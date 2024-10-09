@@ -1,13 +1,16 @@
-require('dotenv').config();
-const express = require('express');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const sequelize = require('./config/database');
-const User = require('./models/User');
-const VerifyToken=require('./middleware/VerifyToken');
+import express from "express";
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import sequelize from './config/database.js';
+import User from './models/User.js'
+import VerifyToken from './middleware/VerifyToken.js';
+import Auth from "./routes/Auth.js";
+import dotenv from 'dotenv';
+dotenv.config();
 
 const app = express();
 app.use(express.json());
+app.use(Auth);
 
 sequelize.sync()
     .then(() => {

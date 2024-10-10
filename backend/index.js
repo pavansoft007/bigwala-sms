@@ -6,11 +6,13 @@ import User from './models/User.js'
 import VerifyToken from './middleware/VerifyToken.js';
 import Auth from "./routes/Auth.js";
 import dotenv from 'dotenv';
+import StudentsAdding from "./routes/Students-Adding.js";
+import TeacherAdding from "./routes/Teachers-Adding.js";
+import TeachersAdding from "./routes/Teachers-Adding.js";
 dotenv.config();
 
 const app = express();
 app.use(express.json());
-app.use(Auth);
 
 sequelize.sync()
     .then(() => {
@@ -19,6 +21,10 @@ sequelize.sync()
     .catch((error) => {
         console.error('Error syncing the database:', error);
     });
+
+app.use(Auth);
+app.use(StudentsAdding);
+app.use(TeachersAdding);
 
 app.post('/register', async (req, res) => {
     const { username, email, password } = req.body;

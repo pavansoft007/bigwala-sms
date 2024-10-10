@@ -1,5 +1,6 @@
-const { DataTypes, Model } = require('sequelize');
-const sequelize = require('./database'); // import your Sequelize instance
+import { DataTypes, Model } from 'sequelize'
+
+import sequelize from "../config/database.js";
 
 class Student extends Model {}
 
@@ -60,4 +61,4 @@ Student.init({
     timestamps: false
 });
 
-module.exports = Student;
+export default Student;

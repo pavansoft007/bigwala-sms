@@ -1,26 +1,39 @@
-// backend/models/User.js
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+import { Sequelize, DataTypes } from 'sequelize'
+import sequelize from "../config/database.js";
 
 const User = sequelize.define('User', {
     id: {
         type: DataTypes.INTEGER,
-        primaryKey: true,
         autoIncrement: true,
+        primaryKey: true,
     },
-    username: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
-    email: {
-        type: DataTypes.STRING,
+    phone_number: {
+        type: DataTypes.STRING(15),
         allowNull: false,
         unique: true,
     },
-    password: {
-        type: DataTypes.STRING,
+    role: {
+        type: DataTypes.ENUM('student', 'teacher', 'admin'),
         allowNull: false,
     },
+    original_id: {
+        type: DataTypes.STRING(50),
+        allowNull: false,
+    },
+    createdAt: {
+        type: DataTypes.DATE,
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
+    },
+    updatedAt: {
+        type: DataTypes.DATE,
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
+        onUpdate: Sequelize.literal('CURRENT_TIMESTAMP'),
+    },
+}, {
+    tableName: 'users',
+    timestamps: true,
+    updatedAt: 'updatedAt',
+    createdAt: 'createdAt',
 });
 
-module.exports = User;
+export default User;

@@ -1,8 +1,8 @@
-import express from "express";
-import Student from "../models/Student.js";
-import User from "../models/User.js";
+import express from 'express';
+import Student from '../models/Student.js';
+import User from '../models/User.js';
 
-const StudentsAdding=express.Router();
+const StudentsAdding = express.Router();
 
 StudentsAdding.post('/mobileAPI/add-new-student', async (req, res) => {
     try {
@@ -15,9 +15,9 @@ StudentsAdding.post('/mobileAPI/add-new-student', async (req, res) => {
             email,
             phone_number,
             address,
-            enrollment_date
+            enrollment_date,
+            school_id
         } = req.body;
-
 
         const newStudent = await Student.create({
             admission_ID,
@@ -29,11 +29,12 @@ StudentsAdding.post('/mobileAPI/add-new-student', async (req, res) => {
             phone_number,
             address,
             enrollment_date,
-            status: 'Active'
+            status: 'Active',
+            school_id
         });
 
         const newUser = await User.create({
-            phone_number: phone_number,
+            phone_number,
             role: 'student',
             original_id: newStudent.student_id
         });
@@ -51,4 +52,5 @@ StudentsAdding.post('/mobileAPI/add-new-student', async (req, res) => {
         });
     }
 });
+
 export default StudentsAdding;

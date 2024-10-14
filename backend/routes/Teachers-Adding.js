@@ -13,8 +13,10 @@ TeacherAdding.post('/mobileAPI/add-new-teacher', async (req, res) => {
             phone_number,
             subject_specialization,
             hire_date,
-            status
+            status,
+            school_id
         } = req.body;
+
 
         const newTeacher = await Teacher.create({
             first_name,
@@ -23,11 +25,11 @@ TeacherAdding.post('/mobileAPI/add-new-teacher', async (req, res) => {
             phone_number,
             subject_specialization,
             hire_date,
+            school_id,
             status: status || 'Active'
         });
-
         const newUser = await User.create({
-            phone_number: phone_number,
+            phone_number,
             role: 'teacher',
             original_id: newTeacher.teacher_id
         });

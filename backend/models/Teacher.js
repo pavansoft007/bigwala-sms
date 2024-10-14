@@ -1,4 +1,5 @@
 import { DataTypes, Model } from 'sequelize';
+import School from './School.js';
 import sequelize from '../config/database.js';
 
 class Teacher extends Model {}
@@ -39,6 +40,14 @@ Teacher.init({
     status: {
         type: DataTypes.ENUM('Active', 'Inactive'),
         allowNull: true
+    },
+    school_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: School,
+            key: 'school_id'
+        }
     }
 }, {
     sequelize,

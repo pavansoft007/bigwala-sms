@@ -135,4 +135,5 @@ GettingData.get('/mobileAPI/schools/:school_id/teachers', async (req, res) => {
         });
     }
 });
+
 export default GettingData;

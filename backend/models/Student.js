@@ -1,4 +1,4 @@
-import { DataTypes, Model } from 'sequelize'
+import { DataTypes, Model } from 'sequelize';
 import School from './School.js';
 import sequelize from "../config/database.js";
 
@@ -12,7 +12,8 @@ Student.init({
     },
     admission_ID: {
         type: DataTypes.STRING(50),
-        allowNull: false
+        allowNull: false,
+        unique: true
     },
     first_name: {
         type: DataTypes.STRING(50),
@@ -33,13 +34,15 @@ Student.init({
     email: {
         type: DataTypes.STRING(100),
         allowNull: false,
+        unique: true,
         validate: {
             isEmail: true
         }
     },
     phone_number: {
         type: DataTypes.STRING(15),
-        allowNull: true
+        allowNull: true,
+        unique: true
     },
     address: {
         type: DataTypes.STRING(255),
@@ -68,6 +71,5 @@ Student.init({
     tableName: 'students',
     timestamps: false
 });
-
 
 export default Student;

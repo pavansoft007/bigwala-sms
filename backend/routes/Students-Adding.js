@@ -4,10 +4,25 @@ import User from '../models/User.js';
 
 const StudentsAdding = express.Router();
 
+
+async function generateAdmissionID() {
+    const lastStudent = await Student.findOne({
+        order: [['admission_ID', 'DESC']]
+    });
+
+    let nextAdmissionNumber = 1;
+
+    if (lastStudent && lastStudent.admission_ID) {
+        const lastAdmissionNumber = parseInt(lastStudent.admission_ID.substring(3), 10);
+        nextAdmissionNumber = lastAdmissionNumber + 1;
+    }
+
+    return `ADM${nextAdmissionNumber.toString().padStart(7, '0')}`;
+}
+
 StudentsAdding.post('/mobileAPI/add-new-student', async (req, res) => {
     try {
         const {
-            admission_ID,
             first_name,
             last_name,
             date_of_birth,
@@ -18,6 +33,10 @@ StudentsAdding.post('/mobileAPI/add-new-student', async (req, res) => {
             enrollment_date,
             school_id
         } = req.body;
+
+
+        const admission_ID = await generateAdmissionID();
+
 
         const newStudent = await Student.create({
             admission_ID,
@@ -32,6 +51,7 @@ StudentsAdding.post('/mobileAPI/add-new-student', async (req, res) => {
             status: 'Active',
             school_id
         });
+
 
         const newUser = await User.create({
             phone_number,

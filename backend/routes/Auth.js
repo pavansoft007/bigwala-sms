@@ -10,7 +10,7 @@ Auth.get('/', (req, res) => {
    res.send({ message: "hello there" });
 });
 
-const JWT_SECRET = 'your_jwt_secret_key';
+const JWT_SECRET = process.env.JWTKEY;
 
 Auth.post('/mobileAPI/otp-request', (req, res) => {
    const otp = Math.floor(100000 + Math.random() * 900000).toString();

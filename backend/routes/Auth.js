@@ -48,42 +48,60 @@ Auth.post('/mobileAPI/otp-verify', async (req, res) => {
 
          if (user.role === 'student') {
             const student = await Student.findOne({ where: { phone_number: user.phone_number } });
+            const studentData={
+               student_id: student.student_id,
+               first_name: student.first_name,
+               last_name: student.last_name,
+               date_of_birth: student.date_of_birth,
+               gender: student.gender,
+               email: student.email,
+               phone_number: student.phone_number,
+               address: student.address,
+               enrollment_date: student.enrollment_date,
+               status: student.status,
+               role:"student"
+            };
+            const token = await jwt.sign(
+                studentData,
+                JWT_SECRET,
+                { expiresIn: '360m' }
+            );
+
 
             if (student) {
                return res.status(200).json({
                   message: 'OTP verified successfully',
-                  student: {
-                     student_id: student.student_id,
-                     first_name: student.first_name,
-                     last_name: student.last_name,
-                     date_of_birth: student.date_of_birth,
-                     gender: student.gender,
-                     email: student.email,
-                     phone_number: student.phone_number,
-                     address: student.address,
-                     enrollment_date: student.enrollment_date,
-                     status: student.status
-                  }
+                  role:"student",
+                  token:token,
+                  student: studentData
                });
             } else {
                return res.status(404).json({ message: 'Student not found' });
             }
          } else if (user.role === 'teacher') {
             const teacher = await Teacher.findOne({ where: { phone_number: user.phone_number } });
+            const teacherDetails={
+               teacher_id: teacher.teacher_id,
+               first_name: teacher.first_name,
+               last_name: teacher.last_name,
+               email: teacher.email,
+               phone_number: teacher.phone_number,
+               subject_specialization: teacher.subject_specialization,
+               hire_date: teacher.hire_date,
+               status: teacher.status
+            };
+            const token=await jwt.sign(
+                teacherDetails,
+                JWT_SECRET,
+                {expiresIn: '360m'}
+            )
 
             if (teacher) {
                return res.status(200).json({
                   message: 'OTP verified successfully',
-                  teacher: {
-                     teacher_id: teacher.teacher_id,
-                     first_name: teacher.first_name,
-                     last_name: teacher.last_name,
-                     email: teacher.email,
-                     phone_number: teacher.phone_number,
-                     subject_specialization: teacher.subject_specialization,
-                     hire_date: teacher.hire_date,
-                     status: teacher.status
-                  }
+                  role:"teacher",
+                  token:token,
+                  teacher: teacherDetails
                });
             } else {
                return res.status(404).json({ message: 'Teacher not found' });
@@ -99,5 +117,6 @@ Auth.post('/mobileAPI/otp-verify', async (req, res) => {
       return res.status(400).json({ message: 'Invalid or expired token' });
    }
 });
+
 
 export default Auth;

@@ -88,7 +88,8 @@ Auth.post('/mobileAPI/otp-verify', async (req, res) => {
                phone_number: teacher.phone_number,
                subject_specialization: teacher.subject_specialization,
                hire_date: teacher.hire_date,
-               status: teacher.status
+               status: teacher.status,
+               role: teacher.adminAccess ? "admin" : "teacher"
             };
             const token=await jwt.sign(
                 teacherDetails,

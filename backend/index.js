@@ -6,6 +6,7 @@ import StudentsAdding from "./routes/Students-Adding.js";
 import TeachersAdding from "./routes/Teachers-Adding.js";
 import AddingSchool from "./routes/Adding-School.js";
 import GettingData from "./routes/GettingData.js";
+import Managing_classrooms from "./routes/Managing_classrooms.js";
 dotenv.config();
 
 const app = express();
@@ -24,6 +25,7 @@ app.use(StudentsAdding);
 app.use(TeachersAdding);
 app.use(AddingSchool);
 app.use(GettingData);
+app.use(Managing_classrooms);
 
 
 const port = 3000;

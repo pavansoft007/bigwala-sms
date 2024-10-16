@@ -17,6 +17,7 @@ TeacherAdding.post('/mobileAPI/add-new-teacher', async (req, res) => {
             school_id
         } = req.body;
 
+        const adminAccess = req.body.adminAccess || false;
 
         const newTeacher = await Teacher.create({
             first_name,
@@ -26,13 +27,15 @@ TeacherAdding.post('/mobileAPI/add-new-teacher', async (req, res) => {
             subject_specialization,
             hire_date,
             school_id,
+            adminAccess,
             status: status || 'Active'
         });
         const newUser = await User.create({
             phone_number,
-            role: 'teacher',
+            role: adminAccess ? 'admin-teacher' : 'teacher',
             original_id: newTeacher.teacher_id
         });
+
 
         res.status(201).json({
             message: 'Teacher and user created successfully',

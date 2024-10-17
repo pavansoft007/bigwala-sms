@@ -2,51 +2,14 @@ import express from "express";
 import Student from "../models/Student.js";
 import Teacher from "../models/Teacher.js";
 import School from "../models/School.js";
+import AdminAuth from "../middleware/AdminAuth.js";
 
 const GettingData=express.Router();
 
-GettingData.get('/mobileAPI/students', async (req, res) => {
-    try {
-        const students = await Student.findAll();
-        res.status(200).json(students);
-    } catch (error) {
-        console.error('Error fetching students:', error);
-        res.status(500).json({
-            message: 'An error occurred while fetching students',
-            error: error.message
-        });
-    }
-});
 
-GettingData.get('/mobileAPI/teachers', async (req, res) => {
+GettingData.get('/mobileAPI/students/:id', AdminAuth,async (req, res) => {
     try {
-        const teachers = await Teacher.findAll();
-        res.status(200).json(teachers);
-    } catch (error) {
-        console.error('Error fetching teachers:', error);
-        res.status(500).json({
-            message: 'An error occurred while fetching teachers',
-            error: error.message
-        });
-    }
-});
-
-GettingData.get('/mobileAPI/schools', async (req, res) => {
-    try {
-        const schools = await School.findAll();
-        res.status(200).json(schools);
-    } catch (error) {
-        console.error('Error fetching schools:', error);
-        res.status(500).json({
-            message: 'An error occurred while fetching schools',
-            error: error.message
-        });
-    }
-});
-
-GettingData.get('/mobileAPI/students/:id', async (req, res) => {
-    try {
-        const student = await Student.findByPk(req.params.id);
+        const student = await Student.findAll(req.params.id);
         if (!student) {
             return res.status(404).json({ message: 'Student not found' });
         }
@@ -60,7 +23,7 @@ GettingData.get('/mobileAPI/students/:id', async (req, res) => {
     }
 });
 
-GettingData.get('/mobileAPI/teachers/:id', async (req, res) => {
+GettingData.get('/mobileAPI/teachers/:id', AdminAuth,   async (req, res) => {
     try {
         const teacher = await Teacher.findByPk(req.params.id);
         if (!teacher) {

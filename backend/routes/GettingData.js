@@ -9,7 +9,12 @@ const GettingData=express.Router();
 
 GettingData.get('/mobileAPI/students/:id', AdminAuth,async (req, res) => {
     try {
-        const student = await Student.findAll(req.params.id);
+        const student = await Student.findOne({
+            where:{
+                student_id:req.params.id,
+                school_id:req.sessionData.school_id
+            }
+        })
         if (!student) {
             return res.status(404).json({ message: 'Student not found' });
         }
@@ -25,7 +30,12 @@ GettingData.get('/mobileAPI/students/:id', AdminAuth,async (req, res) => {
 
 GettingData.get('/mobileAPI/teachers/:id', AdminAuth,   async (req, res) => {
     try {
-        const teacher = await Teacher.findByPk(req.params.id);
+        const teacher = await Teacher.findOne({
+            where:{
+                teacher_id:req.params.id,
+                school_id:req.sessionData.school_id
+            }
+        });
         if (!teacher) {
             return res.status(404).json({ message: 'Teacher not found' });
         }

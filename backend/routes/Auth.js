@@ -4,6 +4,7 @@ import Teacher from "../models/Teacher.js";
 import Classroom from "../models/Classroom.js";
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
+import Admin from "../models/Admin.js";
 
 const Auth = express.Router();
 
@@ -145,6 +146,35 @@ Auth.post('/mobileAPI/otp-verify', async (req, res) => {
    } catch (error) {
       console.log(error);
       return res.status(400).json({ message: 'Invalid or expired token' });
+   }
+});
+
+Auth.post('/api/admin-login',async (req,res)=>{
+   const {email,password}=req.body;
+   try{
+      const adminDetails=await Admin.findOne({
+         where:{
+            admin_email:email
+         }
+      })
+      if (adminDetails){
+         if(adminDetails.admin_password === password ){
+             console.log(adminDetails);
+             const tokenData={
+                school_id: adminDetails.school_id,
+                role:'admin'
+             }
+             const token = await jwt.sign(tokenData,JWT_SECRET,{expiresIn: '360m'});
+             res.status(200).json({token});
+         }else{
+            return res.status(403).json({message:"wrong password"});
+         }
+      }else{
+         return res.status(404).json({message:"email not found"});
+      }
+   }catch (e) {
+      console.log(e);
+      return res.status(500).json({message:"internal server error"});
    }
 });
 

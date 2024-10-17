@@ -44,10 +44,16 @@ TeacherAdding.post('/mobileAPI/add-new-teacher', async (req, res) => {
         });
     } catch (error) {
         console.error('Error creating teacher and user:', error);
-        res.status(500).json({
-            message: 'An error occurred while creating teacher and user',
-            error: error.message
-        });
+        if(error.original.errno === 1062){
+            res.status(403).json({
+                message:error.errors[0].message
+            })
+        }else{
+            res.status(500).json({
+                message: 'An error occurred while creating teacher and user',
+                error: error.message
+            });
+        }
     }
 });
 

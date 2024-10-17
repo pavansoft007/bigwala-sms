@@ -7,7 +7,7 @@ import jwt from "jsonwebtoken";
 const Auth = express.Router();
 
 Auth.get('/', (req, res) => {
-   res.send({ message: "hello there" });
+   res.send({ message: "bigwala server is running" });
 });
 
 const JWT_SECRET = process.env.JWTKEY;

@@ -5,7 +5,6 @@ const Managing_classrooms=express.Router();
 
 Managing_classrooms.post('/mobileAPI/addingClassroom',async (req,res)=>{
     const body=req.body;
-    console.log(body);
     try{
        const newClassroom=await Classroom.create(body);
         res.status(201).json({

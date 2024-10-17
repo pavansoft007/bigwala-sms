@@ -1,24 +1,9 @@
 import express from 'express';
 import Student from '../models/Student.js';
 import User from '../models/User.js';
+import generateAdmissionID from "../services/generateAdmissionID.js";
 
 const StudentsAdding = express.Router();
-
-
-async function generateAdmissionID() {
-    const lastStudent = await Student.findOne({
-        order: [['admission_ID', 'DESC']]
-    });
-
-    let nextAdmissionNumber = 1;
-
-    if (lastStudent && lastStudent.admission_ID) {
-        const lastAdmissionNumber = parseInt(lastStudent.admission_ID.substring(3), 10);
-        nextAdmissionNumber = lastAdmissionNumber + 1;
-    }
-
-    return `ADM${nextAdmissionNumber.toString().padStart(7, '0')}`;
-}
 
 StudentsAdding.post('/mobileAPI/add-new-student', async (req, res) => {
     try {
@@ -31,6 +16,7 @@ StudentsAdding.post('/mobileAPI/add-new-student', async (req, res) => {
             phone_number,
             address,
             enrollment_date,
+            assginedClassroom,
             school_id
         } = req.body;
 
@@ -48,6 +34,7 @@ StudentsAdding.post('/mobileAPI/add-new-student', async (req, res) => {
             phone_number,
             address,
             enrollment_date,
+            assginedClassroom,
             status: 'Active',
             school_id
         });
@@ -66,10 +53,17 @@ StudentsAdding.post('/mobileAPI/add-new-student', async (req, res) => {
         });
     } catch (error) {
         console.error('Error creating student and user:', error);
-        res.status(500).json({
-            message: 'An error occurred while creating student and user',
-            error: error.message
-        });
+        if(error.original.errno === 1062){
+           res.status(403).json({
+               message:error.errors[0].message
+           })
+        }
+        else{
+            res.status(500).json({
+                message: 'An error occurred while creating student and user',
+                error: error.message
+            });
+        }
     }
 });
 

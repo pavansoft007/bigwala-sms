@@ -1,24 +1,29 @@
 import express from 'express';
 import Student from "../models/Student.js";
 import Teacher from "../models/Teacher.js";
+import Classroom from "../models/Classroom.js";
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 
 const Auth = express.Router();
 
 Auth.get('/', (req, res) => {
-   res.send({ message: "hello there" });
+   res.send({ message: "bigwala server is running" });
 });
 
 const JWT_SECRET = process.env.JWTKEY;
 
-Auth.post('/mobileAPI/otp-request', (req, res) => {
+Auth.post('/mobileAPI/otp-request', async (req, res) => {
    const otp = Math.floor(100000 + Math.random() * 900000).toString();
    console.log(otp);
-   const { phone } = req.body;
 
+   const { phone } = req.body;
+   const user = await User.findOne({ where: { phone_number: phone } });
    if (!phone) {
       return res.status(400).json({ message: 'Phone number is required' });
+   }
+   if(!user){
+      return res.status(404).json({});
    }
    const token = jwt.sign(
        { phone, otp },
@@ -47,7 +52,19 @@ Auth.post('/mobileAPI/otp-verify', async (req, res) => {
 
 
          if (user.role === 'student') {
-            const student = await Student.findOne({ where: { phone_number: user.phone_number } });
+            Classroom.hasMany(Student, { foreignKey: 'assginedClassroom' });
+            Student.belongsTo(Classroom, { foreignKey: 'assginedClassroom' });
+            const student = await Student.findOne({
+               where: {
+                  phone_number: user.phone_number
+               },
+               include: [
+                  {
+                     model: Classroom,
+                     required: true
+                  }
+               ]
+            });
             const studentData={
                student_id: student.student_id,
                first_name: student.first_name,
@@ -59,6 +76,8 @@ Auth.post('/mobileAPI/otp-verify', async (req, res) => {
                address: student.address,
                enrollment_date: student.enrollment_date,
                status: student.status,
+               standard:student.Classroom.standard,
+               section:student.Classroom.section,
                role:"student"
             };
             const token = await jwt.sign(
@@ -89,6 +108,7 @@ Auth.post('/mobileAPI/otp-verify', async (req, res) => {
                subject_specialization: teacher.subject_specialization,
                hire_date: teacher.hire_date,
                status: teacher.status,
+               school_id:teacher.school_id,
                role: teacher.adminAccess ? "teacher-admin" : "teacher"
             };
             const token=await jwt.sign(
@@ -115,6 +135,7 @@ Auth.post('/mobileAPI/otp-verify', async (req, res) => {
          return res.status(400).json({ message: 'Invalid OTP' });
       }
    } catch (error) {
+      console.log(error);
       return res.status(400).json({ message: 'Invalid or expired token' });
    }
 });

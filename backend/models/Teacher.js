@@ -13,34 +13,36 @@ Teacher.init({
     },
     first_name: {
         type: DataTypes.STRING(50),
-        allowNull: true
+        allowNull: false
     },
     last_name: {
         type: DataTypes.STRING(50),
-        allowNull: true
+        allowNull: false
     },
     email: {
         type: DataTypes.STRING(100),
-        allowNull: true,
+        allowNull: false,
+        unique: true,
         validate: {
             isEmail: true
         }
     },
     phone_number: {
         type: DataTypes.STRING(15),
-        allowNull: true
+        unique: true,
+        allowNull: false
     },
     subject_specialization: {
         type: DataTypes.STRING(100),
-        allowNull: true
+        allowNull: false
     },
     hire_date: {
         type: DataTypes.DATEONLY,
-        allowNull: true
+        allowNull: false
     },
     status: {
         type: DataTypes.ENUM('Active', 'Inactive'),
-        allowNull: true
+        allowNull: false
     },
     adminAccess:{
         type:DataTypes.BOOLEAN,

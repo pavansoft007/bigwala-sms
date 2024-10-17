@@ -57,4 +57,39 @@ Managing_classrooms.get('/mobileAPI/getStudent/:classroomID',async (req,res)=>{
     }
 });
 
+Managing_classrooms.post('/mobileAPI/student-assign-classroom', async  (req,res)=>{
+   const {standard,section,studentID,schoolID}=req.body;
+   try{
+       console.log(standard,section,studentID);
+       const classDetails=await Classroom.findOne({
+           where:{
+               standard,section,school_id:schoolID
+           }
+       })
+       if(classDetails){
+           const updateStudent=await Student.update(
+               {assginedClassroom:classDetails.classroom_id},
+               {
+                   where:{
+                       student_id: studentID
+                   }
+               }
+           )
+           if (updateStudent[0] === 1) {
+               res.status(200).json({ message: 'Student updated successfully' });
+           } else {
+               res.status(404).json({ message: 'Student not found or no changes made' });
+           }
+       }else{
+           res.status(404).json({message:'section is not found in your school'});
+       }
+   }catch (e) {
+       console.error('Error fetching students:', e);
+       res.status(500).json({
+           message: 'An error occurred while fetching students',
+           error: e.message
+       });
+   }
+});
+
 export default Managing_classrooms;

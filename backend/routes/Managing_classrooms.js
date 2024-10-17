@@ -1,6 +1,7 @@
 import express from "express";
 import Classroom from "../models/Classroom.js";
 import Student from "../models/Student.js";
+import semiAdminAuth from "../middleware/semiAdminAuth.js";
 
 const Managing_classrooms=express.Router();
 
@@ -57,8 +58,9 @@ Managing_classrooms.get('/mobileAPI/getStudent/:classroomID',async (req,res)=>{
     }
 });
 
-Managing_classrooms.post('/mobileAPI/student-assign-classroom', async  (req,res)=>{
-   const {standard,section,studentID,schoolID}=req.body;
+Managing_classrooms.post('/mobileAPI/student-assign-classroom',semiAdminAuth, async  (req,res)=>{
+   const {standard,section,studentID}=req.body;
+   const schoolID=req['sessionData']['school_id'];
    try{
        console.log(standard,section,studentID);
        const classDetails=await Classroom.findOne({

@@ -1,6 +1,7 @@
 import { DataTypes, Model } from 'sequelize';
 import School from './School.js';
 import sequelize from "../config/database.js";
+import classroom from "./Classroom.js";
 
 class Student extends Model {}
 
@@ -56,6 +57,14 @@ Student.init({
         type: DataTypes.ENUM('Active', 'Inactive'),
         allowNull: false,
         defaultValue: 'Active'
+    },
+    assginedClassroom:{
+        type:DataTypes.INTEGER,
+        allowNull: true,
+        references:{
+            model:classroom,
+            key:'classroom_id'
+        }
     },
     school_id: {
         type: DataTypes.INTEGER,

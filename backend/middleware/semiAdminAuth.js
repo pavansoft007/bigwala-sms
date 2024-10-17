@@ -6,7 +6,7 @@ const SemiAdminAuth = async (req, res, next) => {
     try{
         const tokenDetails=await jwt.verify(token,process.env.JWTKEY);
         console.log(tokenDetails);
-        if(tokenDetails.role=== 'admin' && tokenDetails.role === 'teacher-admin' ){
+        if(tokenDetails.role=== 'admin' || tokenDetails.role === 'teacher-admin' ){
             next();
         }else{
             res.status(403).json({message:"you dont have access"});

@@ -1,5 +1,6 @@
 import express from "express";
 import Classroom from "../models/Classroom.js";
+import Student from "../models/Student.js";
 
 const Managing_classrooms=express.Router();
 
@@ -30,6 +31,24 @@ Managing_classrooms.get('/mobileAPI/getClassroomDetails',async (req,res)=>{
        })
         res.send(classroomDetails);
    } catch (error) {
+        console.error('Error fetching students:', error);
+        res.status(500).json({
+            message: 'An error occurred while fetching students',
+            error: error.message
+        });
+    }
+});
+
+Managing_classrooms.get('/mobileAPI/getStudent/:classroomID',async (req,res)=>{
+   const classroomID=req.params.classroomID;
+    try{
+        const studentINFO=await Student.findAll({
+           where:{
+               assginedClassroom:classroomID
+           }
+        });
+        res.status(200).json(studentINFO)
+    } catch (error) {
         console.error('Error fetching students:', error);
         res.status(500).json({
             message: 'An error occurred while fetching students',

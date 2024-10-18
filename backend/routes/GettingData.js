@@ -3,6 +3,9 @@ import Student from "../models/Student.js";
 import Teacher from "../models/Teacher.js";
 import School from "../models/School.js";
 import AdminAuth from "../middleware/AdminAuth.js";
+import verifyToken from "../middleware/VerifyToken.js";
+import teacher from "../models/Teacher.js";
+import Classroom from "../models/Classroom.js";
 
 const GettingData=express.Router();
 
@@ -49,20 +52,15 @@ GettingData.get('/mobileAPI/teachers/:id', AdminAuth,   async (req, res) => {
     }
 });
 
-GettingData.get('/mobileAPI/schools/:id', async (req, res) => {
-    try {
-        const school = await School.findByPk(req.params.id);
-        if (!school) {
-            return res.status(404).json({ message: 'School not found' });
-        }
-        res.status(200).json(school);
-    } catch (error) {
-        console.error('Error fetching school:', error);
-        res.status(500).json({
-            message: 'An error occurred while fetching school',
-            error: error.message
-        });
-    }
+GettingData.get('/mobileAPI/getStudent',verifyToken,async (req,res)=>{
+       const assignedClass=req['sessionData']['assignedClass'];
+       const completeDetails=await Student.findAll({
+           where:{
+               assginedClassroom:assignedClass
+           }
+       });
+       console.log(completeDetails);
+       res.status(200).json();
 });
 
 GettingData.get('/mobileAPI/schools/:school_id/students', async (req, res) => {

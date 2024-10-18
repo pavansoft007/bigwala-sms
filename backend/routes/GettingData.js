@@ -1,11 +1,9 @@
 import express from "express";
 import Student from "../models/Student.js";
 import Teacher from "../models/Teacher.js";
-import School from "../models/School.js";
 import AdminAuth from "../middleware/AdminAuth.js";
 import verifyToken from "../middleware/VerifyToken.js";
-import teacher from "../models/Teacher.js";
-import Classroom from "../models/Classroom.js";
+
 
 const GettingData=express.Router();
 

@@ -1,13 +1,21 @@
 import jwt from "jsonwebtoken";
-const verifyToken = (req, res, next) => {
+const VerifyToken = async (req, res, next) => {
     const token = req.headers['authorization'];
     if (!token) return res.status(403).json({ message: 'No token provided' });
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-        if (err) return res.status(500).json({ message: 'Failed to authenticate token' });
-        req.userId = decoded.id;
-        next();
-    });
+    try{
+        const tokenDetails=await jwt.verify(token,process.env.JWTKEY);
+        console.log(tokenDetails);
+        if(tokenDetails.role=== 'admin' || tokenDetails.role === 'teacher-admin' || tokenDetails.role === 'teacher' ){
+            req['sessionData']=tokenDetails;
+            next();
+        }else{
+            res.status(403).json({message:"you dont have access"});
+        }
+
+    }catch (e) {
+        return res.status(500).json({ message: 'Failed to authenticate token' });
+    }
 };
 
-export default verifyToken;
+export default VerifyToken;

@@ -159,13 +159,13 @@ Auth.post('/api/admin-login',async (req,res)=>{
       })
       if (adminDetails){
          if(adminDetails.admin_password === password ){
-             console.log(adminDetails);
-             const tokenData={
-                school_id: adminDetails.school_id,
-                role:'admin'
-             }
-             const token = await jwt.sign(tokenData,JWT_SECRET,{expiresIn: '360m'});
-             res.status(200).json({token});
+            console.log(adminDetails);
+            const tokenData={
+               school_id: adminDetails.school_id,
+               role:'admin'
+            }
+            const token = await jwt.sign(tokenData,JWT_SECRET,{expiresIn: '360m'});
+            res.status(200).json({token});
          }else{
             return res.status(403).json({message:"wrong password"});
          }

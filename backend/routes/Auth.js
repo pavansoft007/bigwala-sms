@@ -5,6 +5,7 @@ import Classroom from "../models/Classroom.js";
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 import Admin from "../models/Admin.js";
+import otpTokenVerification from "../middleware/otp-token-verification.js";
 
 const Auth = express.Router();
 
@@ -18,14 +19,13 @@ Auth.post('/mobileAPI/otp-request', async (req, res) => {
    const otp = Math.floor(100000 + Math.random() * 900000).toString();
    console.log(otp);
    const { phone } = req.body;
-   const phonePattern = /^[0-9]{10}$/;
-   if (!phonePattern.test(phone.slice(3,phone.length)) && phone.slice(0,2) === '+91' ) {
-      return res.status(400).json({message:"Phone number must be 10 digits"});
-   }
-
    const user = await User.findOne({ where: { phone_number: phone } });
    if (!phone) {
       return res.status(400).json({ message: 'Phone number is required' });
+   }
+   const phonePattern = /^[0-9]{10}$/;
+   if (!phonePattern.test(phone.slice(3,phone.length)) && phone.slice(0,2) === '+91' ) {
+      return res.status(400).json({message:"Phone number must be 10 digits"});
    }
    if(!user){
       return res.status(404).json({});
@@ -38,9 +38,9 @@ Auth.post('/mobileAPI/otp-request', async (req, res) => {
    res.status(200).json({ message: 'OTP sent successfully', token: token });
 });
 
-Auth.post('/mobileAPI/otp-verify', async (req, res) => {
-   const { otp, token } = req.body;
-
+Auth.post('/mobileAPI/otp-verify', otpTokenVerification ,async (req, res) => {
+   const { otp } = req.body;
+   const token=req['tokenDetails'];
    if (!otp || !token) {
       return res.status(400).json({ message: 'OTP and token are required' });
    }

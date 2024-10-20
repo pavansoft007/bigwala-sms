@@ -1,23 +1,23 @@
 import jwt from "jsonwebtoken";
-const SemiAdminAuth = async (req, res, next) => {
+
+const otpTokenVerification=async (req,res,next)=>{
     const token = req.headers['authorization'];
     if (!token) return res.status(403).json({ message: 'No token provided' });
 
-    try{
+    try {
         const bearerToken = token.split(' ')[1];
         if (!bearerToken) return res.status(403).json({ message: 'No token provided' });
 
-        const tokenDetails=await jwt.verify(bearerToken,process.env.JWTKEY);
-        if(tokenDetails.role=== 'admin' || tokenDetails.role === 'teacher-admin' ){
-            req['sessionData']=tokenDetails;
+        const tokenDetails = await jwt.verify(bearerToken, process.env.JWTKEY);
+        if (tokenDetails) {
+            req['tokenDetails'] = bearerToken;
             next();
-        }else{
-            res.status(403).json({message:"you dont have access"});
+        } else {
+            res.status(403).json({ message: "You don't have access" });
         }
-
-    }catch (e) {
+    } catch (e) {
         return res.status(500).json({ message: 'Failed to authenticate token' });
     }
-};
 
-export default SemiAdminAuth;
+};
+export default otpTokenVerification;

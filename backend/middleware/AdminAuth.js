@@ -4,7 +4,10 @@ const AdminAuth = async (req, res, next) => {
     if (!token) return res.status(403).json({ message: 'No token provided' });
 
     try{
-        const tokenDetails=await jwt.verify(token,process.env.JWTKEY);
+        const bearerToken = token.split(' ')[1];
+        if (!bearerToken) return res.status(403).json({ message: 'No token provided' });
+        const tokenDetails=await jwt.verify(bearerToken,process.env.JWTKEY);
+
         if(tokenDetails.role=== 'admin'){
             req['sessionData']=tokenDetails;
             next();

@@ -11,6 +11,9 @@ node_modules/
 # Local environment files
 .env
 
+.env.prod
+.env.dev
+
 # IDE settings
 .idea/
 .vscode/

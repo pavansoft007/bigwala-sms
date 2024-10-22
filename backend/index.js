@@ -11,7 +11,6 @@ import AddingSchool from "./routes/Adding-School.js";
 import GettingData from "./routes/GettingData.js";
 import Managing_classrooms from "./routes/Managing_classrooms.js";
 import TestingRoute from "./routes/TestingRoute.js";
-dotenv.config();
 
 const app = express();
 app.use(express.json());
@@ -39,8 +38,11 @@ app.use(GettingData);
 app.use(Managing_classrooms);
 app.use(TestingRoute);
 
+dotenv.config({
+    path: process.env.NODE_ENV === 'production' ? '.env.prod' : '.env.dev'
+});
 
-const port = 3000;
+const port = process.env.PORT;
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });

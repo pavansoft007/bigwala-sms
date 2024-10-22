@@ -57,52 +57,8 @@ GettingData.get('/mobileAPI/getStudent',verifyToken,async (req,res)=>{
                assginedClassroom:assignedClass
            }
        });
-       console.log(completeDetails);
-       res.status(200).json();
+       res.status(200).json(completeDetails);
 });
 
-GettingData.get('/mobileAPI/schools/:school_id/students', async (req, res) => {
-    const { school_id } = req.params;
-
-    try {
-        const students = await Student.findAll({
-            where: { school_id }
-        });
-
-        if (students.length === 0) {
-            return res.status(404).json({ message: 'No students found for this school' });
-        }
-
-        res.status(200).json(students);
-    } catch (error) {
-        console.error('Error fetching students by school_id:', error);
-        res.status(500).json({
-            message: 'An error occurred while fetching students',
-            error: error.message
-        });
-    }
-});
-
-GettingData.get('/mobileAPI/schools/:school_id/teachers', async (req, res) => {
-    const { school_id } = req.params;
-
-    try {
-        const teachers = await Teacher.findAll({
-            where: { school_id }
-        });
-
-        if (teachers.length === 0) {
-            return res.status(404).json({ message: 'No teachers found for this school' });
-        }
-
-        res.status(200).json(teachers);
-    } catch (error) {
-        console.error('Error fetching teachers by school_id:', error);
-        res.status(500).json({
-            message: 'An error occurred while fetching teachers',
-            error: error.message
-        });
-    }
-});
 
 export default GettingData;

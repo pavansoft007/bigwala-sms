@@ -1,8 +1,9 @@
 import express from "express";
 import Student from "../models/Student.js";
 import Teacher from "../models/Teacher.js";
-import School from "../models/School.js";
 import AdminAuth from "../middleware/AdminAuth.js";
+import verifyToken from "../middleware/VerifyToken.js";
+
 
 const GettingData=express.Router();
 
@@ -49,64 +50,15 @@ GettingData.get('/mobileAPI/teachers/:id', AdminAuth,   async (req, res) => {
     }
 });
 
-GettingData.get('/mobileAPI/schools/:id', async (req, res) => {
-    try {
-        const school = await School.findByPk(req.params.id);
-        if (!school) {
-            return res.status(404).json({ message: 'School not found' });
-        }
-        res.status(200).json(school);
-    } catch (error) {
-        console.error('Error fetching school:', error);
-        res.status(500).json({
-            message: 'An error occurred while fetching school',
-            error: error.message
-        });
-    }
+GettingData.get('/mobileAPI/getStudent',verifyToken,async (req,res)=>{
+       const assignedClass=req['sessionData']['assignedClass'];
+       const completeDetails=await Student.findAll({
+           where:{
+               assginedClassroom:assignedClass
+           }
+       });
+       res.status(200).json(completeDetails);
 });
 
-GettingData.get('/mobileAPI/schools/:school_id/students', async (req, res) => {
-    const { school_id } = req.params;
-
-    try {
-        const students = await Student.findAll({
-            where: { school_id }
-        });
-
-        if (students.length === 0) {
-            return res.status(404).json({ message: 'No students found for this school' });
-        }
-
-        res.status(200).json(students);
-    } catch (error) {
-        console.error('Error fetching students by school_id:', error);
-        res.status(500).json({
-            message: 'An error occurred while fetching students',
-            error: error.message
-        });
-    }
-});
-
-GettingData.get('/mobileAPI/schools/:school_id/teachers', async (req, res) => {
-    const { school_id } = req.params;
-
-    try {
-        const teachers = await Teacher.findAll({
-            where: { school_id }
-        });
-
-        if (teachers.length === 0) {
-            return res.status(404).json({ message: 'No teachers found for this school' });
-        }
-
-        res.status(200).json(teachers);
-    } catch (error) {
-        console.error('Error fetching teachers by school_id:', error);
-        res.status(500).json({
-            message: 'An error occurred while fetching teachers',
-            error: error.message
-        });
-    }
-});
 
 export default GettingData;

@@ -13,6 +13,7 @@ import AddingSchool from "./routes/Adding-School.js";
 import GettingData from "./routes/GettingData.js";
 import Managing_classrooms from "./routes/Managing_classrooms.js";
 import TestingRoute from "./routes/TestingRoute.js";
+import Attendance from "./routes/Attendance.js";
 
 const app = express();
 app.use(express.json());
@@ -47,6 +48,7 @@ app.use(AddingSchool);
 app.use(GettingData);
 app.use(Managing_classrooms);
 app.use(TestingRoute);
+app.use(Attendance);
 
 dotenv.config({
     path: process.env.NODE_ENV === 'production' ? '.env.prod' : '.env.dev'

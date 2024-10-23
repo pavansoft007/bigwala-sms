@@ -9,9 +9,6 @@ import otpTokenVerification from "../middleware/otp-token-verification.js";
 
 const Auth = express.Router();
 
-Auth.get('/', (req, res) => {
-   res.send({ message: "bigwala server is running" });
-});
 
 const JWT_SECRET = process.env.JWTKEY;
 

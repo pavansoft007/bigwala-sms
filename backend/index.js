@@ -18,7 +18,11 @@ import Attendance from "./routes/Attendance.js";
 const app = express();
 app.use(express.json());
 app.use(helmet());
-app.use(cors());
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true
+}));
 
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,

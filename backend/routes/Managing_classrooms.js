@@ -63,13 +63,11 @@ Managing_classrooms.post('/mobileAPI/student-assign-classroom',semiAdminAuth, as
     const {standard,section,studentID}=req.body;
     const schoolID=req['sessionData']['school_id'];
     try{
-        console.log(standard,section,studentID);
         const classDetails=await Classroom.findOne({
             where:{
                 standard,section,school_id:schoolID
             }
         })
-        console.log(classDetails);
         if(classDetails){
             const updateStudent=await Student.update(
                 {assginedClassroom:classDetails.classroom_id},

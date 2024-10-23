@@ -5,6 +5,8 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import helmet from "helmet";
+import path from 'path';
+import { fileURLToPath } from 'url';
 import StudentsAdding from "./routes/Students-Adding.js";
 import TeachersAdding from "./routes/Teachers-Adding.js";
 import AddingSchool from "./routes/Adding-School.js";
@@ -30,6 +32,13 @@ sequelize.sync()
         console.error('Error syncing the database:', error);
     });
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const frontendPath = path.resolve(__dirname, '../frontend/dist');
+app.use(express.static(frontendPath));
+
+
+
 app.use(Auth);
 app.use(StudentsAdding);
 app.use(TeachersAdding);
@@ -40,6 +49,17 @@ app.use(TestingRoute);
 
 dotenv.config({
     path: process.env.NODE_ENV === 'production' ? '.env.prod' : '.env.dev'
+});
+app.get('/mobileAPI/*',(req, res)=>{
+    res.status(404).json({});
+});
+
+app.get('/api/*',(req, res)=>{
+    res.status(404).json({});
+});
+
+app.get('*',(req,res)=>{
+    res.sendFile(path.resolve(__dirname, '../frontend/dist/index.html'));
 });
 
 const port = process.env.PORT;

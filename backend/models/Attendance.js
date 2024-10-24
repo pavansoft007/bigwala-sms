@@ -28,9 +28,14 @@ Attendance.init({
         }
     },
     attendDate: {
-        type: DataTypes.DATE,
+        type: DataTypes.DATEONLY,
         allowNull: false,
-        defaultValue: DataTypes.NOW,
+        defaultValue: DataTypes.NOW
+    },
+    attendTime: {
+        type: DataTypes.TIME,
+        allowNull: false,
+        defaultValue: DataTypes.NOW
     }
 }, {
     sequelize,

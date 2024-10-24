@@ -4,6 +4,7 @@ import teacherAttendance from "../models/teacherAttendance.js";
 import Teacher from "../models/Teacher.js";
 import VerifyToken from "../middleware/VerifyToken.js";
 import AdminAuth from "../middleware/AdminAuth.js";
+import StudentAttendance from "../models/studentAttendance.js";
 
 const ManageAttendance = express.Router();
 
@@ -103,7 +104,6 @@ ManageAttendance.get('/mobileAPI/attendance/get-pending-request',AdminAuth,async
                 attributes: ['teacher_id', 'first_name', 'last_name', 'email', 'phone_number'],
             }]
         });
-        console.log(pendingRequests);
 
         if (pendingRequests.length === 0) {
             return res.status(404).json({ message: 'No pending attendance requests found' });
@@ -116,8 +116,9 @@ ManageAttendance.get('/mobileAPI/attendance/get-pending-request',AdminAuth,async
     }
 });
 
+ManageAttendance.get('/mobileAPI/attendance/get-student',StudentAttendance,async (req,res)=>{
 
-
+});
 
 
 

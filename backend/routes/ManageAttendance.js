@@ -4,7 +4,6 @@ import teacherAttendance from "../models/teacherAttendance.js";
 import Teacher from "../models/Teacher.js";
 import VerifyToken from "../middleware/VerifyToken.js";
 import AdminAuth from "../middleware/AdminAuth.js";
-import StudentAttendance from "../models/studentAttendance.js";
 
 const ManageAttendance = express.Router();
 
@@ -114,10 +113,6 @@ ManageAttendance.get('/mobileAPI/attendance/get-pending-request',AdminAuth,async
         console.log(error);
         res.status(500).json({ message: 'Error fetching pending requests', error });
     }
-});
-
-ManageAttendance.get('/mobileAPI/attendance/get-student',StudentAttendance,async (req,res)=>{
-
 });
 
 

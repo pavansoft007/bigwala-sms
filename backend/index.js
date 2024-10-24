@@ -30,7 +30,7 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-sequelize.sync()
+sequelize.sync( )
     .then(() => {
         console.log('Database synced successfully.');
     })

@@ -102,7 +102,6 @@ Managing_classrooms.post('/mobileAPI/teacher-assign-classroom',semiAdminAuth, as
                 standard,section,school_id:schoolID
             }
         })
-        console.log(classDetails);
         if(classDetails){
             const updateTeacher=await Teacher.update(
                 {assignedClass:classDetails.classroom_id},

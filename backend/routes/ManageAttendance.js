@@ -4,6 +4,8 @@ import teacherAttendance from "../models/teacherAttendance.js";
 import Teacher from "../models/Teacher.js";
 import VerifyToken from "../middleware/VerifyToken.js";
 import AdminAuth from "../middleware/AdminAuth.js";
+import StudentAuth from "../middleware/StudentAuth.js";
+import StudentAttendance from "../models/studentAttendance.js";
 
 const ManageAttendance = express.Router();
 
@@ -115,6 +117,35 @@ ManageAttendance.get('/mobileAPI/attendance/get-pending-request',AdminAuth,async
     }
 });
 
+ManageAttendance.get('/mobileAPI/attendance/get-student-attendance',StudentAuth,async (req, res)=>{
+    try {
+        const student_id=req['sessionData']['student_id'];
+        const studentDetails=await StudentAttendance.findAll({
+            "where":{
+                student_id:student_id
+            }
+        })
+        res.json(studentDetails);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: 'Error fetching pending requests', error });
+    }
+});
+
+ManageAttendance.get('/mobileAPI/attendance/get-teacher-attendance',StudentAuth,async (req, res)=>{
+    try {
+        const teacher_id=req['sessionData']['teacher_id'];
+        const studentDetails=await teacherAttendance.findAll({
+            "where":{
+                teacher_id:teacher_id
+            }
+        })
+        res.json(studentDetails);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: 'Error fetching pending requests', error });
+    }
+});
 
 
 export default ManageAttendance;

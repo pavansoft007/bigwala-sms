@@ -30,7 +30,9 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-sequelize.sync( )
+const dbProcess= process.env.DB_STATE=== 'alter' ? {alter:true} : {};
+
+sequelize.sync(dbProcess)
     .then(() => {
         console.log('Database synced successfully.');
     })

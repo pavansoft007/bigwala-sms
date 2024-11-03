@@ -3,13 +3,31 @@ import Classroom from "../models/Classroom.js";
 import Student from "../models/Student.js";
 import semiAdminAuth from "../middleware/semiAdminAuth.js";
 import Teacher from "../models/Teacher.js";
+import adminAuth from "../middleware/AdminAuth.js";
+import teacherAuth from "../middleware/teacherAuth.js";
 
 const Managing_classrooms=express.Router();
 
-Managing_classrooms.post('/mobileAPI/addingClassroom',async (req,res)=>{
+Managing_classrooms.post('/mobileAPI/addingClassroom',adminAuth,async (req,res)=>{
     const body=req.body;
+    const existingClassroom=await Classroom.findOne({
+        where:{
+            standard:body.standard,
+            section:body.section,
+            school_id:req['sessionData']['school_id']
+        }
+    })
+
+    if (existingClassroom){
+        return res.status(409).json({message:"classroom already exists"});
+    }
+
     try{
-        const newClassroom=await Classroom.create(body);
+        const newClassroom=await Classroom.create({
+            standard:body.standard,
+            section:body.section,
+            school_id:req['sessionData']['school_id']
+        });
         res.status(201).json({
             message: 'Teacher and user created successfully',
             classroomInfo:newClassroom
@@ -23,7 +41,7 @@ Managing_classrooms.post('/mobileAPI/addingClassroom',async (req,res)=>{
     }
 });
 
-Managing_classrooms.get('/mobileAPI/getClassroomDetails',async (req,res)=>{
+Managing_classrooms.get('/mobileAPI/getClassroomDetails',teacherAuth,async (req,res)=>{
     const school_id=req.query.school_id;
     try{
         const classroomDetails=await Classroom.findAll({
@@ -41,7 +59,7 @@ Managing_classrooms.get('/mobileAPI/getClassroomDetails',async (req,res)=>{
     }
 });
 
-Managing_classrooms.get('/mobileAPI/getStudent/:classroomID',async (req,res)=>{
+Managing_classrooms.get('/mobileAPI/getStudent/:classroomID',teacherAuth,async (req,res)=>{
     const classroomID=req.params.classroomID;
     try{
         const studentINFO=await Student.findAll({
@@ -112,7 +130,7 @@ Managing_classrooms.post('/mobileAPI/teacher-assign-classroom',semiAdminAuth, as
                 }
             )
             if (updateTeacher[0] === 1) {
-                res.status(200).json({ message: 'Student updated successfully' });
+                res.status(200).json({ message: 'teacher updated successfully' });
             } else {
                 res.status(404).json({ message: 'Student not found or no changes made' });
             }

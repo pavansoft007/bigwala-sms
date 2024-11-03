@@ -35,6 +35,10 @@ Homework.init({
         type:DataTypes.TEXT,
         allowNull:false
     },
+    addedDate: {
+        type: DataTypes.DATEONLY,
+        allowNull: false,
+    }
 }, {
     sequelize,
     modelName: 'Homework',

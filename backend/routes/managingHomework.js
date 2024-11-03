@@ -5,7 +5,7 @@ import verifyToken from "../middleware/VerifyToken.js";
 
 const ManagingHomework = express.Router();
 
-ManagingHomework.post('/mobileAPI/add-new-homework', async (req, res) => {
+ManagingHomework.post('/mobileAPI/add-new-homework', verifyToken,async (req, res) => {
     try {
         const { subject, context, standard, section } = req.body;
         const classroom = await Classroom.findOne({
@@ -17,9 +17,7 @@ ManagingHomework.post('/mobileAPI/add-new-homework', async (req, res) => {
 
         if (classroom) {
             const classroomID = classroom.classroom_id;
-            const today = new Date().toISOString().split('T')[0]; // Format to only the date (YYYY-MM-DD)
-
-            // Check if homework with the same subject and date already exists
+            const today = new Date().toISOString().split('T')[0];
             const existingHomework = await Homework.findOne({
                 where: {
                     classroom_id: classroomID,
@@ -56,8 +54,8 @@ ManagingHomework.post('/mobileAPI/add-new-homework', async (req, res) => {
 
 ManagingHomework.get('/mobileAPI/get-homework', async (req, res) => {
     try {
-        const classroom_id = 1;  // This could be dynamic based on the request
-        const today = new Date().toISOString().split('T')[0];  // Format to only the date (YYYY-MM-DD)
+        const classroom_id = 1;
+        const today = new Date().toISOString().split('T')[0];
 
         const homeworkDetails = await Homework.findAll({
             where: {

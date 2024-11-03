@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-const VerifyToken = async (req, res, next) => {
+const TeacherAuth = async (req, res, next) => {
     const token = req.headers['authorization'];
     if (!token) return res.status(403).json({ message: 'No token provided' });
 
@@ -20,4 +20,4 @@ const VerifyToken = async (req, res, next) => {
     }
 };
 
-export default VerifyToken;
+export default TeacherAuth;

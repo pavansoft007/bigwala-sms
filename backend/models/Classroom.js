@@ -25,6 +25,11 @@ Classroom.init({
             model: School,
             key: 'school_id'
         }
+    },
+    addedDate:{
+        type: DataTypes.TIME,
+        allowNull: false,
+        defaultValue: DataTypes.NOW
     }
 }, {
     sequelize,

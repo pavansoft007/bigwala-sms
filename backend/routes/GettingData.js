@@ -2,7 +2,7 @@ import express from "express";
 import Student from "../models/Student.js";
 import Teacher from "../models/Teacher.js";
 import AdminAuth from "../middleware/AdminAuth.js";
-import verifyToken from "../middleware/VerifyToken.js";
+import verifyToken from "../middleware/teacherAuth.js";
 
 
 const GettingData=express.Router();

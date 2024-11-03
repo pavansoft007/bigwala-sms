@@ -14,6 +14,7 @@ import GettingData from "./routes/GettingData.js";
 import Managing_classrooms from "./routes/Managing_classrooms.js";
 import TestingRoute from "./routes/TestingRoute.js";
 import ManageAttendance from "./routes/ManageAttendance.js";
+import ManagingHomework from "./routes/managingHomework.js";
 
 const app = express();
 app.use(express.json());
@@ -55,10 +56,9 @@ app.use(GettingData);
 app.use(Managing_classrooms);
 app.use(TestingRoute);
 app.use(ManageAttendance);
+app.use(ManagingHomework);
 
-dotenv.config({
-    path: process.env.NODE_ENV === 'production' ? '.env.prod' : '.env.dev'
-});
+dotenv.config();
 app.get('/mobileAPI/*',(req, res)=>{
     res.status(404).json({});
 });

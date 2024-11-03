@@ -24,7 +24,7 @@ Homework.init({
         allowNull:false,
         references: {
             model: Classroom,
-            key: 'school_id'
+            key: 'classroom_id'
         }
     },
     subject:{
@@ -45,5 +45,7 @@ Homework.init({
     tableName: 'homeworks',
     timestamps: false
 });
+Homework.belongsTo(School, { foreignKey: 'school_id' });
+Homework.belongsTo(Classroom, { foreignKey: 'classroom_id' });
 
 export default Homework;

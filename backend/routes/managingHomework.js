@@ -1,7 +1,7 @@
 import express from "express";
 import Homework from "../models/Homework.js";
 import Classroom from "../models/Classroom.js";
-import verifyToken from "../middleware/VerifyToken.js";
+import verifyToken from "../middleware/teacherAuth.js";
 
 const ManagingHomework = express.Router();
 

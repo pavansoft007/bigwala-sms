@@ -2,14 +2,14 @@ import express from 'express';
 import studentAttendance from '../models/studentAttendance.js';
 import teacherAttendance from "../models/teacherAttendance.js";
 import Teacher from "../models/Teacher.js";
-import VerifyToken from "../middleware/VerifyToken.js";
+import TeacherAuth from "../middleware/teacherAuth.js";
 import AdminAuth from "../middleware/AdminAuth.js";
 import StudentAuth from "../middleware/StudentAuth.js";
 import StudentAttendance from "../models/studentAttendance.js";
 
 const ManageAttendance = express.Router();
 
-ManageAttendance.post('/mobileAPI/addstudentattendance', VerifyToken, async (req, res) => {
+ManageAttendance.post('/mobileAPI/addstudentattendance', TeacherAuth, async (req, res) => {
     try {
         const { student_id } = req.body;
         const school_id = req['sessionData']['school_id'];
@@ -38,7 +38,7 @@ ManageAttendance.post('/mobileAPI/addstudentattendance', VerifyToken, async (req
     }
 });
 
-ManageAttendance.post('/mobileAPI/requestTeacherAttendance',VerifyToken,async (req, res)=>{
+ManageAttendance.post('/mobileAPI/requestTeacherAttendance',TeacherAuth,async (req, res)=>{
     try {
         const teacher_id=req['sessionData']['teacher_id'];
         const school_id=req['sessionData']['school_id'];

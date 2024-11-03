@@ -58,9 +58,7 @@ app.use(TestingRoute);
 app.use(ManageAttendance);
 app.use(ManagingHomework);
 
-dotenv.config({
-    path: process.env.NODE_ENV === 'production' ? '.env.prod' : '.env.dev'
-});
+dotenv.config();
 app.get('/mobileAPI/*',(req, res)=>{
     res.status(404).json({});
 });

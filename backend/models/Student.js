@@ -66,6 +66,10 @@ Student.init({
             key:'classroom_id'
         }
     },
+    school_code:{
+      type:DataTypes.STRING(20),
+      allowNull:false
+    },
     school_id: {
         type: DataTypes.INTEGER,
         allowNull: false,

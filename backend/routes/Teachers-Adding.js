@@ -2,6 +2,8 @@ import { Router } from 'express';
 import Teacher from '../models/Teacher.js';
 import User from '../models/User.js';
 import AdminAuth from "../middleware/AdminAuth.js";
+import generateTeacherID from "../services/generateTeacherID.js";
+import moment from "moment";
 
 const TeacherAdding = Router();
 
@@ -19,14 +21,19 @@ TeacherAdding.post('/mobileAPI/add-new-teacher', AdminAuth ,async (req, res) => 
 
         const adminAccess = req.body.adminAccess || false;
 
+
+        const newTeacherID=await generateTeacherID(req['sessionData']['school_code']);
+
         const newTeacher = await Teacher.create({
             first_name,
             last_name,
+            TeacherID:newTeacherID,
             email,
             phone_number,
             subject_specialization,
-            hire_date,
+            hire_date:moment(hire_date, "MM-DD-YYYY").toDate(),
             school_id:req['sessionData']['school_id'],
+            school_code:req['sessionData']['school_code'],
             adminAccess,
             status: status || 'Active'
         });

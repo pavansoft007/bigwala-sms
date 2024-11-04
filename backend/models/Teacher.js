@@ -11,6 +11,11 @@ Teacher.init({
         autoIncrement: true,
         primaryKey: true
     },
+    TeacherID:{
+      type:DataTypes.STRING(20),
+      unique:true,
+      allowNull:false
+    },
     first_name: {
         type: DataTypes.STRING(50),
         allowNull: false
@@ -47,6 +52,10 @@ Teacher.init({
     adminAccess:{
         type:DataTypes.BOOLEAN,
         allowNull:false
+    },
+    school_code:{
+      type:DataTypes.STRING(10),
+      allowNull:false
     },
     assignedClass:{
         type:DataTypes.INTEGER,

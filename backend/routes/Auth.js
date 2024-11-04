@@ -1,6 +1,7 @@
 import express from 'express';
 import Student from "../models/Student.js";
 import Teacher from "../models/Teacher.js";
+import School from "../models/School.js";
 import Classroom from "../models/Classroom.js";
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
@@ -150,16 +151,25 @@ Auth.post('/mobileAPI/otp-verify', otpTokenVerification ,async (req, res) => {
 Auth.post('/api/admin-login',async (req,res)=>{
    const {email,password}=req.body;
    try{
+      Admin.belongsTo(School, { foreignKey: 'school_id', as: 'school' });
+      School.hasMany(Admin, { foreignKey: 'school_id', as: 'admins' });
+
       const adminDetails=await Admin.findOne({
          where:{
             admin_email:email
+         },
+         include: {
+            model: School,
+            as: 'school',
+            required: true
          }
       })
+
       if (adminDetails){
          if(adminDetails.admin_password === password ){
-            console.log(adminDetails);
             const tokenData={
                school_id: adminDetails.school_id,
+               school_code:adminDetails.school.school_code,
                role:'admin'
             }
             const token = await jwt.sign(tokenData,JWT_SECRET,{expiresIn: '360m'});

@@ -1,6 +1,6 @@
 import Student from "../models/Student.js";
 
-async function generateAdmissionID() {
+async function generateAdmissionID(school_code) {
     const lastStudent = await Student.findOne({
         order: [['admission_ID', 'DESC']]
     });
@@ -12,6 +12,6 @@ async function generateAdmissionID() {
         nextAdmissionNumber = lastAdmissionNumber + 1;
     }
 
-    return `ADM${nextAdmissionNumber.toString().padStart(7, '0')}`;
+    return `${school_code}${nextAdmissionNumber.toString().padStart(7, '0')}`;
 }
 export default generateAdmissionID;

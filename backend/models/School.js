@@ -27,6 +27,10 @@ School.init({
         validate: {
             isEmail: true
         }
+    },
+    school_code:{
+        type:DataTypes.STRING(100),
+        allowNull:false
     }
 }, {
     sequelize,

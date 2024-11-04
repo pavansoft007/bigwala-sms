@@ -3,6 +3,7 @@ import Student from '../models/Student.js';
 import User from '../models/User.js';
 import generateAdmissionID from "../services/generateAdmissionID.js";
 import AdminAuth from "../middleware/AdminAuth.js";
+import School from "../models/School.js";
 
 const StudentsAdding = express.Router();
 
@@ -20,10 +21,14 @@ StudentsAdding.post('/mobileAPI/add-new-student', AdminAuth,async (req, res) => 
             assginedClassroom,
         } = req.body;
 
+        console.log('school_id:',req['sessionData']['school_id']);
+        const schoolDetails=await School.findOne({
+            where:{
+                school_id:req['sessionData']['school_id']
+            }
+        })
 
-        const admission_ID = await generateAdmissionID();
-
-
+        const admission_ID = await generateAdmissionID(schoolDetails.school_code);
         const newStudent = await Student.create({
             admission_ID,
             first_name,

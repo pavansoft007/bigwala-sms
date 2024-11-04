@@ -104,7 +104,7 @@ Auth.post('/mobileAPI/otp-verify', otpTokenVerification ,async (req, res) => {
             } else {
                return res.status(404).json({ message: 'Student not found' });
             }
-         } else if (user.role === 'teacher') {
+         } else if (user.role === 'teacher' || user.role==='admin-teacher'){
             const teacher = await Teacher.findOne({ where: { phone_number: user.phone_number } });
             const teacherDetails={
                teacher_id: teacher.teacher_id,
@@ -117,7 +117,7 @@ Auth.post('/mobileAPI/otp-verify', otpTokenVerification ,async (req, res) => {
                status: teacher.status,
                school_id:teacher.school_id,
                assignedClass:teacher.assignedClass,
-               role: teacher.adminAccess ? "teacher-admin" : "teacher"
+               role: teacher.adminAccess ? "admin-teacher" : "teacher"
             };
             const token=await jwt.sign(
                 teacherDetails,
@@ -128,14 +128,15 @@ Auth.post('/mobileAPI/otp-verify', otpTokenVerification ,async (req, res) => {
             if (teacher) {
                return res.status(200).json({
                   message: 'OTP verified successfully',
-                  role:"teacher",
+                  role:teacher.adminAccess ? "admin-teacher" : "teacher",
                   token:token,
                   teacher: teacherDetails
                });
             } else {
                return res.status(404).json({ message: 'Teacher not found' });
             }
-         } else {
+         }
+         else {
             return res.status(400).json({ message: 'Invalid role' });
          }
 

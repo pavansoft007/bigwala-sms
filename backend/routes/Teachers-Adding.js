@@ -1,10 +1,11 @@
 import { Router } from 'express';
 import Teacher from '../models/Teacher.js';
 import User from '../models/User.js';
+import AdminAuth from "../middleware/AdminAuth.js";
 
 const TeacherAdding = Router();
 
-TeacherAdding.post('/mobileAPI/add-new-teacher', async (req, res) => {
+TeacherAdding.post('/mobileAPI/add-new-teacher', AdminAuth ,async (req, res) => {
     try {
         const {
             first_name,
@@ -14,7 +15,6 @@ TeacherAdding.post('/mobileAPI/add-new-teacher', async (req, res) => {
             subject_specialization,
             hire_date,
             status,
-            school_id
         } = req.body;
 
         const adminAccess = req.body.adminAccess || false;
@@ -26,7 +26,7 @@ TeacherAdding.post('/mobileAPI/add-new-teacher', async (req, res) => {
             phone_number,
             subject_specialization,
             hire_date,
-            school_id,
+            school_id:req['sessionData']['school_id'],
             adminAccess,
             status: status || 'Active'
         });

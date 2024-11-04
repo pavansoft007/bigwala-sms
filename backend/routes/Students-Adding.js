@@ -18,7 +18,6 @@ StudentsAdding.post('/mobileAPI/add-new-student', AdminAuth,async (req, res) => 
             address,
             enrollment_date,
             assginedClassroom,
-            school_id
         } = req.body;
 
 
@@ -37,7 +36,7 @@ StudentsAdding.post('/mobileAPI/add-new-student', AdminAuth,async (req, res) => 
             enrollment_date,
             assginedClassroom,
             status: 'Active',
-            school_id
+            school_id:req['sessionData']['school_id']
         });
 
 

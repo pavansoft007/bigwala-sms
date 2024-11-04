@@ -2,10 +2,11 @@ import express from 'express';
 import Student from '../models/Student.js';
 import User from '../models/User.js';
 import generateAdmissionID from "../services/generateAdmissionID.js";
+import AdminAuth from "../middleware/AdminAuth.js";
 
 const StudentsAdding = express.Router();
 
-StudentsAdding.post('/mobileAPI/add-new-student', async (req, res) => {
+StudentsAdding.post('/mobileAPI/add-new-student', AdminAuth,async (req, res) => {
     try {
         const {
             first_name,

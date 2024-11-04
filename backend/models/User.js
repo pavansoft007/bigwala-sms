@@ -13,7 +13,7 @@ const User = sequelize.define('User', {
         unique: true,
     },
     role: {
-        type: DataTypes.ENUM('student', 'teacher', 'admin'),
+        type: DataTypes.ENUM('student', 'teacher', 'admin','admin-teacher'),
         allowNull: false,
     },
     original_id: {

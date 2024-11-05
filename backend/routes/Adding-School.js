@@ -5,15 +5,18 @@ import sequelize  from "../config/database.js";
 
 const AddingSchool = express.Router();
 
-AddingSchool.post('/mobileAPI/schools', async (req, res) => {
+AddingSchool.post('/api/schools', async (req, res) => {
     const transaction = await sequelize.transaction();
     try {
-        const { school_name, address, admin_name, admin_email, admin_phone_number, admin_password } = req.body;
+        const { school_name, address, admin_name, admin_email, admin_phone_number, admin_password,school_code } = req.body;
 
 
         const newSchool = await School.create({
             name:school_name,
-            address
+            address,
+            phone_number:admin_phone_number,
+            email:admin_email,
+            school_code:school_code
         }, { transaction });
 
 

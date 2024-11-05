@@ -10,7 +10,6 @@ const User = sequelize.define('User', {
     phone_number: {
         type: DataTypes.STRING(15),
         allowNull: false,
-        unique: true,
     },
     role: {
         type: DataTypes.ENUM('student', 'teacher', 'admin','admin-teacher'),

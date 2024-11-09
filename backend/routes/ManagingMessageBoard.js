@@ -92,8 +92,8 @@ ManagingMessageBoard.get('/mobileAPI/getMessages',StudentAuth,async (req,res)=>{
                          { type: 'completeSchool' },
                          {
                                [Op.and]: [
-                                     { section: 'A' },
-                                     { standard: '6' }
+                                     { section: req['sessionData']['section'] },
+                                     { standard: req['sessionData']['standard'] }
                                ]
                          },
                          { admission_id: 'ADM0000002' }

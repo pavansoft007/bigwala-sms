@@ -15,6 +15,7 @@ import Managing_classrooms from "./routes/Managing_classrooms.js";
 import TestingRoute from "./routes/TestingRoute.js";
 import ManageAttendance from "./routes/ManageAttendance.js";
 import ManagingHomework from "./routes/managingHomework.js";
+import ManagingMessageBoard from "./routes/ManagingMessageBoard.js";
 
 const app = express();
 app.use(express.json());
@@ -46,8 +47,7 @@ const __dirname = path.dirname(__filename);
 const frontendPath = path.resolve(__dirname, '../frontend/dist');
 app.use(express.static(frontendPath));
 
-
-
+app.use('/uploads', express.static('uploads'));
 app.use(Auth);
 app.use(StudentsAdding);
 app.use(TeachersAdding);
@@ -57,6 +57,8 @@ app.use(Managing_classrooms);
 app.use(TestingRoute);
 app.use(ManageAttendance);
 app.use(ManagingHomework);
+app.use(ManagingMessageBoard);
+
 
 dotenv.config();
 app.get('/mobileAPI/*',(req, res)=>{

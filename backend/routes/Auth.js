@@ -72,6 +72,7 @@ Auth.post('/mobileAPI/otp-verify', otpTokenVerification ,async (req, res) => {
                   }
                ]
             });
+            console.log(student.school_id);
             const studentData={
                student_id: student.student_id,
                first_name: student.first_name,
@@ -83,6 +84,7 @@ Auth.post('/mobileAPI/otp-verify', otpTokenVerification ,async (req, res) => {
                address: student.address,
                enrollment_date: student.enrollment_date,
                status: student.status,
+               school_id:student.school_id,
                standard:student.Classroom.standard,
                section:student.Classroom.section,
                role:"student"
@@ -187,6 +189,7 @@ Auth.post('/mobileAPI/new-otp-verify', otpTokenVerification, async (req, res) =>
             if (!student) {
                return res.status(404).json({ message: 'Student not found' });
             }
+            console.log(student.admission_ID);
 
             const studentData = {
                student_id: student.student_id,
@@ -198,7 +201,9 @@ Auth.post('/mobileAPI/new-otp-verify', otpTokenVerification, async (req, res) =>
                phone_number: student.phone_number,
                address: student.address,
                enrollment_date: student.enrollment_date,
+               school_id:student.school_id,
                status: student.status,
+               admission_id:student.admission_ID,
                standard: student.Classroom.standard,
                section: student.Classroom.section,
                role: "student"

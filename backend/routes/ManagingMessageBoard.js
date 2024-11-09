@@ -112,8 +112,12 @@ ManagingMessageBoard.get('/mobileAPI/getMessages',StudentAuth,async (req,res)=>{
                         day: '2-digit',
                         year: 'numeric'
                   });
-                  const encText = Encrypt(message.messageBoard_id+':'+req['ip']);
-                  return { ...message.toJSON(), addedOn: formattedDate , accessID:encText};
+                  if(message.messageType === 'voice' ){
+                        return {...message.toJSON(),addedOn: formattedDate}
+                  }else{
+                        const encText = Encrypt(message.messageBoard_id+':'+req['ip']);
+                        return { ...message.toJSON(), addedOn: formattedDate , accessID:encText};
+                  }
        });
        res.send(formattedMessages);
       }catch (error) {

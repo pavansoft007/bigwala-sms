@@ -4,6 +4,13 @@ import multer from 'multer';
 import path from 'path';
 import StudentAuth from "../middleware/StudentAuth.js";
 import Teacher from "../models/Teacher.js";
+import Encrypt from "../services/Encrypt.js";
+import Decrypt from "../services/Decrypt.js";
+import {Op} from "sequelize";
+import {fileURLToPath} from "url";
+import dotenv from "dotenv";
+dotenv.config();
+
 
 const storage = multer.diskStorage({
       destination: (req, file, cb) => {
@@ -80,9 +87,17 @@ ManagingMessageBoard.get('/mobileAPI/getMessages',StudentAuth,async (req,res)=>{
       try{
        MessageBoard.belongsTo(Teacher, { foreignKey: 'teacher_id' });
        const allMessages=await MessageBoard.findAll({
-             where:{
-                   school_id:req['sessionData']['school_id'],
-                   admission_id:req['sessionData']['admission_id']
+             where: {
+                   [Op.or]: [
+                         { type: 'completeSchool' },
+                         {
+                               [Op.and]: [
+                                     { section: 'A' },
+                                     { standard: '6' }
+                               ]
+                         },
+                         { admission_id: 'ADM0000002' }
+                   ]
              },
              include:[
                    {
@@ -97,7 +112,8 @@ ManagingMessageBoard.get('/mobileAPI/getMessages',StudentAuth,async (req,res)=>{
                         day: '2-digit',
                         year: 'numeric'
                   });
-                  return { ...message.toJSON(), addedOn: formattedDate };
+                  const encText = Encrypt(message.messageBoard_id+':'+req['ip']);
+                  return { ...message.toJSON(), addedOn: formattedDate , accessID:encText};
        });
        res.send(formattedMessages);
       }catch (error) {
@@ -105,5 +121,30 @@ ManagingMessageBoard.get('/mobileAPI/getMessages',StudentAuth,async (req,res)=>{
             return res.status(500).json({ error: 'An error occurred while getting the message.' });
       }
 });
+
+ManagingMessageBoard.get('/staticFiles/voiceMessage/:id',async (req,res)=>{
+      const id=req.params.id;
+      const decText = Decrypt(id).split(':');
+      const ip=decText[decText.length-1];
+      const realIp=req['ip'].split(':');
+      if(ip === realIp[realIp.length-1]){
+            const fileDetails=await MessageBoard.findOne({
+                  where:{
+                        messageBoard_id:decText[0]
+                  }
+            });
+            const __filename = fileURLToPath(import.meta.url);
+            const __dirname = path.dirname(__filename);
+            const completePath=path.parse(__dirname)['dir'];
+            if(fileDetails['voice_location']){
+                  res.sendFile(path.join(completePath,fileDetails['voice_location']));
+            }else{
+                  res.send('file location not found');
+            }
+      }else{
+            res.send('no access');
+      }
+});
+
 
 export default ManagingMessageBoard;

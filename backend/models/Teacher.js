@@ -2,6 +2,7 @@ import { DataTypes, Model } from 'sequelize';
 import School from './School.js';
 import sequelize from '../config/database.js';
 import classroom from "./Classroom.js";
+import Subject from "./Subject.js";
 
 class Teacher extends Model {}
 
@@ -24,17 +25,23 @@ Teacher.init({
         type: DataTypes.STRING(50),
         allowNull: false
     },
+    subject_id:{
+        type:DataTypes.STRING(50),
+        allowNull:false,
+        references:{
+            model:Subject,
+            key:'subject_id'
+        }
+    },
     email: {
         type: DataTypes.STRING(100),
         allowNull: false,
-        unique: true,
         validate: {
             isEmail: true
         }
     },
     phone_number: {
         type: DataTypes.STRING(15),
-        unique: true,
         allowNull: false
     },
     subject_specialization: {

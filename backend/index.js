@@ -18,6 +18,7 @@ import ManagingHomework from "./routes/managingHomework.js";
 import ManagingMessageBoard from "./routes/ManagingMessageBoard.js";
 import ManagingGallery from "./routes/ManagingGallery.js";
 import ManagingVideo from "./routes/ManagingVideo.js";
+import ManagingSubjects from "./routes/ManagingSubjects.js";
 
 const app = express();
 app.use(express.json());
@@ -62,6 +63,7 @@ app.use(ManagingHomework);
 app.use(ManagingMessageBoard);
 app.use(ManagingGallery);
 app.use(ManagingVideo);
+app.use(ManagingSubjects);
 
 
 dotenv.config();

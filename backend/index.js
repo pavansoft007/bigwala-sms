@@ -14,7 +14,7 @@ import GettingData from "./routes/GettingData.js";
 import Managing_classrooms from "./routes/Managing_classrooms.js";
 import TestingRoute from "./routes/TestingRoute.js";
 import ManageAttendance from "./routes/ManageAttendance.js";
-import ManagingHomework from "./routes/managingHomework.js";
+import ManagingHomework from "./routes/ManagingHomework.js";
 import ManagingMessageBoard from "./routes/ManagingMessageBoard.js";
 import ManagingGallery from "./routes/ManagingGallery.js";
 import ManagingVideo from "./routes/ManagingVideo.js";

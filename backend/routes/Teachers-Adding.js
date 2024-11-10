@@ -17,6 +17,7 @@ TeacherAdding.post('/mobileAPI/add-new-teacher', AdminAuth ,async (req, res) => 
             subject_specialization,
             hire_date,
             status,
+            subject_id
         } = req.body;
 
         const adminAccess = req.body.adminAccess || false;
@@ -31,6 +32,7 @@ TeacherAdding.post('/mobileAPI/add-new-teacher', AdminAuth ,async (req, res) => 
             email,
             phone_number,
             subject_specialization,
+            subject_id,
             hire_date:moment(hire_date, "MM-DD-YYYY").toDate(),
             school_id:req['sessionData']['school_id'],
             school_code:req['sessionData']['school_code'],

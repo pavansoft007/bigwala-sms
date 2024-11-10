@@ -21,6 +21,7 @@ import ManagingVideo from "./routes/ManagingVideo.js";
 import ManagingSubjects from "./routes/ManagingSubjects.js";
 import ManagingTeacher from "./routes/ManagingTeacher.js";
 import ManagingStudent from "./routes/ManagingStudent.js";
+import ManagingExam from "./routes/ManagingExam.js";
 
 const app = express();
 app.use(express.json());
@@ -68,6 +69,7 @@ app.use(ManagingVideo);
 app.use(ManagingSubjects);
 app.use(ManagingTeacher);
 app.use(ManagingStudent);
+app.use(ManagingExam);
 
 
 dotenv.config();

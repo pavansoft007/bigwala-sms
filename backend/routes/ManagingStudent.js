@@ -8,7 +8,7 @@ import { Op } from 'sequelize';
 
 const ManagingStudent = express.Router();
 
-// Route to create a new student (already provided)
+
 ManagingStudent.post('/api/student', AdminAuth, async (req, res) => {
     try {
         const {

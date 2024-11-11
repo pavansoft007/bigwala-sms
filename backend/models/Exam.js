@@ -15,7 +15,7 @@ Exam.init({
         type:DataTypes.STRING(225),
         allowNull:false
     },
-    classroom_id:{
+    class_id:{
         type:DataTypes.INTEGER,
         allowNull:false,
         references:{

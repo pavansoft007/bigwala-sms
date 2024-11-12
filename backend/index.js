@@ -1,5 +1,5 @@
 import express from "express";
-import sequelize from './config/database.js';
+import sequelize from "./config/database.js";
 import Auth from "./routes/Auth.js";
 import dotenv from 'dotenv';
 import cors from 'cors';
@@ -37,15 +37,14 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-const dbProcess= process.env.DB_STATE=== 'alter' ? {alter:true} : {};
-
-sequelize.sync(dbProcess)
+sequelize.sync()
     .then(() => {
         console.log('Database synced successfully.');
     })
     .catch((error) => {
         console.error('Error syncing the database:', error);
-    });
+});
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

@@ -67,6 +67,7 @@ Teacher.init({
     assignedClass:{
         type:DataTypes.INTEGER,
         allowNull:true,
+        unique:true,
         references:{
             model:classroom,
             key:'classroom_id'

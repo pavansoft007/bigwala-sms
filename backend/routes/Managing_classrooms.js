@@ -132,13 +132,16 @@ Managing_classrooms.post('/mobileAPI/teacher-assign-classroom',semiAdminAuth, as
             if (updateTeacher[0] === 1) {
                 res.status(200).json({ message: 'teacher updated successfully' });
             } else {
-                res.status(404).json({ message: 'Student not found or no changes made' });
+                res.status(404).json({ message: 'teacher not found or no changes made' });
             }
         }else{
             res.status(404).json({message:'section is not found in your school'});
         }
     }catch (e) {
         console.error('Error fetching students:', e);
+        if(e.original.errno === 1062 ){
+            return res.status(409).json({ message:"already an teacher was assigned to that class " });
+        }
         res.status(500).json({
             message: 'An error occurred while fetching students',
             error: e.message

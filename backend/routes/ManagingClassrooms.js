@@ -6,9 +6,9 @@ import Teacher from "../models/Teacher.js";
 import adminAuth from "../middleware/AdminAuth.js";
 import teacherAuth from "../middleware/teacherAuth.js";
 
-const Managing_classrooms=express.Router();
+const ManagingClassrooms=express.Router();
 
-Managing_classrooms.post('/mobileAPI/addingClassroom',adminAuth,async (req,res)=>{
+ManagingClassrooms.post('/mobileAPI/addingClassroom',adminAuth,async (req, res)=>{
     const body=req.body;
     const existingClassroom=await Classroom.findOne({
         where:{
@@ -41,7 +41,7 @@ Managing_classrooms.post('/mobileAPI/addingClassroom',adminAuth,async (req,res)=
     }
 });
 
-Managing_classrooms.get('/mobileAPI/getClassroomDetails',teacherAuth,async (req,res)=>{
+ManagingClassrooms.get('/mobileAPI/getClassroomDetails',teacherAuth,async (req, res)=>{
     const school_id=req.query.school_id;
     try{
         const classroomDetails=await Classroom.findAll({
@@ -59,7 +59,7 @@ Managing_classrooms.get('/mobileAPI/getClassroomDetails',teacherAuth,async (req,
     }
 });
 
-Managing_classrooms.get('/mobileAPI/getStudent/:classroomID',teacherAuth,async (req,res)=>{
+ManagingClassrooms.get('/mobileAPI/getStudent/:classroomID',teacherAuth,async (req, res)=>{
     const classroomID=req.params.classroomID;
     try{
         const studentINFO=await Student.findAll({
@@ -77,7 +77,7 @@ Managing_classrooms.get('/mobileAPI/getStudent/:classroomID',teacherAuth,async (
     }
 });
 
-Managing_classrooms.post('/mobileAPI/student-assign-classroom',semiAdminAuth, async  (req,res)=>{
+ManagingClassrooms.post('/mobileAPI/student-assign-classroom',semiAdminAuth, async  (req, res)=>{
     const {standard,section,studentID}=req.body;
     const schoolID=req['sessionData']['school_id'];
     try{
@@ -111,7 +111,7 @@ Managing_classrooms.post('/mobileAPI/student-assign-classroom',semiAdminAuth, as
         });
     }
 });
-Managing_classrooms.post('/mobileAPI/teacher-assign-classroom',semiAdminAuth, async  (req,res)=>{
+ManagingClassrooms.post('/mobileAPI/teacher-assign-classroom',semiAdminAuth, async  (req, res)=>{
     const {standard,section,teacher_id}=req.body;
     const schoolID=req['sessionData']['school_id'];
     try{
@@ -132,17 +132,20 @@ Managing_classrooms.post('/mobileAPI/teacher-assign-classroom',semiAdminAuth, as
             if (updateTeacher[0] === 1) {
                 res.status(200).json({ message: 'teacher updated successfully' });
             } else {
-                res.status(404).json({ message: 'Student not found or no changes made' });
+                res.status(404).json({ message: 'teacher not found or no changes made' });
             }
         }else{
             res.status(404).json({message:'section is not found in your school'});
         }
     }catch (e) {
         console.error('Error fetching students:', e);
+        if(e.original.errno === 1062 ){
+            return res.status(409).json({ message:"already an teacher was assigned to that class " });
+        }
         res.status(500).json({
             message: 'An error occurred while fetching students',
             error: e.message
         });
     }
 });
-export default Managing_classrooms;
+export default ManagingClassrooms;

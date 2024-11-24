@@ -42,7 +42,7 @@ ManagingClassrooms.post('/mobileAPI/addingClassroom',adminAuth,async (req, res)=
 });
 
 ManagingClassrooms.get('/mobileAPI/getClassroomDetails',teacherAuth,async (req, res)=>{
-    const school_id=req.query.school_id;
+    const school_id=req.sessionData['school_id'];
     try{
         const classroomDetails=await Classroom.findAll({
             where:{

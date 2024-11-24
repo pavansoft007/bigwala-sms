@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axiosInstance from "../services/axiosInstance.ts";
 
 const AddStudent = () => {
@@ -11,10 +11,58 @@ const AddStudent = () => {
         phone_number: "",
         address: "",
         enrollment_date: "",
-        assignedClassroom: "",
+        standard: "",
+        section: "",
     });
+
+    const [standards, setStandards] = useState<string[]>([]);
+    const [sections, setSections] = useState<string[]>([]);
+    const [selectedStandard, setSelectedStandard] = useState("");
+    const [selectedSection, setSelectedSection] = useState("");
     const [message, setMessage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+
+    // Fetch standards on component mount
+    useEffect(() => {
+        const fetchStandards = async () => {
+            try {
+                const response = await axiosInstance.get("/mobileAPI/standard");
+                setStandards(response.data);
+            } catch (e) {
+                console.error("Error fetching standards:", e);
+                setError("Failed to load standards. Please try again later.");
+            }
+        };
+
+        fetchStandards();
+    }, []);
+
+    const handleStandardChange = async (
+        event: React.ChangeEvent<HTMLSelectElement>
+    ) => {
+        const selected = event.target.value;
+        setSelectedStandard(selected);
+        setFormData({ ...formData, standard: selected });
+
+        if (selected) {
+            try {
+                const response = await axiosInstance.get("/mobileAPI/section?standard="+selected);
+                setSections(response.data);
+            } catch (e) {
+                console.error("Error fetching sections:", e);
+                setError("Failed to load sections. Please try again later.");
+            }
+        } else {
+            setSections([]);
+            setSelectedSection("");
+        }
+    };
+
+    const handleSectionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        const selected = event.target.value;
+        setSelectedSection(selected);
+        setFormData({ ...formData, section: selected });
+    };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setFormData({
@@ -39,8 +87,12 @@ const AddStudent = () => {
                 phone_number: "",
                 address: "",
                 enrollment_date: "",
-                assignedClassroom: "",
+                standard: "",
+                section: "",
             });
+            setSelectedStandard("");
+            setSelectedSection("");
+            setSections([]);
         } catch (err: any) {
             setError(err.response?.data?.message || "An error occurred while adding the student.");
         }
@@ -66,7 +118,6 @@ const AddStudent = () => {
                     />
                 </div>
 
-
                 <div>
                     <label className="block text-sm font-medium text-gray-700">Last Name</label>
                     <input
@@ -79,7 +130,6 @@ const AddStudent = () => {
                     />
                 </div>
 
-                {/* Date of Birth */}
                 <div>
                     <label className="block text-sm font-medium text-gray-700">Date of Birth</label>
                     <input
@@ -92,7 +142,6 @@ const AddStudent = () => {
                     />
                 </div>
 
-                {/* Gender */}
                 <div>
                     <label className="block text-sm font-medium text-gray-700">Gender</label>
                     <select
@@ -108,7 +157,6 @@ const AddStudent = () => {
                     </select>
                 </div>
 
-                {/* Email */}
                 <div>
                     <label className="block text-sm font-medium text-gray-700">Email</label>
                     <input
@@ -121,7 +169,6 @@ const AddStudent = () => {
                     />
                 </div>
 
-                {/* Phone Number */}
                 <div>
                     <label className="block text-sm font-medium text-gray-700">Phone Number</label>
                     <input
@@ -134,7 +181,7 @@ const AddStudent = () => {
                     />
                 </div>
 
-                {/* Address */}
+
                 <div>
                     <label className="block text-sm font-medium text-gray-700">Address</label>
                     <input
@@ -147,7 +194,45 @@ const AddStudent = () => {
                     />
                 </div>
 
-                {/* Enrollment Date */}
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-700">Class</label>
+                    <select
+                        name="standard"
+                        value={selectedStandard}
+                        onChange={handleStandardChange}
+                        required
+                        className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg"
+                    >
+                        <option value="">Select Class</option>
+                        {standards.map((standard) => (
+                            <option key={standard} value={standard}>
+                                {standard}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-700">Section</label>
+                    <select
+                        name="section"
+                        value={selectedSection}
+                        onChange={handleSectionChange}
+                        required
+                        disabled={!selectedStandard}
+                        className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg"
+                    >
+                        <option value="">Select Section</option>
+                        {sections.map((section) => (
+                            <option key={section} value={section}>
+                                {section}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+
                 <div>
                     <label className="block text-sm font-medium text-gray-700">Enrollment Date</label>
                     <input
@@ -160,20 +245,7 @@ const AddStudent = () => {
                     />
                 </div>
 
-                {/* Assigned Classroom */}
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Assigned Classroom</label>
-                    <input
-                        type="text"
-                        name="assignedClassroom"
-                        value={formData.assignedClassroom}
-                        onChange={handleChange}
-                        required
-                        className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg"
-                    />
-                </div>
 
-                {/* Submit Button */}
                 <button
                     type="submit"
                     className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700"

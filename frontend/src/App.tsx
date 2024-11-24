@@ -11,6 +11,7 @@ import ProtectedRoute from "./services/ProtectedRoute.tsx";
 import Dashboard_main from "./pages/Dashboard_main.tsx";
 import NotFound from "./pages/NotFound";
 import AddStudent from "./pages/AddStudent.tsx";
+import Logout from "./pages/Logout.tsx";
 
 function App() {
     return (
@@ -32,6 +33,7 @@ function App() {
                         <Route path="*" element={<NotFound />} />
                     </Route>
                 </Route>
+                <Route path="logout" element={<Logout />} />
                 <Route path="*" element={<NotFound />} />
             </Routes>
         </div>

@@ -5,6 +5,7 @@ import generateAdmissionID from "../services/generateAdmissionID.js";
 import AdminAuth from "../middleware/AdminAuth.js";
 import School from "../models/School.js";
 import { Op } from 'sequelize';
+import Classroom from "../models/Classroom.js";
 
 const ManagingStudent = express.Router();
 
@@ -20,7 +21,8 @@ ManagingStudent.post('/api/student', AdminAuth, async (req, res) => {
             phone_number,
             address,
             enrollment_date,
-            assignedClassroom,
+            standard,
+            section
         } = req.body;
 
         if (!req['sessionData']?.school_id) {
@@ -45,6 +47,15 @@ ManagingStudent.post('/api/student', AdminAuth, async (req, res) => {
             }
         });
 
+        const classroomDetails=await Classroom.findOne({
+            where:{
+                standard,
+                section,
+                school_id:req['sessionData']['school_id']
+            }
+        });
+        console.log(classroomDetails);
+
         if (existingStudent) {
             return res.status(409).json({ message: "This student already exists" });
         }
@@ -59,7 +70,7 @@ ManagingStudent.post('/api/student', AdminAuth, async (req, res) => {
             phone_number,
             address,
             enrollment_date,
-            assignedClassroom,
+            assginedClassroom:classroomDetails.classroom_id,
             school_code: schoolDetails.school_code,
             status: 'Active',
             school_id: req['sessionData']['school_id']

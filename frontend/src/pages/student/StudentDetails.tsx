@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import axiosInstance from "../services/axiosInstance";
+import axiosInstance from "../../services/axiosInstance.ts";
 
 const StudentDetails = () => {
     const { id } = useParams();

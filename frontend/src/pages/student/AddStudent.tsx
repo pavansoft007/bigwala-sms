@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axiosInstance from "../services/axiosInstance.ts";
+import axiosInstance from "../../services/axiosInstance.ts";
 
 const AddStudent = () => {
     const [formData, setFormData] = useState({

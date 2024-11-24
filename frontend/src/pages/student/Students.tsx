@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../services/axiosInstance.ts";
 
 const Students = () => {
     const [classrooms, setClassrooms] = useState([]);
     const [selectedClassroom, setSelectedClassroom] = useState("");
     const [students, setStudents] = useState([]);
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+
 
     useEffect(() => {
         axiosInstance
@@ -19,6 +21,7 @@ const Students = () => {
             });
     }, []);
 
+
     const fetchStudents = (e) => {
         e.preventDefault();
 
@@ -27,6 +30,8 @@ const Students = () => {
             return;
         }
 
+        setLoading(true);
+
         axiosInstance
             .get(`/mobileAPI/getStudent/${selectedClassroom}`)
             .then((res) => {
@@ -34,6 +39,9 @@ const Students = () => {
             })
             .catch((e) => {
                 console.error("Error fetching students:", e);
+            })
+            .finally(() => {
+                setLoading(false);
             });
     };
 
@@ -76,8 +84,11 @@ const Students = () => {
 
             {/* Students List */}
             <div className="mt-8">
-                <h3 className="text-xl font-bold mb-4">Students List</h3>
-                {students.length > 0 ? (
+                {loading ? (
+                    <div className="flex justify-center items-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500"></div>
+                    </div>
+                ) : students.length > 0 ? (
                     <div className="space-y-2">
                         {students.map((student) => (
                             <div

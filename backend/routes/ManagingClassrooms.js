@@ -5,6 +5,7 @@ import semiAdminAuth from "../middleware/semiAdminAuth.js";
 import Teacher from "../models/Teacher.js";
 import adminAuth from "../middleware/AdminAuth.js";
 import teacherAuth from "../middleware/teacherAuth.js";
+import TeacherAuth from "../middleware/teacherAuth.js";
 
 const ManagingClassrooms=express.Router();
 
@@ -42,7 +43,7 @@ ManagingClassrooms.post('/mobileAPI/addingClassroom',adminAuth,async (req, res)=
 });
 
 ManagingClassrooms.get('/mobileAPI/getClassroomDetails',teacherAuth,async (req, res)=>{
-    const school_id=req.query.school_id;
+    const school_id=req.sessionData['school_id'];
     try{
         const classroomDetails=await Classroom.findAll({
             where:{
@@ -57,6 +58,52 @@ ManagingClassrooms.get('/mobileAPI/getClassroomDetails',teacherAuth,async (req, 
             error: error.message
         });
     }
+});
+
+ManagingClassrooms.get('/mobileAPI/standard',TeacherAuth,async (req,res)=>{
+    const school_id=req.sessionData['school_id'];
+    try{
+        const classroomDetails = await Classroom.findAll({
+            where: {
+                school_id
+            },
+            attributes: ['standard'],
+            group: ['standard']
+        });
+        const classStandard=classroomDetails.map((item)=>{
+            return item.standard
+        });
+        res.send(classStandard);
+    } catch (error) {
+        console.error('Error fetching students:', error);
+        res.status(500).json({
+            message: 'An error occurred while fetching students',
+            error: error.message
+        });
+    }
+});
+
+ManagingClassrooms.get('/mobileAPI/section',TeacherAuth,async (req,res)=>{
+    const standard=req.query.standard;
+    const school_id=req['sessionData']['school_id'];
+   try{
+       const classroomDetails = await Classroom.findAll({
+           where: {
+               school_id,standard
+           },
+           attributes: ['section'],
+       });
+       const classStandard=classroomDetails.map((item)=>{
+           return item.section
+       });
+       res.json(classStandard);
+   } catch (error) {
+       console.error('Error fetching students:', error);
+       res.status(500).json({
+           message: 'An error occurred while fetching students',
+           error: error.message
+       });
+   }
 });
 
 ManagingClassrooms.get('/mobileAPI/getStudent/:classroomID',teacherAuth,async (req, res)=>{

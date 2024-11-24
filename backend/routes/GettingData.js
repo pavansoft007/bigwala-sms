@@ -3,6 +3,7 @@ import Student from "../models/Student.js";
 import Teacher from "../models/Teacher.js";
 import AdminAuth from "../middleware/AdminAuth.js";
 import verifyToken from "../middleware/teacherAuth.js";
+import sequelize from "../config/database.js";
 
 
 const GettingData=express.Router();
@@ -10,16 +11,11 @@ const GettingData=express.Router();
 
 GettingData.get('/mobileAPI/students/:id', AdminAuth,async (req, res) => {
     try {
-        const student = await Student.findOne({
-            where:{
-                student_id:req.params.id,
-                school_id:req.sessionData.school_id
-            }
-        })
+        const [student] = await sequelize.query('SELECT * FROM `students` INNER JOIN classrooms ON classrooms.classroom_id=students.student_id WHERE student_id='+req.params.id);
         if (!student) {
             return res.status(404).json({ message: 'Student not found' });
         }
-        res.status(200).json(student);
+        res.status(200).json(student[0]);
     } catch (error) {
         console.error('Error fetching student:', error);
         res.status(500).json({

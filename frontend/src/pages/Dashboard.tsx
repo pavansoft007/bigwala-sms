@@ -36,7 +36,7 @@ const Dashboard = () => {
                                 </li>
                                 <li>
                                     <Link
-                                        to="students/manage"
+                                        to="students/manage-student"
                                         className="block p-2 hover:bg-gray-600"
                                     >
                                         Manage Students

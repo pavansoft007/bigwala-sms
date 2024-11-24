@@ -11,6 +11,7 @@ import ProtectedRoute from "./services/ProtectedRoute.tsx";
 import Dashboard_main from "./pages/Dashboard_main.tsx";
 import NotFound from "./pages/NotFound";
 import AddStudent from "./pages/AddStudent.tsx";
+import StudentDetails from "./pages/StudentDetails.tsx";
 import Logout from "./pages/Logout.tsx";
 
 function App() {
@@ -27,6 +28,7 @@ function App() {
                         <Route path="students" >
                             <Route path="add" element={<AddStudent />} />
                             <Route path="manage-student" element={<Students />}  />
+                            <Route path=":id" element={<StudentDetails />} />
                         </Route>
                         <Route path="teachers" element={<Teachers />} />
                         <Route path="settings" element={<Settings />} />

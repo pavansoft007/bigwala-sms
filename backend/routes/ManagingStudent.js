@@ -133,7 +133,7 @@ ManagingStudent.put('/api/student/:id', AdminAuth, async (req, res) => {
             phone_number,
             address,
             enrollment_date,
-            assignedClassroom,
+            assginedClassroom:assignedClassroom,
             status: status || 'Active'
         });
 

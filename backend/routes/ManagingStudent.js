@@ -21,6 +21,7 @@ ManagingStudent.post('/api/student', AdminAuth, async (req, res) => {
             phone_number,
             address,
             enrollment_date,
+
             standard,
             section
         } = req.body;

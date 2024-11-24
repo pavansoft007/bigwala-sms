@@ -13,6 +13,7 @@ const AddStudent = () => {
         enrollment_date: "",
         standard: "",
         section: "",
+        tuition_fee:''
     });
 
     const [standards, setStandards] = useState<string[]>([]);
@@ -89,6 +90,7 @@ const AddStudent = () => {
                 enrollment_date: "",
                 standard: "",
                 section: "",
+                tuition_fee:''
             });
             setSelectedStandard("");
             setSelectedSection("");
@@ -193,7 +195,17 @@ const AddStudent = () => {
                         className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg"
                     />
                 </div>
-
+                <div>
+                    <label className="block text-sm font-medium text-gray-700">tuition fee</label>
+                    <input
+                        type="number"
+                        name="tuition_fee"
+                        value={formData.tuition_fee}
+                        onChange={handleChange}
+                        required
+                        className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg"
+                    />
+                </div>
 
                 <div>
                     <label className="block text-sm font-medium text-gray-700">Class</label>

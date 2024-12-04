@@ -116,9 +116,10 @@ ManagingStudent.put('/api/student/:id', AdminAuth, async (req, res) => {
             phone_number,
             address,
             enrollment_date,
-            assignedClassroom,
+            assginedClassroom,
             status
         } = req.body;
+
 
         const student = await Student.findByPk(studentId);
         if (!student) {
@@ -134,7 +135,7 @@ ManagingStudent.put('/api/student/:id', AdminAuth, async (req, res) => {
             phone_number,
             address,
             enrollment_date,
-            assginedClassroom:assignedClassroom,
+            assginedClassroom,
             status: status || 'Active'
         });
 

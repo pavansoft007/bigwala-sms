@@ -2,13 +2,27 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../services/axiosInstance.ts";
 
+interface Student {
+    student_id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone_number: string;
+    school_id: string;
+}
+
+interface Classroom {
+    classroom_id: string;
+    standard: string;
+    section: string;
+}
+
 const Students = () => {
-    const [classrooms, setClassrooms] = useState([]);
+    const [classrooms, setClassrooms] = useState<Classroom[]>([]);
     const [selectedClassroom, setSelectedClassroom] = useState("");
-    const [students, setStudents] = useState([]);
+    const [students, setStudents] = useState<Student[]>([]);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
-
 
     useEffect(() => {
         axiosInstance
@@ -21,8 +35,7 @@ const Students = () => {
             });
     }, []);
 
-
-    const fetchStudents = (e) => {
+    const fetchStudents = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
         if (!selectedClassroom) {
@@ -45,7 +58,7 @@ const Students = () => {
             });
     };
 
-    const handleEdit = (id) => {
+    const handleEdit = (id: string) => {
         navigate(`/dashboard/students/${id}`);
     };
 

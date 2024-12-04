@@ -77,7 +77,7 @@ const AddStudent = () => {
         setMessage(null);
         setError(null);
         try {
-            const response = await axiosInstance.post("/api/student", formData);
+            await axiosInstance.post("/api/student", formData);
             setMessage("Student added successfully!");
             setFormData({
                 first_name: "",

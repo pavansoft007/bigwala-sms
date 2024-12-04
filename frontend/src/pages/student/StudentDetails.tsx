@@ -1,6 +1,20 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axiosInstance from "../../services/axiosInstance.ts";
+interface Classroom {
+    classroom_id: string;
+    standard: string;
+    section: string;
+}
+
+// interface Student {
+//     student_id: string;
+//     first_name: string;
+//     last_name: string;
+//     email: string;
+//     phone_number: string;
+//     school_id: string;
+// }
 
 const StudentDetails = () => {
     const { id } = useParams();
@@ -17,13 +31,13 @@ const StudentDetails = () => {
         standard:'',
         section:''
     });
-    const [classrooms, setClassrooms] = useState([]);
+
+    const [classrooms, setClassrooms] = useState<Classroom[]>([]);
     const [isEditMode, setIsEditMode] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [message, setMessage] = useState<string | null>(null);
 
-
-    useEffect(() => {
+    const getStudentDetails=()=>{
         axiosInstance
             .get(`/mobileAPI/students/${id}`)
             .then((res) => {
@@ -33,6 +47,10 @@ const StudentDetails = () => {
                 console.error("Error fetching student details:", e);
                 setError("Failed to load student details.");
             });
+    };
+
+    useEffect(() => {
+        getStudentDetails();
     }, [id]);
 
 
@@ -64,6 +82,7 @@ const StudentDetails = () => {
         try {
             await axiosInstance.put(`/api/student/${id}`, formData);
             setMessage("Student details updated successfully!");
+            getStudentDetails();
             setIsEditMode(false);
         } catch (err: any) {
             console.error("Error updating student:", err);

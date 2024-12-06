@@ -48,7 +48,8 @@ ManagingClassrooms.get('/mobileAPI/getClassroomDetails',teacherAuth,async (req, 
         const classroomDetails=await Classroom.findAll({
             where:{
                 school_id
-            }
+            },
+            attributes:['classroom_id','standard','section']
         })
         res.send(classroomDetails);
     } catch (error) {

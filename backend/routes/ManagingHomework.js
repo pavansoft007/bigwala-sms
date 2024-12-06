@@ -3,13 +3,21 @@ import Homework from "../models/Homework.js";
 import Classroom from "../models/Classroom.js";
 import teacherAuth from "../middleware/teacherAuth.js";
 import studentAuth from "../middleware/StudentAuth.js";
+import Subject from "../models/Subject.js";
 
 const ManagingHomework = express.Router();
 
-ManagingHomework.post('/mobileAPI/add-new-homework', teacherAuth, async (req, res) => {
+ManagingHomework.post('/mobileAPI/homework', teacherAuth, async (req, res) => {
     try {
-        const { subject, context, standard, section } = req.body;
+        const { subject_id, context, standard, section } = req.body;
         const school_id=req['sessionData']['school_id'];
+        const subjectDetails=await Subject.findOne({
+            where:{
+                school_id,
+                subject_id
+            }
+        });
+
         const classroom = await Classroom.findOne({
             where: {
                 standard,
@@ -32,7 +40,7 @@ ManagingHomework.post('/mobileAPI/add-new-homework', teacherAuth, async (req, re
             where: {
                 classroom_id: classroomID,
                 school_id: school_id,
-                subject,
+                subject_id:subjectDetails.subject_id,
                 addedDate: today
             }
         });
@@ -44,7 +52,7 @@ ManagingHomework.post('/mobileAPI/add-new-homework', teacherAuth, async (req, re
         const newHomework = await Homework.create({
             school_id: school_id,
             classroom_id: classroomID,
-            subject,
+            subject_id:subjectDetails.subject_id,
             context,
             addedDate: today
         });
@@ -60,26 +68,27 @@ ManagingHomework.post('/mobileAPI/add-new-homework', teacherAuth, async (req, re
     }
 });
 
-ManagingHomework.get('/mobileAPI/get-homework', studentAuth,async (req, res) => {
+ManagingHomework.get('/mobileAPI/homework', studentAuth,async (req, res) => {
     try {
         const studentDetails=req['sessionData'];
         const classroom = await Classroom.findOne({
             where: {
                 standard:studentDetails.standard,
-                section:studentDetails.section
+                section:studentDetails.section,
+                addedDate:today
             }
         });
         if(!classroom){
             return res.status(403).json({message:"classroom not found"});
         }
         const classroom_id = classroom.classroom_id;
-        const today = new Date().toISOString().split('T')[0];
+        const addedDate = new Date().toISOString().split('T')[0];
 
         const homeworkDetails = await Homework.findAll({
             where: {
                 classroom_id: classroom_id,
                 school_id: 1,
-                addedDate: today
+                addedDate: addedDate
             }
         });
 
@@ -91,5 +100,68 @@ ManagingHomework.get('/mobileAPI/get-homework', studentAuth,async (req, res) => 
         });
     }
 });
+
+ManagingHomework.put('/mobileAPI/homework/:id', teacherAuth, async (req, res) => {
+    try {
+        const homework_id = req.params.id;
+        const { context } = req.body;
+        const school_id = req['sessionData']['school_id'];
+
+        const homework = await Homework.findOne({
+            where: {
+                homework_id,
+                school_id
+            }
+        });
+
+        if (!homework) {
+            return res.status(404).json({ message: "Homework not found" });
+        }
+
+        homework.context = context || homework.context;
+        await homework.save();
+
+        res.status(200).json({
+            message: "Homework updated successfully",
+            homework
+        });
+    } catch (e) {
+        console.log("Error while updating the homework: ", e);
+        res.status(500).json({
+            message: "Error while updating the homework",
+            error: e.message
+        });
+    }
+});
+ManagingHomework.delete('/mobileAPI/homework/:id', teacherAuth, async (req, res) => {
+    try {
+        const homework_id = req.params.id;
+        const school_id = req['sessionData']['school_id'];
+
+        const homework = await Homework.findOne({
+            where: {
+                homework_id,
+                school_id
+            }
+        });
+
+        if (!homework) {
+            return res.status(404).json({ message: "Homework not found" });
+        }
+
+        await homework.destroy();
+
+        res.status(200).json({
+            message: "Homework deleted successfully"
+        });
+    } catch (e) {
+        console.log("Error while deleting the homework: ", e);
+        res.status(500).json({
+            message: "Error while deleting the homework",
+            error: e.message
+        });
+    }
+});
+
 
 export default ManagingHomework;

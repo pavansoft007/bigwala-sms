@@ -4,6 +4,7 @@ import Classroom from "../models/Classroom.js";
 import teacherAuth from "../middleware/teacherAuth.js";
 import studentAuth from "../middleware/StudentAuth.js";
 import Subject from "../models/Subject.js";
+import sequelize from "../config/database.js";
 
 const ManagingHomework = express.Router();
 
@@ -70,33 +71,42 @@ ManagingHomework.post('/mobileAPI/homework', teacherAuth, async (req, res) => {
 
 ManagingHomework.get('/mobileAPI/homework', studentAuth,async (req, res) => {
     try {
-        const studentDetails=req['sessionData'];
-        const classroom = await Classroom.findOne({
-            where: {
-                standard:studentDetails.standard,
-                section:studentDetails.section,
-                addedDate:today
-            }
-        });
-        if(!classroom){
-            return res.status(403).json({message:"classroom not found"});
+        const sessionDetails=req['sessionData'];
+        if(sessionDetails['role']=== 'student'){
+            const [homeworkDetails] = await
+                sequelize.query(`SELECT homework_id,context,s.subject_name,s.subject_code FROM homeworks INNER JOIN classrooms c ON c.classroom_id=homeworks.classroom_id INNER JOIN subjects s ON s.subject_id=homeworks.subject_id WHERE c.standard=${sessionDetails['standard']} && c.section='${sessionDetails['section']}';`);
+            return res.json(homeworkDetails);
+        }else{
+            const standard=req.body.standard;
+            const section=req.body.section;
+            const [homeworkDetails] = await
+                sequelize.query(`SELECT homework_id,context,s.subject_name,s.subject_code FROM homeworks INNER JOIN classrooms c ON c.classroom_id=homeworks.classroom_id INNER JOIN subjects s ON s.subject_id=homeworks.subject_id WHERE c.standard=${standard} && c.section='${section}';`);
+            return  res.json(homeworkDetails);
         }
-        const classroom_id = classroom.classroom_id;
-        const addedDate = new Date().toISOString().split('T')[0];
-
-        const homeworkDetails = await Homework.findAll({
-            where: {
-                classroom_id: classroom_id,
-                school_id: 1,
-                addedDate: addedDate
-            }
-        });
-
-        res.json(homeworkDetails);
     } catch (e) {
         console.log("Error in getting the data: ", e);
         res.status(500).json({
             message: "Error while getting the homework"
+        });
+    }
+});
+
+ManagingHomework.get('/mobileAPI/homework/:id',teacherAuth,async (req,res)=>{
+    try{
+        const homework_id = req.params.id;
+        const school_id = req['sessionData']['school_id'];
+        const homework = await Homework.findOne({
+            where: {
+                homework_id,
+                school_id
+            }
+        });
+        res.json(homework);
+    }catch (e){
+        console.log("Error while updating the homework: ", e);
+        res.status(500).json({
+            message: "Error while updating the homework",
+            error: e.message
         });
     }
 });

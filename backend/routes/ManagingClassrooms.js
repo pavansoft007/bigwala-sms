@@ -5,11 +5,11 @@ import semiAdminAuth from "../middleware/semiAdminAuth.js";
 import Teacher from "../models/Teacher.js";
 import adminAuth from "../middleware/AdminAuth.js";
 import teacherAuth from "../middleware/teacherAuth.js";
-import TeacherAuth from "../middleware/teacherAuth.js";
+import completeLogin from "../middleware/completeLogin.js";
 
 const ManagingClassrooms=express.Router();
 
-ManagingClassrooms.post('/mobileAPI/addingClassroom',adminAuth,async (req, res)=>{
+ManagingClassrooms.post('/mobileAPI/classroom',adminAuth,async (req, res)=>{
     const body=req.body;
     const existingClassroom=await Classroom.findOne({
         where:{
@@ -42,7 +42,7 @@ ManagingClassrooms.post('/mobileAPI/addingClassroom',adminAuth,async (req, res)=
     }
 });
 
-ManagingClassrooms.get('/mobileAPI/getClassroomDetails',teacherAuth,async (req, res)=>{
+ManagingClassrooms.get('/mobileAPI/classroom',teacherAuth,async (req, res)=>{
     const school_id=req.sessionData['school_id'];
     try{
         const classroomDetails=await Classroom.findAll({
@@ -61,7 +61,7 @@ ManagingClassrooms.get('/mobileAPI/getClassroomDetails',teacherAuth,async (req, 
     }
 });
 
-ManagingClassrooms.get('/mobileAPI/standard',TeacherAuth,async (req,res)=>{
+ManagingClassrooms.get('/mobileAPI/standard',completeLogin,async (req,res)=>{
     const school_id=req.sessionData['school_id'];
     try{
         const classroomDetails = await Classroom.findAll({
@@ -84,7 +84,7 @@ ManagingClassrooms.get('/mobileAPI/standard',TeacherAuth,async (req,res)=>{
     }
 });
 
-ManagingClassrooms.get('/mobileAPI/section',TeacherAuth,async (req,res)=>{
+ManagingClassrooms.get('/mobileAPI/section',completeLogin,async (req,res)=>{
     const standard=req.query.standard;
     const school_id=req['sessionData']['school_id'];
    try{

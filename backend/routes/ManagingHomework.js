@@ -75,7 +75,6 @@ ManagingHomework.get('/mobileAPI/homework', studentAuth,async (req, res) => {
             where: {
                 standard:studentDetails.standard,
                 section:studentDetails.section,
-                addedDate:today
             }
         });
         if(!classroom){
@@ -97,6 +96,26 @@ ManagingHomework.get('/mobileAPI/homework', studentAuth,async (req, res) => {
         console.log("Error in getting the data: ", e);
         res.status(500).json({
             message: "Error while getting the homework"
+        });
+    }
+});
+
+ManagingHomework.get('/mobileAPI/homework/:id',teacherAuth,async (req,res)=>{
+    try{
+        const homework_id = req.params.id;
+        const school_id = req['sessionData']['school_id'];
+        const homework = await Homework.findOne({
+            where: {
+                homework_id,
+                school_id
+            }
+        });
+        res.json(homework);
+    }catch (e){
+        console.log("Error while updating the homework: ", e);
+        res.status(500).json({
+            message: "Error while updating the homework",
+            error: e.message
         });
     }
 });

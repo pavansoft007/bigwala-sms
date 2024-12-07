@@ -71,11 +71,18 @@ ManagingHomework.post('/mobileAPI/homework', teacherAuth, async (req, res) => {
 
 ManagingHomework.get('/mobileAPI/homework', studentAuth,async (req, res) => {
     try {
-        const studentDetails=req['sessionData'];
-        const [homeworkDetails] = await
-            sequelize.query(`SELECT homework_id,context,c.standard,c.section,s.subject_name,s.subject_code FROM homeworks INNER JOIN classrooms c ON c.classroom_id=homeworks.classroom_id INNER JOIN subjects s ON s.subject_id=homeworks.subject_id WHERE c.standard=${studentDetails['standard']} && c.section='${studentDetails['section']}';`);
-
-        res.json(homeworkDetails);
+        const sessionDetails=req['sessionData'];
+        if(sessionDetails['role']=== 'student'){
+            const [homeworkDetails] = await
+                sequelize.query(`SELECT homework_id,context,s.subject_name,s.subject_code FROM homeworks INNER JOIN classrooms c ON c.classroom_id=homeworks.classroom_id INNER JOIN subjects s ON s.subject_id=homeworks.subject_id WHERE c.standard=${sessionDetails['standard']} && c.section='${sessionDetails['section']}';`);
+            return res.json(homeworkDetails);
+        }else{
+            const standard=req.body.standard;
+            const section=req.body.section;
+            const [homeworkDetails] = await
+                sequelize.query(`SELECT homework_id,context,s.subject_name,s.subject_code FROM homeworks INNER JOIN classrooms c ON c.classroom_id=homeworks.classroom_id INNER JOIN subjects s ON s.subject_id=homeworks.subject_id WHERE c.standard=${standard} && c.section='${section}';`);
+            return  res.json(homeworkDetails);
+        }
     } catch (e) {
         console.log("Error in getting the data: ", e);
         res.status(500).json({

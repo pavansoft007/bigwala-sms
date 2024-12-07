@@ -9,36 +9,57 @@ import StudentAttendance from "../models/studentAttendance.js";
 
 const ManageAttendance = express.Router();
 
-ManageAttendance.post('/mobileAPI/addstudentattendance', TeacherAuth, async (req, res) => {
+ManageAttendance.post('/mobileAPI/student/attendance', TeacherAuth, async (req, res) => {
     try {
-        const { student_id } = req.body;
+        const { studentsIDs } = req.body;
+        if (!Array.isArray(studentsIDs) || studentsIDs.length === 0) {
+            return res.status(400).json({ message: 'Invalid or missing student IDs' });
+        }
+
         const school_id = req['sessionData']['school_id'];
         const today = new Date().toISOString().split('T')[0];
-        const existingAttendance = await studentAttendance.findOne({
+
+
+        const existingAttendance = await studentAttendance.findAll({
             where: {
-                student_id: student_id,
+                student_id: studentsIDs,
                 school_id: school_id,
                 attendDate: today
-            }
+            },
+            attributes: ['student_id']
         });
 
-        if (existingAttendance) {
-            return res.status(400).json({ message: 'Attendance already recorded for today' });
+
+        const existingStudentIDs = existingAttendance.map(record => record.student_id);
+
+
+        const newAttendanceRecords = studentsIDs
+            .filter(student_id => !existingStudentIDs.includes(student_id))
+            .map(student_id => ({
+                student_id,
+                school_id,
+                attendDate: today
+            }));
+
+
+        if (newAttendanceRecords.length > 0) {
+            await studentAttendance.bulkCreate(newAttendanceRecords);
         }
-        const addStudentAttendance = await studentAttendance.create({
-            student_id: student_id,
-            school_id: school_id,
-            attendDate: today
-        });
 
-        res.json(addStudentAttendance);
+        res.json({
+            message: 'Attendance recorded successfully',
+            newAttendance: newAttendanceRecords.map(record => record.student_id),
+            skipped: existingStudentIDs
+        });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error adding attendance' });
+        console.error('Error adding attendance:', error);
+        res.status(500).json({ message: 'Error adding attendance', error: error.message });
     }
 });
 
-ManageAttendance.post('/mobileAPI/requestTeacherAttendance',TeacherAuth,async (req, res)=>{
+
+
+ManageAttendance.post('/mobileAPI/teacher/attendance/request',TeacherAuth,async (req, res)=>{
     try {
         const teacher_id=req['sessionData']['teacher_id'];
         const school_id=req['sessionData']['school_id'];
@@ -56,9 +77,9 @@ ManageAttendance.post('/mobileAPI/requestTeacherAttendance',TeacherAuth,async (r
     }
 });
 
-ManageAttendance.post('/mobileAPI/attendance/admin-reject',AdminAuth,async (req, res)=>{
+ManageAttendance.post('/api/attendance/admin/reject/:id',AdminAuth,async (req, res)=>{
     try {
-        const { attendance_id } = req.body;
+        const attendance_id = req.body;
 
         const attendanceRequest = await teacherAttendance.findByPk(attendance_id);
         if (!attendanceRequest) {
@@ -74,9 +95,9 @@ ManageAttendance.post('/mobileAPI/attendance/admin-reject',AdminAuth,async (req,
     }
 });
 
-ManageAttendance.post('/mobileAPI/attendance/admin-approve',AdminAuth,async (req,res)=>{
+ManageAttendance.post('/api/attendance/admin/approve/:id',AdminAuth,async (req,res)=>{
     try {
-        const { attendance_id } = req.body;
+        const attendance_id = req.params.id;
 
         const attendanceRequest = await teacherAttendance.findByPk(attendance_id);
         if (!attendanceRequest) {
@@ -92,7 +113,7 @@ ManageAttendance.post('/mobileAPI/attendance/admin-approve',AdminAuth,async (req
     }
 });
 
-ManageAttendance.get('/mobileAPI/attendance/get-pending-request',AdminAuth,async (req, res)=>{
+ManageAttendance.get('/api/attendance/admin/pending',AdminAuth,async (req, res)=>{
     try {
         const  school_id  =req['sessionData']['school_id'];
         teacherAttendance.belongsTo(Teacher, { foreignKey: 'teacher_id' });
@@ -117,7 +138,7 @@ ManageAttendance.get('/mobileAPI/attendance/get-pending-request',AdminAuth,async
     }
 });
 
-ManageAttendance.get('/mobileAPI/attendance/get-student-attendance',StudentAuth,async (req, res)=>{
+ManageAttendance.get('/mobileAPI/attendance/student',StudentAuth,async (req, res)=>{
     try {
         const student_id=req['sessionData']['student_id'];
         const studentDetails=await StudentAttendance.findAll({
@@ -132,7 +153,7 @@ ManageAttendance.get('/mobileAPI/attendance/get-student-attendance',StudentAuth,
     }
 });
 
-ManageAttendance.get('/mobileAPI/attendance/get-teacher-attendance',StudentAuth,async (req, res)=>{
+ManageAttendance.get('/mobileAPI/attendance/teachers',TeacherAuth,async (req, res)=>{
     try {
         const teacher_id=req['sessionData']['teacher_id'];
         const studentDetails=await teacherAttendance.findAll({

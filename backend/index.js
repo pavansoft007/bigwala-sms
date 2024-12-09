@@ -72,11 +72,11 @@ app.get('/mobileAPI/*',(req, res)=>{
     res.status(404).json({});
 });
 
-app.get('/api/*',(req, res)=>{
+app.all('/api/*',(req, res)=>{
     res.status(404).json({});
 });
 
-app.get('*',(req,res)=>{
+app.all('*',(req,res)=>{
     res.sendFile(path.resolve(__dirname, '../frontend/dist/index.html'));
 });
 

@@ -13,6 +13,7 @@ import NotFound from "./pages/NotFound";
 import AddStudent from "./pages/student/AddStudent.tsx";
 import StudentDetails from "./pages/student/StudentDetails.tsx";
 import AddTeacher from "./pages/teacher/AddTeacher.tsx";
+import Subject from "./pages/subjects/Subjects.tsx"
 import Logout from "./pages/Logout.tsx";
 
 function App() {
@@ -37,6 +38,7 @@ function App() {
                             <Route path="manage-teacher" element={<Students />}  />
                             <Route path=":id" element={<StudentDetails />} />
                         </Route>
+                        <Route path="subjects" element={<Subject />} ></Route>
                         <Route path="settings" element={<Settings />} />
                         <Route path="*" element={<NotFound />} />
                     </Route>

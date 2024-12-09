@@ -22,11 +22,13 @@ ManagingSubjects.post('/api/subject',AdminAuth,async (req,res)=>{
 });
 ManagingSubjects.get("/api/subject",completeLogin,async (req,res)=>{
    try{
-       const subjects=await Subject.findAll({
-           where:{
-               school_id:req['sessionData']['school_id']
-           }
+       const subjects = await Subject.findAll({
+           where: {
+               school_id: req['sessionData']['school_id']
+           },
+           attributes: ['subject_id', 'subject_name', 'subject_code'],
        });
+
        res.json(subjects);
    } catch (e) {
        console.error(' got error in getting the subject :',e );

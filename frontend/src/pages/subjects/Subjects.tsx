@@ -7,10 +7,11 @@ interface Subject {
     subject_code: string;
 }
 
-const Subjects = () => {
+const AddSubjects = () => {
     const [subjects, setSubjects] = useState<Subject[]>([]);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [newSubject, setNewSubject] = useState({ subject_name: "", subject_code: "" });
     const [currentSubject, setCurrentSubject] = useState<Subject | null>(null);
 
@@ -59,6 +60,23 @@ const Subjects = () => {
         }
     };
 
+    const handleDeleteSubject = () => {
+        if (currentSubject) {
+            axiosInstance
+                .delete(`/api/subject/${currentSubject.subject_id}`)
+                .then(() => {
+                    setSubjects((prev) =>
+                        prev.filter((subject) => subject.subject_id !== currentSubject.subject_id)
+                    );
+                    setIsDeleteModalOpen(false);
+                    setCurrentSubject(null);
+                })
+                .catch(() => {
+                    console.error("Error in deleting the subject");
+                });
+        }
+    };
+
     return (
         <div className="p-6 bg-gray-100 min-h-screen">
             <h1 className="text-3xl font-bold text-center mb-8">Subjects List</h1>
@@ -74,15 +92,26 @@ const Subjects = () => {
                         <p className="text-gray-600">
                             <strong>Code:</strong> {subject.subject_code}
                         </p>
-                        <button
-                            className="text-blue-500 mt-2 hover:underline"
-                            onClick={() => {
-                                setCurrentSubject(subject);
-                                setIsEditModalOpen(true);
-                            }}
-                        >
-                            Edit
-                        </button>
+                        <div className="mt-2 flex space-x-2">
+                            <button
+                                className="text-blue-500 hover:underline"
+                                onClick={() => {
+                                    setCurrentSubject(subject);
+                                    setIsEditModalOpen(true);
+                                }}
+                            >
+                                Edit
+                            </button>
+                            <button
+                                className="text-red-500 hover:underline"
+                                onClick={() => {
+                                    setCurrentSubject(subject);
+                                    setIsDeleteModalOpen(true);
+                                }}
+                            >
+                                Delete
+                            </button>
+                        </div>
                     </div>
                 ))}
             </div>
@@ -200,8 +229,35 @@ const Subjects = () => {
                     </div>
                 </div>
             )}
+
+            {/* Delete Confirmation Modal */}
+            {isDeleteModalOpen && currentSubject && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+                        <h2 className="text-xl font-bold mb-4">Delete Subject</h2>
+                        <p className="text-gray-800 mb-6">
+                            Are you sure you want to delete the subject{" "}
+                            <span className="font-semibold">{currentSubject.subject_name}</span>?
+                        </p>
+                        <div className="flex justify-end">
+                            <button
+                                className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md mr-2"
+                                onClick={() => setIsDeleteModalOpen(false)}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
+                                onClick={handleDeleteSubject}
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
 
-export default Subjects;
+export default AddSubjects;

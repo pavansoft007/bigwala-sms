@@ -98,6 +98,22 @@ const Dashboard = () => {
                             subjects
                         </Link>
                     </li>
+                    <li>
+                        <Link
+                            to="classroom"
+                            className="block p-3 rounded-lg hover:bg-gray-700 transition-colors"
+                        >
+                            classroom
+                        </Link>
+                    </li>
+                    <li>
+                        <Link
+                            to="exams"
+                            className="block p-3 rounded-lg hover:bg-gray-700 transition-colors"
+                        >
+                            exams
+                        </Link>
+                    </li>
 
                     <li>
                         <Link

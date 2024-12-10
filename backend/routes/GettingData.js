@@ -3,7 +3,7 @@ import Student from "../models/Student.js";
 import Teacher from "../models/Teacher.js";
 import AdminAuth from "../middleware/AdminAuth.js";
 import verifyToken from "../middleware/teacherAuth.js";
-import sequelize from "../config/database.js";
+import sequelize from "../config/database.js"
 
 
 const GettingData=express.Router();
@@ -56,5 +56,8 @@ GettingData.get('/mobileAPI/getStudent',verifyToken,async (req,res)=>{
        res.status(200).json(completeDetails);
 });
 
+GettingData.get('/api/userDetails',verifyToken,async (req,res)=>{
+    res.status(200).json(req['sessionData']);
+});
 
 export default GettingData;

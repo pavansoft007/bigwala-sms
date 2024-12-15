@@ -128,7 +128,27 @@ Auth.post('/mobileAPI/otp-verify', otpTokenVerification, async (req, res) => {
                token: teacherToken,
                teacher: teacherDetails
             });
-         } else {
+         }else if(currentUser.role === 'admin'){
+            const admin=await Admin.findOne({ where: {admin_phone_number:currentUser.phone_number} });
+
+            if(!admin){
+               return res.status(404).json({ message: 'Teacher not found' });
+            }
+            const adminDetails={
+               id:admin.admin_id,
+               school_id:admin.school_id,
+               name:admin.admin_name,
+               email:admin.admin_email
+            }
+
+            const adminToken=jwt.sign(adminDetails,JWT_SECRET,{expiresIn: '360m'});
+            oneData.push({
+               role:'admin',
+               token:adminToken,
+               admin:adminDetails
+            });
+         }
+         else {
             return res.status(400).json({ message: 'Invalid role' });
          }
       }

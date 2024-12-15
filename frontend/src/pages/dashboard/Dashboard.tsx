@@ -15,7 +15,6 @@ const Dashboard = () => {
 
     return (
         <div className="flex min-h-screen bg-gray-100">
-            {/* Sidebar */}
             <div className="w-64 bg-gray-800 text-white">
                 <div className="p-5">
                     <h1 className="text-2xl font-semibold tracking-wide">Admin Dashboard</h1>
@@ -91,6 +90,30 @@ const Dashboard = () => {
                             </ul>
                         </div>
                     </li>
+                    <li>
+                        <Link
+                            to="subjects"
+                            className="block p-3 rounded-lg hover:bg-gray-700 transition-colors"
+                        >
+                            subjects
+                        </Link>
+                    </li>
+                    <li>
+                        <Link
+                            to="classroom"
+                            className="block p-3 rounded-lg hover:bg-gray-700 transition-colors"
+                        >
+                            classroom
+                        </Link>
+                    </li>
+                    <li>
+                        <Link
+                            to="exams"
+                            className="block p-3 rounded-lg hover:bg-gray-700 transition-colors"
+                        >
+                            exams
+                        </Link>
+                    </li>
 
                     <li>
                         <Link
@@ -103,9 +126,8 @@ const Dashboard = () => {
                 </ul>
             </div>
 
-            {/* Main Content */}
             <div className="flex-1 p-5">
-                <Outlet />
+                <Outlet/>
             </div>
         </div>
     );

@@ -13,7 +13,11 @@ import NotFound from "./pages/NotFound";
 import AddStudent from "./pages/student/AddStudent.tsx";
 import StudentDetails from "./pages/student/StudentDetails.tsx";
 import AddTeacher from "./pages/teacher/AddTeacher.tsx";
+import Subject from "./pages/subjects/Subjects.tsx"
+import ClassroomManagement from "./pages/classroom/ClassroomManagement.tsx";
 import Logout from "./pages/Logout.tsx";
+import ManageExams from "./pages/exams/ManageExams.tsx";
+import ManageSubject from "./pages/exams/ManageSubject.tsx";
 
 function App() {
     return (
@@ -37,6 +41,12 @@ function App() {
                             <Route path="manage-teacher" element={<Students />}  />
                             <Route path=":id" element={<StudentDetails />} />
                         </Route>
+                        <Route path="subjects" element={<Subject />} />
+                        <Route path="exams" >
+                            <Route path="manageExam" element={<ManageExams />} />
+                            <Route path="manageSubject" element={<ManageSubject />} />
+                        </Route>
+                        <Route path="classroom" element={<ClassroomManagement />} />
                         <Route path="settings" element={<Settings />} />
                         <Route path="*" element={<NotFound />} />
                     </Route>

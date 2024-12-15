@@ -39,6 +39,7 @@ ManagingExam.post('/api/exam', AdminAuth, async (req, res) => {
 ManagingExam.post('/api/exam-subject/:id', AdminAuth, async (req, res) => {
     const { exam_details } = req.body;
     const exam_id = req.params.id;
+    //@todo write a case if the subject ID already present then need to stop them
     try {
         const exam = await Exam.findOne({ where: { exam_id } });
         if (!exam) {

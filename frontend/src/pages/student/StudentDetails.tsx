@@ -56,7 +56,7 @@ const StudentDetails = () => {
 
     useEffect(() => {
         axiosInstance
-            .get("/mobileAPI/getClassroomDetails")
+            .get("/mobileAPI/classroom")
             .then((res) => {
                 setClassrooms(res.data);
             })

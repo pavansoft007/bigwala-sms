@@ -11,9 +11,10 @@ interface Role {
 const RoleManagement: React.FC = () => {
     const [roles, setRoles] = useState<Role[]>([]);
     const [permissions] = useState([
-        'teacher attendance',
         'student management',
         'teacher management',
+        'homework',
+        'classroom',
         'fee',
         'attendance',
         'gallery',

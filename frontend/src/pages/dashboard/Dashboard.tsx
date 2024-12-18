@@ -4,6 +4,7 @@ import { useState } from "react";
 const Dashboard = () => {
     const [isStudentDropdownOpen, setIsStudentDropdownOpen] = useState<boolean>(false);
     const [isTeacherDropdownOpen, setIsTeacherDropdownOpen] = useState<boolean>(false);
+    const [isUserManagementDropdownOpen,setIsUserManagementDropdownOpen]=useState<boolean>(false);
 
     const toggleStudentDropdown = () => {
         setIsStudentDropdownOpen((prevState) => !prevState);
@@ -12,6 +13,10 @@ const Dashboard = () => {
     const toggleTeacherDropdown = () => {
         setIsTeacherDropdownOpen((prevState) => !prevState);
     };
+
+    const toggleUserManagementDropdown=()=>{
+        setIsUserManagementDropdownOpen((prevState)=>!prevState);
+    }
 
     return (
         <div className="flex min-h-screen bg-gray-100">
@@ -91,6 +96,41 @@ const Dashboard = () => {
                         </div>
                     </li>
                     <li>
+                        <button
+                            className={`block w-full text-left p-3 rounded-lg ${
+                                isTeacherDropdownOpen ? "bg-gray-700" : "hover:bg-gray-700"
+                            } transition-colors`}
+                            onClick={toggleUserManagementDropdown}
+                        >
+                            Manage admins
+                        </button>
+                        <div
+                            className={`overflow-hidden transition-all duration-300 ${
+                                isUserManagementDropdownOpen ? "max-h-40" : "max-h-0"
+                            }`}
+                        >
+                            <ul className="ml-5 space-y-1">
+                                <li>
+                                    <Link
+                                        to="roles"
+                                        className="block p-2 rounded-lg hover:bg-gray-600"
+                                    >
+                                        roles
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link
+                                        to="users"
+                                        className="block p-2 rounded-lg hover:bg-gray-600"
+                                    >
+                                        users
+                                    </Link>
+                                </li>
+                            </ul>
+                        </div>
+
+                    </li>
+                    <li>
                         <Link
                             to="subjects"
                             className="block p-3 rounded-lg hover:bg-gray-700 transition-colors"
@@ -111,7 +151,7 @@ const Dashboard = () => {
                             to="exams"
                             className="block p-3 rounded-lg hover:bg-gray-700 transition-colors"
                         >
-                            exams
+                        exams
                         </Link>
                     </li>
 

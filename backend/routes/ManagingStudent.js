@@ -2,15 +2,15 @@ import express from 'express';
 import Student from '../models/Student.js';
 import User from '../models/User.js';
 import generateAdmissionID from "../services/generateAdmissionID.js";
-import AdminAuth from "../middleware/AdminAuth.js";
 import School from "../models/School.js";
 import { Op } from 'sequelize';
 import Classroom from "../models/Classroom.js";
+import AdminAuth from "../middleware/AdminAuth.js";
 
 const ManagingStudent = express.Router();
 
 
-ManagingStudent.post('/api/student', AdminAuth, async (req, res) => {
+ManagingStudent.post('/api/student',AdminAuth('student management'), async (req, res) => {
     try {
         const {
             first_name,
@@ -104,7 +104,7 @@ ManagingStudent.post('/api/student', AdminAuth, async (req, res) => {
     }
 });
 
-ManagingStudent.put('/api/student/:id', AdminAuth, async (req, res) => {
+ManagingStudent.put('/api/student/:id', AdminAuth('student management'), async (req, res) => {
     try {
         const studentId = req.params.id;
         const {
@@ -152,7 +152,7 @@ ManagingStudent.put('/api/student/:id', AdminAuth, async (req, res) => {
     }
 });
 
-ManagingStudent.delete('/api/student/:id', AdminAuth, async (req, res) => {
+ManagingStudent.delete('/api/student/:id', AdminAuth('student management'), async (req, res) => {
     try {
         const studentId = req.params.id;
 

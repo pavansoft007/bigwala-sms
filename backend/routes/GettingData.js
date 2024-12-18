@@ -10,7 +10,7 @@ import completeLogin from "../middleware/completeLogin.js";
 const GettingData=express.Router();
 
 
-GettingData.get('/mobileAPI/students/:id', AdminAuth,async (req, res) => {
+GettingData.get('/mobileAPI/students/:id', AdminAuth('student management'),async (req, res) => {
     try {
         const [student] = await sequelize.query('SELECT * FROM `students` INNER JOIN classrooms ON classrooms.classroom_id=students.student_id WHERE student_id='+req.params.id);
         if (!student) {
@@ -26,7 +26,7 @@ GettingData.get('/mobileAPI/students/:id', AdminAuth,async (req, res) => {
     }
 });
 
-GettingData.get('/mobileAPI/teachers/:id', AdminAuth,   async (req, res) => {
+GettingData.get('/mobileAPI/teachers/:id', AdminAuth('student management'),   async (req, res) => {
     try {
         const teacher = await Teacher.findOne({
             where:{

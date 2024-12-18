@@ -77,7 +77,7 @@ ManageAttendance.post('/mobileAPI/teacher/attendance/request',TeacherAuth,async 
     }
 });
 
-ManageAttendance.post('/api/attendance/admin/reject/:id',AdminAuth,async (req, res)=>{
+ManageAttendance.post('/api/attendance/admin/reject/:id',AdminAuth('attendance'),async (req, res)=>{
     try {
         const attendance_id = req.body;
 
@@ -95,7 +95,7 @@ ManageAttendance.post('/api/attendance/admin/reject/:id',AdminAuth,async (req, r
     }
 });
 
-ManageAttendance.post('/api/attendance/admin/approve/:id',AdminAuth,async (req,res)=>{
+ManageAttendance.post('/api/attendance/admin/approve/:id',AdminAuth('attendance'),async (req,res)=>{
     try {
         const attendance_id = req.params.id;
 
@@ -113,7 +113,7 @@ ManageAttendance.post('/api/attendance/admin/approve/:id',AdminAuth,async (req,r
     }
 });
 
-ManageAttendance.get('/api/attendance/admin/pending',AdminAuth,async (req, res)=>{
+ManageAttendance.get('/api/attendance/admin/pending',AdminAuth('attendance'),async (req, res)=>{
     try {
         const  school_id  =req['sessionData']['school_id'];
         teacherAttendance.belongsTo(Teacher, { foreignKey: 'teacher_id' });

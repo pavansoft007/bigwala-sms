@@ -135,6 +135,7 @@ Auth.post('/mobileAPI/otp-verify', otpTokenVerification, async (req, res) => {
                return res.status(404).json({ message: 'Teacher not found' });
             }
             const adminDetails={
+               role:'admin',
                id:admin.admin_id,
                school_id:admin.school_id,
                name:admin.admin_name,
@@ -183,6 +184,7 @@ Auth.post('/api/admin-login',async (req,res)=>{
       if (adminDetails){
          if(adminDetails.admin_password === password ){
             const tokenData={
+               id:adminDetails.admin_id,
                school_id: adminDetails.school_id,
                school_code:adminDetails.school.school_code,
                role:'admin'

@@ -9,7 +9,7 @@ import completeLogin from "../middleware/completeLogin.js";
 
 const ManagingClassrooms=express.Router();
 
-ManagingClassrooms.post('/mobileAPI/classroom',adminAuth,async (req, res)=>{
+ManagingClassrooms.post('/mobileAPI/classroom',adminAuth('classroom'),async (req, res)=>{
     const body=req.body;
     const existingClassroom=await Classroom.findOne({
         where:{

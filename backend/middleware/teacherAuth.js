@@ -1,23 +1,46 @@
 import jwt from "jsonwebtoken";
-const TeacherAuth = async (req, res, next) => {
-    const token = req.headers['authorization'];
-    if (!token) return res.status(403).json({ message: 'No token provided' });
+import sequelize from "../config/database.js";
+const teacherAdminAuth = (required) => {
+    return async (req, res, next) => {
+        const token = req.headers['authorization'];
+        if (!token) return res.status(403).json({ message: 'No token provided' });
 
-    try{
-        const bearerToken = token.split(' ')[1];
-        if (!bearerToken) return res.status(403).json({ message: 'No token provided' });
+        try {
+            const bearerToken = token.split(' ')[1];
+            if (!bearerToken) return res.status(403).json({ message: 'No token provided' });
 
-        const tokenDetails=await jwt.verify(bearerToken,process.env.JWTKEY);
-        if(tokenDetails.role=== 'admin' || tokenDetails.role === 'teacher-admin' || tokenDetails.role === 'teacher' ){
-            req['sessionData']=tokenDetails;
-            next();
-        }else{
-            res.status(403).json({message:"you dont have access"});
+            const tokenDetails = await jwt.verify(bearerToken, process.env.JWTKEY);
+
+
+
+            if ( tokenDetails.role === 'admin') {
+                const [result,meteData]=await sequelize.query('SELECT permissions,r.role_name FROM admins INNER  JOIN roles r ON r.role_id=admins.role_id WHERE admin_id='+tokenDetails['id']);
+                if(result[0]['role_name'] === 'admin' ){
+                    req['sessionData'] = tokenDetails;
+                    return next();
+                }
+                const permissions=result[0]['permissions'];
+                permissions.forEach((item)=>{
+                    if(item === required){
+                        req['sessionData'] = tokenDetails;
+                        next();
+                    }
+                })
+
+                return res.status(404).json({});
+
+            }else if(tokenDetails.role === 'teacher-admin' || tokenDetails.role==='teacher' ){
+                req['sessionData'] = tokenDetails;
+                next();
+            }
+            else {
+                res.status(403).json({ message: 'You do not have access' });
+            }
+        } catch (e) {
+            console.log(e);
+            return res.status(500).json({ message: 'Failed to authenticate token' });
         }
-
-    }catch (e) {
-        return res.status(500).json({ message: 'Failed to authenticate token' });
-    }
+    };
 };
 
-export default TeacherAuth;
+export default teacherAdminAuth;

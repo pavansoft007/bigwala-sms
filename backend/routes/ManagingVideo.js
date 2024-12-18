@@ -2,11 +2,10 @@ import express from "express";
 import YoutudeModel from "../models/YoutudeModel.js";
 import SemiAdminAuth from "../middleware/semiAdminAuth.js";
 import studentAuth from "../middleware/StudentAuth.js";
-import semiAdminAuth from "../middleware/semiAdminAuth.js";
 
 const ManagingVideo=express.Router();
 
-ManagingVideo.post('/mobileAPI/add-new-video',SemiAdminAuth,async (req,res)=>{
+ManagingVideo.post('/mobileAPI/add-new-video',SemiAdminAuth('managing videos'),async (req,res)=>{
     try{
         const {event_name,youtude_link}=req.body;
         const school_id=req['sessionData']['school_id'];
@@ -36,7 +35,7 @@ ManagingVideo.get('/mobileAPI/get-videos',studentAuth,async (req,res)=>{
        res.status(500).json({message: 'error while fetching the video data',});
    }
 });
-ManagingVideo.put('/mobileAPI/update-video/:id', semiAdminAuth, async (req, res) => {
+ManagingVideo.put('/mobileAPI/update-video/:id', SemiAdminAuth('managing videos'), async (req, res) => {
     try {
         const youtude_id = req.params.id;
         const { event_name, youtude_link } = req.body;
@@ -64,7 +63,7 @@ ManagingVideo.put('/mobileAPI/update-video/:id', semiAdminAuth, async (req, res)
     }
 });
 
-ManagingVideo.delete('/mobileAPI/delete-video/:id', semiAdminAuth, async (req, res) => {
+ManagingVideo.delete('/mobileAPI/delete-video/:id', SemiAdminAuth('managing videos'), async (req, res) => {
     try {
         const youtude_id = req.params.id;
         const school_id = req['sessionData']['school_id'];

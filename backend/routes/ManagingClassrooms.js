@@ -42,7 +42,7 @@ ManagingClassrooms.post('/mobileAPI/classroom',adminAuth('classroom'),async (req
     }
 });
 
-ManagingClassrooms.get('/mobileAPI/classroom',teacherAuth,async (req, res)=>{
+ManagingClassrooms.get('/mobileAPI/classroom',teacherAuth('classroom'),async (req, res)=>{
     const school_id=req.sessionData['school_id'];
     try{
         const classroomDetails=await Classroom.findAll({
@@ -107,7 +107,7 @@ ManagingClassrooms.get('/mobileAPI/section',completeLogin,async (req,res)=>{
    }
 });
 
-ManagingClassrooms.get('/mobileAPI/getStudent/:classroomID',teacherAuth,async (req, res)=>{
+ManagingClassrooms.get('/mobileAPI/getStudent/:classroomID',teacherAuth('classroom'),async (req, res)=>{
     const classroomID=req.params.classroomID;
     try{
         const studentINFO=await Student.findAll({
@@ -125,7 +125,7 @@ ManagingClassrooms.get('/mobileAPI/getStudent/:classroomID',teacherAuth,async (r
     }
 });
 
-ManagingClassrooms.post('/mobileAPI/student-assign-classroom',semiAdminAuth, async  (req, res)=>{
+ManagingClassrooms.post('/mobileAPI/student-assign-classroom',semiAdminAuth('classroom'), async  (req, res)=>{
     const {standard,section,studentID}=req.body;
     const schoolID=req['sessionData']['school_id'];
     try{
@@ -159,7 +159,7 @@ ManagingClassrooms.post('/mobileAPI/student-assign-classroom',semiAdminAuth, asy
         });
     }
 });
-ManagingClassrooms.post('/mobileAPI/teacher-assign-classroom',semiAdminAuth, async  (req, res)=>{
+ManagingClassrooms.post('/mobileAPI/teacher-assign-classroom',semiAdminAuth('classroom'), async  (req, res)=>{
     const {standard,section,teacher_id}=req.body;
     const schoolID=req['sessionData']['school_id'];
     try{

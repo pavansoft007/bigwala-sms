@@ -8,7 +8,7 @@ import sequelize from "../config/database.js";
 
 const ManagingHomework = express.Router();
 
-ManagingHomework.post('/mobileAPI/homework', teacherAuth, async (req, res) => {
+ManagingHomework.post('/mobileAPI/homework', teacherAuth('homework'), async (req, res) => {
     try {
         const { subject_id, context, standard, section } = req.body;
         const school_id=req['sessionData']['school_id'];
@@ -91,7 +91,7 @@ ManagingHomework.get('/mobileAPI/homework', studentAuth,async (req, res) => {
     }
 });
 
-ManagingHomework.get('/mobileAPI/homework/:id',teacherAuth,async (req,res)=>{
+ManagingHomework.get('/mobileAPI/homework/:id',teacherAuth('homework'),async (req,res)=>{
     try{
         const homework_id = req.params.id;
         const school_id = req['sessionData']['school_id'];
@@ -111,7 +111,7 @@ ManagingHomework.get('/mobileAPI/homework/:id',teacherAuth,async (req,res)=>{
     }
 });
 
-ManagingHomework.put('/mobileAPI/homework/:id', teacherAuth, async (req, res) => {
+ManagingHomework.put('/mobileAPI/homework/:id', teacherAuth('homework'), async (req, res) => {
     try {
         const homework_id = req.params.id;
         const { context } = req.body;
@@ -143,7 +143,7 @@ ManagingHomework.put('/mobileAPI/homework/:id', teacherAuth, async (req, res) =>
         });
     }
 });
-ManagingHomework.delete('/mobileAPI/homework/:id', teacherAuth, async (req, res) => {
+ManagingHomework.delete('/mobileAPI/homework/:id', teacherAuth('homework'), async (req, res) => {
     try {
         const homework_id = req.params.id;
         const school_id = req['sessionData']['school_id'];

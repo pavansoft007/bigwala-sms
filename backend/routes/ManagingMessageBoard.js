@@ -42,7 +42,7 @@ const upload = multer({
 const ManagingMessageBoard=express.Router();
 
 
-ManagingMessageBoard.post('/mobileAPI/add-new-message', TeacherAuth,upload.single('voice'), async (req, res) => {
+ManagingMessageBoard.post('/mobileAPI/add-new-message', TeacherAuth('message board'),upload.single('voice'), async (req, res) => {
       const teacher_id = req['sessionData']['teacher_id'];
       const school_id = req['sessionData']['school_id'];
       const { section, standard, admission_id, messageType, message,type } = req.body;

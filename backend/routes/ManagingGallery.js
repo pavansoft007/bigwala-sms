@@ -7,6 +7,8 @@ import Encrypt from "../services/Encrypt.js";
 import Decrypt from "../services/Decrypt.js";
 import {fileURLToPath} from "url";
 import gallery from "../models/Gallery.js";
+import semiAdminAuth from "../middleware/semiAdminAuth.js";
+import completeLogin from "../middleware/completeLogin.js";
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -35,10 +37,10 @@ const upload = multer({
 
 const ManagingGallery=express.Router();
 
-ManagingGallery.post('/mobileAPI/add-new-photos',upload.single('photo'),async (req,res)=>{
+ManagingGallery.post('/mobileAPI/add-new-photos',semiAdminAuth('classroom'),upload.single('photo'),async (req,res)=>{
      try{
          const {event_name}=req.body;
-         const school_id=1;
+         const school_id=req['sessionData']['school_id'];
         const newGalleyImage=await Gallery.create({
             school_id,
             event_name,
@@ -51,9 +53,9 @@ ManagingGallery.post('/mobileAPI/add-new-photos',upload.single('photo'),async (r
      }
 });
 
-ManagingGallery.get('/mobileAPI/get-gallery-images',async (req,res)=>{
+ManagingGallery.get('/mobileAPI/get-gallery-images',completeLogin,async (req,res)=>{
     try{
-        const school_id=1;
+        const school_id=req['sessionData']['school_id'];
         const completeData=await Gallery.findAll({
             where:{
                 school_id

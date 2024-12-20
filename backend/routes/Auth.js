@@ -1,12 +1,13 @@
 import express from 'express';
 import Student from "../models/Student.js";
 import Teacher from "../models/Teacher.js";
-import School from "../models/School.js";
 import Classroom from "../models/Classroom.js";
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 import Admin from "../models/Admin.js";
 import otpTokenVerification from "../middleware/otp-token-verification.js";
+import sequelize from "../config/database.js";
+import {Sequelize} from "sequelize";
 
 const Auth = express.Router();
 
@@ -167,26 +168,34 @@ Auth.post('/mobileAPI/otp-verify', otpTokenVerification, async (req, res) => {
 Auth.post('/api/admin-login',async (req,res)=>{
    const {email,password}=req.body;
    try{
-      Admin.belongsTo(School, { foreignKey: 'school_id', as: 'school' });
-      School.hasMany(Admin, { foreignKey: 'school_id', as: 'admins' });
+      // Admin.belongsTo(School, { foreignKey: 'school_id', as: 'school' });
+      // School.hasMany(Admin, { foreignKey: 'school_id', as: 'admins' });
+      //
+      // const adminDetails=await Admin.findOne({
+      //    where:{
+      //       admin_email:email
+      //    },
+      //    include: {
+      //       model: School,
+      //       as: 'school',
+      //       required: true
+      //    }
+      // })
 
-      const adminDetails=await Admin.findOne({
-         where:{
-            admin_email:email
-         },
-         include: {
-            model: School,
-            as: 'school',
-            required: true
-         }
-      })
+      const [adminDetails] = await sequelize.query(
+          'SELECT * FROM `admins` INNER JOIN  schools s ON admins.school_id=s.school_id WHERE admin_email=:email',
+          {
+             replacements: { email: email },
+             type: Sequelize.QueryTypes.SELECT
+          }
+      );
 
       if (adminDetails){
          if(adminDetails.admin_password === password ){
             const tokenData={
                id:adminDetails.admin_id,
                school_id: adminDetails.school_id,
-               school_code:adminDetails.school.school_code,
+               school_code:adminDetails.school_code,
                role:'admin'
             }
             const token = await jwt.sign(tokenData,JWT_SECRET,{expiresIn: '360m'});

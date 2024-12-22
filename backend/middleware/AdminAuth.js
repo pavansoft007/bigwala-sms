@@ -15,6 +15,10 @@ const AdminAuth = (required) => {
 
 
             if ( tokenDetails.role === 'admin') {
+                if(required==='all'){
+                    req['sessionData'] = tokenDetails;
+                    return next();
+                }
                 const [result,meteData]=await sequelize.query('SELECT permissions,r.role_name FROM admins INNER  JOIN roles r ON r.role_id=admins.role_id WHERE admin_id='+tokenDetails['id']);
                 if(result[0]['role_name'] === 'admin' ){
                     req['sessionData'] = tokenDetails;
@@ -24,14 +28,14 @@ const AdminAuth = (required) => {
                 permissions.forEach((item)=>{
                     if(item === required){
                         req['sessionData'] = tokenDetails;
-                        next();
+                       return next();
                     }
                 })
 
-                return res.status(404).json({});
+                return res.status(404).json({ message:result[0]['role_name'] });
 
             } else {
-                res.status(403).json({ message: 'You do not have access' });
+                return res.status(403).json({ message: 'You do not have access' });
             }
         } catch (e) {
             console.log(e);

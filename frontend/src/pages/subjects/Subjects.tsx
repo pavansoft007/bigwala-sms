@@ -188,7 +188,6 @@ const AddSubjects = () => {
                                 value={currentSubject.subject_name}
                                 onChange={(e) =>
                                     setCurrentSubject({
-                                        subject_code: "", subject_id: 0,
                                         ...currentSubject,
                                         subject_name: e.target.value
                                     })
@@ -205,7 +204,6 @@ const AddSubjects = () => {
                                 value={currentSubject.subject_code}
                                 onChange={(e) =>
                                     setCurrentSubject({
-                                        subject_id: 0, subject_name: "",
                                         ...currentSubject,
                                         subject_code: e.target.value
                                     })

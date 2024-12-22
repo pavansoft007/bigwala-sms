@@ -9,7 +9,7 @@ import StudentAttendance from "../models/studentAttendance.js";
 
 const ManageAttendance = express.Router();
 
-ManageAttendance.post('/mobileAPI/student/attendance', TeacherAuth, async (req, res) => {
+ManageAttendance.post('/mobileAPI/student/attendance', TeacherAuth('attendance'), async (req, res) => {
     try {
         const { studentsIDs } = req.body;
         if (!Array.isArray(studentsIDs) || studentsIDs.length === 0) {
@@ -59,7 +59,7 @@ ManageAttendance.post('/mobileAPI/student/attendance', TeacherAuth, async (req, 
 
 
 
-ManageAttendance.post('/mobileAPI/teacher/attendance/request',TeacherAuth,async (req, res)=>{
+ManageAttendance.post('/mobileAPI/teacher/attendance/request',TeacherAuth('attendance'),async (req, res)=>{
     try {
         const teacher_id=req['sessionData']['teacher_id'];
         const school_id=req['sessionData']['school_id'];
@@ -77,7 +77,7 @@ ManageAttendance.post('/mobileAPI/teacher/attendance/request',TeacherAuth,async 
     }
 });
 
-ManageAttendance.post('/api/attendance/admin/reject/:id',AdminAuth,async (req, res)=>{
+ManageAttendance.post('/api/attendance/admin/reject/:id',AdminAuth('attendance'),async (req, res)=>{
     try {
         const attendance_id = req.body;
 
@@ -95,7 +95,7 @@ ManageAttendance.post('/api/attendance/admin/reject/:id',AdminAuth,async (req, r
     }
 });
 
-ManageAttendance.post('/api/attendance/admin/approve/:id',AdminAuth,async (req,res)=>{
+ManageAttendance.post('/api/attendance/admin/approve/:id',AdminAuth('attendance'),async (req,res)=>{
     try {
         const attendance_id = req.params.id;
 
@@ -113,7 +113,7 @@ ManageAttendance.post('/api/attendance/admin/approve/:id',AdminAuth,async (req,r
     }
 });
 
-ManageAttendance.get('/api/attendance/admin/pending',AdminAuth,async (req, res)=>{
+ManageAttendance.get('/api/attendance/admin/pending',AdminAuth('attendance'),async (req, res)=>{
     try {
         const  school_id  =req['sessionData']['school_id'];
         teacherAttendance.belongsTo(Teacher, { foreignKey: 'teacher_id' });
@@ -153,7 +153,7 @@ ManageAttendance.get('/mobileAPI/attendance/student',StudentAuth,async (req, res
     }
 });
 
-ManageAttendance.get('/mobileAPI/attendance/teachers',TeacherAuth,async (req, res)=>{
+ManageAttendance.get('/mobileAPI/attendance/teachers',TeacherAuth('attendance'),async (req, res)=>{
     try {
         const teacher_id=req['sessionData']['teacher_id'];
         const studentDetails=await teacherAttendance.findAll({

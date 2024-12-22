@@ -1,5 +1,6 @@
 import { DataTypes, Model } from 'sequelize';
 import sequelize from '../config/database.js';
+import Role from "./Role.js";
 
 class Admin extends Model {}
 
@@ -35,6 +36,14 @@ Admin.init({
     admin_password: {
         type: DataTypes.STRING(100),
         allowNull: false
+    },
+    role_id:{
+        type:DataTypes.INTEGER,
+        allowNull:false,
+        references:{
+            model:Role,
+            key:'role_id'
+        }
     }
 }, {
     sequelize,

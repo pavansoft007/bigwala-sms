@@ -18,6 +18,8 @@ import ClassroomManagement from "./pages/classroom/ClassroomManagement.tsx";
 import Logout from "./pages/Logout.tsx";
 import ManageExams from "./pages/exams/ManageExams.tsx";
 import ManageSubject from "./pages/exams/ManageSubject.tsx";
+import RolePanel from "./pages/roles/RolePanel.tsx";
+import UserPanel from "./pages/roles/UserPanel.tsx";
 
 function App() {
     return (
@@ -46,6 +48,8 @@ function App() {
                             <Route path="manageExam" element={<ManageExams />} />
                             <Route path="manageSubject" element={<ManageSubject />} />
                         </Route>
+                        <Route path="roles" element={<RolePanel />} />
+                        <Route path="users" element={<UserPanel />} />
                         <Route path="classroom" element={<ClassroomManagement />} />
                         <Route path="settings" element={<Settings />} />
                         <Route path="*" element={<NotFound />} />

@@ -5,7 +5,7 @@ import completeLogin from "../middleware/completeLogin.js";
 
 const ManagingSubjects=express.Router();
 
-ManagingSubjects.post('/api/subject',AdminAuth,async (req,res)=>{
+ManagingSubjects.post('/api/subject',AdminAuth('subject'),async (req,res)=>{
     try{
         const {subject_name,subject_code}=req.body;
         const school_id=req['sessionData']['school_id'];
@@ -35,7 +35,7 @@ ManagingSubjects.get("/api/subject",completeLogin,async (req,res)=>{
        res.status(500).json({ message:"error in getting the subject" });
    }
 });
-ManagingSubjects.put('/api/subject/:id', AdminAuth, async (req, res) => {
+ManagingSubjects.put('/api/subject/:id', AdminAuth('subject'), async (req, res) => {
     try {
         const subject_id = req.params.id;
         const { subject_name, subject_code } = req.body;
@@ -63,7 +63,7 @@ ManagingSubjects.put('/api/subject/:id', AdminAuth, async (req, res) => {
         res.status(500).json({ message: 'Error while updating the subject' });
     }
 });
-ManagingSubjects.delete('/api/subject/:id', AdminAuth, async (req, res) => {
+ManagingSubjects.delete('/api/subject/:id', AdminAuth('subject'), async (req, res) => {
     try {
         const subject_id = req.params.id;
         const school_id = req['sessionData']['school_id'];

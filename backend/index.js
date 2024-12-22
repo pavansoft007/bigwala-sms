@@ -20,6 +20,7 @@ import ManagingTeacher from "./routes/ManagingTeacher.js";
 import ManagingStudent from "./routes/ManagingStudent.js";
 import ManagingExam from "./routes/ManagingExam.js";
 import ManagingFeeTypes from "./routes/ManagingFeeTypes.js";
+import ManageUserRights from "./routes/ManageUserRights.js";
 
 const app = express();
 app.use(express.json());
@@ -65,6 +66,7 @@ app.use(ManagingTeacher);
 app.use(ManagingStudent);
 app.use(ManagingExam);
 app.use(ManagingFeeTypes);
+app.use(ManageUserRights);
 
 
 dotenv.config();

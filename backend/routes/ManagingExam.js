@@ -8,7 +8,7 @@ import completeLogin from "../middleware/completeLogin.js";
 
 const ManagingExam = express.Router();
 
-ManagingExam.post('/api/exam', AdminAuth, async (req, res) => {
+ManagingExam.post('/api/exam', AdminAuth('exam timetable'), async (req, res) => {
     const { exam_name, start_date, end_date, standard, section } = req.body;
     try {
         const classDetails = await Classroom.findOne({
@@ -36,7 +36,7 @@ ManagingExam.post('/api/exam', AdminAuth, async (req, res) => {
     }
 });
 
-ManagingExam.post('/api/exam-subject/:id', AdminAuth, async (req, res) => {
+ManagingExam.post('/api/exam-subject/:id', AdminAuth('exam timetable'), async (req, res) => {
     const { exam_details } = req.body;
     const exam_id = req.params.id;
     //@todo write a case if the subject ID already present then need to stop them
@@ -153,7 +153,7 @@ ManagingExam.get('/mobileAPI/exam-time-table',completeLogin, async (req, res) =>
 });
 
 
-ManagingExam.put('/api/exam/:id', AdminAuth, async (req, res) => {
+ManagingExam.put('/api/exam/:id', AdminAuth('exam timetable'), async (req, res) => {
     const exam_id = req.params.id;
     const { exam_name, start_date, end_date, standard, section } = req.body;
 
@@ -191,7 +191,7 @@ ManagingExam.put('/api/exam/:id', AdminAuth, async (req, res) => {
 });
 
 
-ManagingExam.delete('/api/exam/:id', AdminAuth, async (req, res) => {
+ManagingExam.delete('/api/exam/:id', AdminAuth('exam timetable'), async (req, res) => {
     const exam_id = req.params.id;
 
     try {
@@ -212,7 +212,7 @@ ManagingExam.delete('/api/exam/:id', AdminAuth, async (req, res) => {
 });
 
 
-ManagingExam.put('/api/exam-subject/:id', AdminAuth, async (req, res) => {
+ManagingExam.put('/api/exam-subject/:id', AdminAuth('exam timetable'), async (req, res) => {
     const examSubject_id = req.params.id;
     const { exam_date } = req.body;
 
@@ -230,7 +230,7 @@ ManagingExam.put('/api/exam-subject/:id', AdminAuth, async (req, res) => {
     }
 });
 
-ManagingExam.delete('/api/exam-subject/:id', AdminAuth, async (req, res) => {
+ManagingExam.delete('/api/exam-subject/:id', AdminAuth('exam timetable'), async (req, res) => {
     const examSubject_id = req.params.id;
 
     try {

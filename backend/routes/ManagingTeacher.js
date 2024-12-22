@@ -7,7 +7,7 @@ import User from "../models/User.js";
 
 const ManagingTeacher=express.Router();
 
-ManagingTeacher.post('/api/teacher', AdminAuth ,async (req, res) => {
+ManagingTeacher.post('/api/teacher', AdminAuth('teacher management') ,async (req, res) => {
     try {
         const {
             first_name,
@@ -66,7 +66,7 @@ ManagingTeacher.post('/api/teacher', AdminAuth ,async (req, res) => {
     }
 });
 
-ManagingTeacher.put('/api/teacher/:id', AdminAuth, async (req, res) => {
+ManagingTeacher.put('/api/teacher/:id', AdminAuth('teacher management'), async (req, res) => {
     try {
         const teacherId = req.params.id;
         const {
@@ -117,7 +117,7 @@ ManagingTeacher.put('/api/teacher/:id', AdminAuth, async (req, res) => {
     }
 });
 
-ManagingTeacher.delete('/api/teacher/:id', AdminAuth, async (req, res) => {
+ManagingTeacher.delete('/api/teacher/:id', AdminAuth('teacher management'), async (req, res) => {
     try {
         const teacherId = req.params.id;
 

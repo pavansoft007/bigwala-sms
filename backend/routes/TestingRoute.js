@@ -1,9 +1,9 @@
 import express from "express";
-import AdminAuth from "../middleware/AdminAuth.js";
+import semiAdminAuth from "../middleware/semiAdminAuth.js";
 
 const TestingRoute=express.Router();
 
-TestingRoute.get('/testing',(req, res)=>{
+TestingRoute.get('/testing',semiAdminAuth('gallery'),(req, res)=>{
     res.status(200).json({ message:"hello there" });
 });
 export default TestingRoute;

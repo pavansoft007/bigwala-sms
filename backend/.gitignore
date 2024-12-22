@@ -11,7 +11,9 @@ node_modules/
 # Local environment files
 .env
 
-uplods
+text.txt
+
+uplodas
 
 .env.prod
 .env.dev

@@ -4,7 +4,7 @@ import Fee_type from "../models/Fee_type.js";
 
 const ManagingFeeTypes = express.Router();
 
-ManagingFeeTypes.post('/api/fee_type', AdminAuth, async (req, res) => {
+ManagingFeeTypes.post('/api/fee_type', AdminAuth('exam timetable'), async (req, res) => {
     const { fee_type_name, description, standard, fee } = req.body;
     const school_id = req['sessionData']['school_id'];
     try {
@@ -23,7 +23,7 @@ ManagingFeeTypes.post('/api/fee_type', AdminAuth, async (req, res) => {
 });
 
 
-ManagingFeeTypes.get('/api/fee_type', AdminAuth, async (req, res) => {
+ManagingFeeTypes.get('/api/fee_type', AdminAuth('exam timetable'), async (req, res) => {
     const school_id = req['sessionData']['school_id'];
     try {
         const feeTypes = await Fee_type.findAll({
@@ -37,7 +37,7 @@ ManagingFeeTypes.get('/api/fee_type', AdminAuth, async (req, res) => {
 });
 
 
-ManagingFeeTypes.put('/api/fee_type/:id', AdminAuth, async (req, res) => {
+ManagingFeeTypes.put('/api/fee_type/:id', AdminAuth('exam timetable'), async (req, res) => {
     const { id } = req.params;
     const { fee_type_name, description, standard, fee } = req.body;
     const school_id = req['sessionData']['school_id'];
@@ -65,7 +65,7 @@ ManagingFeeTypes.put('/api/fee_type/:id', AdminAuth, async (req, res) => {
 });
 
 
-ManagingFeeTypes.delete('/api/fee_type/:id', AdminAuth, async (req, res) => {
+ManagingFeeTypes.delete('/api/fee_type/:id', AdminAuth('exam timetable'), async (req, res) => {
     const { id } = req.params;
     const school_id = req['sessionData']['school_id'];
     try {

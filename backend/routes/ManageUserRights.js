@@ -3,6 +3,7 @@ import Role from "../models/Role.js";
 import AdminAuth from "../middleware/AdminAuth.js";
 import Admin from "../models/Admin.js";
 import User from "../models/User.js";
+import sequelize from "../config/database.js";
 
 const ManageUserRights = express.Router();
 
@@ -36,7 +37,7 @@ ManageUserRights.post('/api/roles', AdminAuth('roles'), async (req, res) => {
 ManageUserRights.get('/api/roles', AdminAuth('roles'), async (req, res) => {
     const school_id = req['sessionData']['school_id'];
     try {
-        const roles = await Role.findAll({ where: { school_id } });
+        const roles = await Role.findAll({ where: { school_id} });
         return res.status(200).json({ data: roles });
     } catch (error) {
         console.error(error);
@@ -67,6 +68,11 @@ ManageUserRights.delete('/api/roles/:id', AdminAuth('roles'), async (req, res) =
         const role = await Role.findByPk(id);
         if (!role) return res.status(404).json({ message: 'Role not found' });
 
+        const isReferenced = await Admin.count({ where: { role_id: id } });
+        if (isReferenced > 0) {
+            return res.status(400).json({ message: 'Role cannot be deleted as it is referenced in other records' });
+        }
+
         await role.destroy();
         return res.status(200).json({ message: 'Role deleted successfully' });
     } catch (error) {
@@ -74,6 +80,7 @@ ManageUserRights.delete('/api/roles/:id', AdminAuth('roles'), async (req, res) =
         return res.status(500).json({ message: 'An error occurred', error: error.message });
     }
 });
+
 
 
 ManageUserRights.post('/api/users', AdminAuth('roles'), async (req, res) => {
@@ -109,8 +116,12 @@ ManageUserRights.post('/api/users', AdminAuth('roles'), async (req, res) => {
 ManageUserRights.get('/api/users', AdminAuth('roles'), async (req, res) => {
     const school_id = req['sessionData']['school_id'];
     try {
-        const users = await Admin.findAll({ where: { school_id } });
-        return res.status(200).json({ data: users });
+        const users = await Admin.findAll({
+            where: {
+                school_id,
+            }
+        });
+        return res.status(200).json({ one:req['sessionData']['admin_id'],data: users });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'An error occurred', error: error.message });
@@ -156,6 +167,32 @@ ManageUserRights.delete('/api/users/:id', AdminAuth('roles'), async (req, res) =
         console.error(error);
         return res.status(500).json({ message: 'An error occurred', error: error.message });
     }
+});
+
+ManageUserRights.get('/api/get-all-roles',AdminAuth('all'),async (req,res)=>{
+     try{
+         const [permission]=await sequelize.query(`
+             SELECT s.permissions,s.role_name FROM admins INNER JOIN roles s on s.role_id=admins.role_id WHERE admin_id=${req['sessionData']['id']}
+         `);
+         // if(permission[0]['role_name'] === 'admin' ){
+         //     return res.json(
+         //         [
+         //             'student management',
+         //             'teacher management',
+         //             'roles',
+         //             'subjects',
+         //             'classroom',
+         //         ]
+         //     )
+         // }
+         return res.json({
+             permission:permission[0]['permissions'] || [] ,
+             role:permission[0]['role_name']
+         });
+     }catch (error) {
+         console.error(error);
+         return res.status(500).json({ message: 'An error occurred' });
+     }
 });
 
 export default ManageUserRights;

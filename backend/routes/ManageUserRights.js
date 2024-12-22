@@ -174,17 +174,6 @@ ManageUserRights.get('/api/get-all-roles',AdminAuth('all'),async (req,res)=>{
          const [permission]=await sequelize.query(`
              SELECT s.permissions,s.role_name FROM admins INNER JOIN roles s on s.role_id=admins.role_id WHERE admin_id=${req['sessionData']['id']}
          `);
-         // if(permission[0]['role_name'] === 'admin' ){
-         //     return res.json(
-         //         [
-         //             'student management',
-         //             'teacher management',
-         //             'roles',
-         //             'subjects',
-         //             'classroom',
-         //         ]
-         //     )
-         // }
          return res.json({
              permission:permission[0]['permissions'] || [] ,
              role:permission[0]['role_name']

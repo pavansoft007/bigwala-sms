@@ -14,7 +14,7 @@ const SemiAdminAuth = (required) => {
 
 
             if ( tokenDetails.role === 'admin') {
-                const [result,meteData]=await sequelize.query('SELECT permissions,r.role_name FROM admins INNER  JOIN roles r ON r.role_id=admins.role_id WHERE admin_id='+tokenDetails['id']);
+                const [result]=await sequelize.query('SELECT permissions,r.role_name FROM admins INNER  JOIN roles r ON r.role_id=admins.role_id WHERE admin_id='+tokenDetails['id']);
                 if(result[0]['role_name'] === 'admin' ){
                     req['sessionData'] = tokenDetails;
                     return next();
@@ -38,6 +38,9 @@ const SemiAdminAuth = (required) => {
             }
         } catch (e) {
             console.log(e);
+            if (e.name === "TokenExpiredError") {
+                return res.status(401).json({ message: "Token has expired" });
+            }
             return res.status(500).json({ message: 'Failed to authenticate token' });
         }
     };

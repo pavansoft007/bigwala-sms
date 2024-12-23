@@ -16,6 +16,9 @@ const StudentAuth = async (req, res, next) => {
         }
 
     }catch (e) {
+        if (e.name === "TokenExpiredError") {
+            return res.status(401).json({ message: "Token has expired" });
+        }
         return res.status(500).json({ message: 'Failed to authenticate token' });
     }
 };

@@ -38,7 +38,7 @@ const upload = multer({
 
 const ManagingGallery=express.Router();
 
-ManagingGallery.post('/mobileAPI/add-new-photos', semiAdminAuth('gallery'), upload.array('photos', 10), async (req, res) => {
+ManagingGallery.post('/mobileAPI/gallery', semiAdminAuth('gallery'), upload.array('photos', 10), async (req, res) => {
     try {
         const { event_name } = req.body;
         const school_id = req['sessionData']['school_id'];
@@ -67,7 +67,7 @@ ManagingGallery.post('/mobileAPI/add-new-photos', semiAdminAuth('gallery'), uplo
 });
 
 
-ManagingGallery.get('/mobileAPI/get-gallery-images',completeLogin,async (req,res)=>{
+ManagingGallery.get('/mobileAPI/gallery',completeLogin,async (req,res)=>{
     try{
         const school_id=req['sessionData']['school_id'];
         const completeData=await Gallery.findAll({
@@ -98,7 +98,7 @@ ManagingGallery.get('/mobileAPI/get-gallery-images',completeLogin,async (req,res
     }
 });
 
-ManagingGallery.get('/staticFiles/get-gallery-images/:id',ImageCors,async (req,res)=>{
+ManagingGallery.get('/staticFiles/gallery/:id',ImageCors,async (req,res)=>{
     const id=req.params.id;
     try {
         const decText = Decrypt(id).split(':');

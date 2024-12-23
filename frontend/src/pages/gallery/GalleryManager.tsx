@@ -19,7 +19,7 @@ const GalleryManager: React.FC = () => {
 
     const fetchGalleryImages = async () => {
         try {
-            const response = await axiosInstance.get<Photos>('/mobileAPI/get-gallery-images');
+            const response = await axiosInstance.get<Photos>('/mobileAPI/gallery');
             setPhotos(response.data);
         } catch (error) {
             console.error('Error fetching gallery images:', error);
@@ -49,7 +49,7 @@ const GalleryManager: React.FC = () => {
         setLoading(true);
 
         try {
-            await axiosInstance.post('/mobileAPI/add-new-photos', formData, {
+            await axiosInstance.post('/mobileAPI/gallery', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
             alert('Photos uploaded successfully!');
@@ -75,7 +75,7 @@ const GalleryManager: React.FC = () => {
                             {images.map((image, index) => (
                                 <img
                                     key={index}
-                                    src={`${import.meta.env.VITE_API_URL}/staticFiles/get-gallery-images/${image.filename}`}
+                                    src={`${import.meta.env.VITE_API_URL}/staticFiles/gallery/${image.filename}`}
                                     alt="Gallery"
                                     className="w-36 h-36 object-cover rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300"
                                 />

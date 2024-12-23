@@ -94,7 +94,7 @@ const Dashboard = () => {
                             </button>
                             <div
                                 className={`overflow-hidden transition-all duration-300 ${
-                                    isTeacherDropdownOpen ? "max-h-40" : "max-h-0"
+                                    isTeacherDropdownOpen  ? "max-h-40" : "max-h-0"
                                 }`}
                             >
                                 <ul className="ml-5 space-y-1">
@@ -122,7 +122,7 @@ const Dashboard = () => {
                         hasPermission('roles') && <li>
                             <button
                                 className={`block w-full text-left p-3 rounded-lg ${
-                                    isTeacherDropdownOpen ? "bg-gray-700" : "hover:bg-gray-700"
+                                    isUserManagementDropdownOpen ? "bg-gray-700" : "hover:bg-gray-700"
                                 } transition-colors`}
                                 onClick={toggleUserManagementDropdown}
                             >
@@ -178,6 +178,17 @@ const Dashboard = () => {
                     }
                     {
                         hasPermission('exams') &&
+                        <li>
+                            <Link
+                                to="exams"
+                                className="block p-3 rounded-lg hover:bg-gray-700 transition-colors"
+                            >
+                                exams
+                            </Link>
+                        </li>
+                    }
+                    {
+                        hasPermission('GalleryManager') &&
                         <li>
                             <Link
                                 to="exams"

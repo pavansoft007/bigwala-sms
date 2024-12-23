@@ -198,6 +198,17 @@ const Dashboard = () => {
                             </Link>
                         </li>
                     }
+                    {
+                        hasPermission('banner Images') &&
+                        <li>
+                            <Link
+                                to="bannerImages"
+                                className="block p-3 rounded-lg hover:bg-gray-700 transition-colors"
+                            >
+                                banner Images
+                            </Link>
+                        </li>
+                    }
 
                     <li>
                         <Link

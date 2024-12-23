@@ -9,6 +9,7 @@ import {fileURLToPath} from "url";
 import gallery from "../models/Gallery.js";
 import semiAdminAuth from "../middleware/semiAdminAuth.js";
 import completeLogin from "../middleware/completeLogin.js";
+import ImageCors from "../middleware/ImageCors.js";
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -37,7 +38,7 @@ const upload = multer({
 
 const ManagingGallery=express.Router();
 
-ManagingGallery.post('/mobileAPI/add-new-photos',semiAdminAuth('classroom'),upload.single('photo'),async (req,res)=>{
+ManagingGallery.post('/mobileAPI/add-new-photos',semiAdminAuth('gallery'),upload.single('photo'),async (req,res)=>{
      try{
          const {event_name}=req.body;
          const school_id=req['sessionData']['school_id'];
@@ -71,6 +72,7 @@ ManagingGallery.get('/mobileAPI/get-gallery-images',completeLogin,async (req,res
             if (!result[date][item.event_name]) {
                 result[date][item.event_name] = [];
             }
+            console.log(item.gallery_id+':'+req['ip']);
             const encText = Encrypt(item.gallery_id+':'+req['ip']);
             result[date][item.event_name].push({ filename: encText });
 
@@ -83,7 +85,7 @@ ManagingGallery.get('/mobileAPI/get-gallery-images',completeLogin,async (req,res
     }
 });
 
-ManagingGallery.get('/staticFiles/get-gallery-images/:id',async (req,res)=>{
+ManagingGallery.get('/staticFiles/get-gallery-images/:id',ImageCors,async (req,res)=>{
     const id=req.params.id;
     try {
         const decText = Decrypt(id).split(':');

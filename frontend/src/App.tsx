@@ -18,6 +18,7 @@ import ClassroomManagement from "./pages/classroom/ClassroomManagement.tsx";
 import Logout from "./pages/Logout.tsx";
 import RolePanel from "./pages/roles/RolePanel.tsx";
 import UserPanel from "./pages/roles/UserPanel.tsx";
+import GalleryManager from './pages/gallery/GalleryManager.tsx';
 
 function App() {
     return (
@@ -46,6 +47,7 @@ function App() {
                         <Route path="users" element={<UserPanel />} />
                         <Route path="classroom" element={<ClassroomManagement />} />
                         <Route path="settings" element={<Settings />} />
+                        <Route path="gallery" element={<GalleryManager />} />
                         <Route path="*" element={<NotFound />} />
                     </Route>
                 </Route>

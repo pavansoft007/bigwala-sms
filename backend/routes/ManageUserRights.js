@@ -169,6 +169,18 @@ ManageUserRights.delete('/api/users/:id', AdminAuth('roles'), async (req, res) =
     }
 });
 
+ManageUserRights.get('/api/get-all-module',AdminAuth('all'),async (req,res)=>{
+    try{
+        const [modulesData]=await sequelize.query(`select module_name from modules`);
+        return res.json({
+            modulesData
+        });
+    }catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'An error occurred' });
+    }
+});
+
 ManageUserRights.get('/api/get-all-roles',AdminAuth('all'),async (req,res)=>{
      try{
          const [permission]=await sequelize.query(`

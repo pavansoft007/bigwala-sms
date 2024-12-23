@@ -38,21 +38,34 @@ const upload = multer({
 
 const ManagingGallery=express.Router();
 
-ManagingGallery.post('/mobileAPI/add-new-photos',semiAdminAuth('gallery'),upload.single('photo'),async (req,res)=>{
-     try{
-         const {event_name}=req.body;
-         const school_id=req['sessionData']['school_id'];
-        const newGalleyImage=await Gallery.create({
-            school_id,
-            event_name,
-            filename:req.file.path
-        });
-         res.status(200).json(newGalleyImage);
-     } catch (error) {
-         console.error('Error saving message:', error);
-         return res.status(500).json({ error: 'An error occurred while saving the photo.' });
-     }
+ManagingGallery.post('/mobileAPI/add-new-photos', semiAdminAuth('gallery'), upload.array('photos', 10), async (req, res) => {
+    try {
+        const { event_name } = req.body;
+        const school_id = req['sessionData']['school_id'];
+
+        // Ensure files were uploaded
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ error: 'No files uploaded.' });
+        }
+
+        // Save each uploaded file in the database
+        const galleryImages = await Promise.all(
+            req.files.map(file =>
+                Gallery.create({
+                    school_id,
+                    event_name,
+                    filename: file.path,
+                })
+            )
+        );
+
+        res.status(200).json({ message: 'Photos uploaded successfully.', data: galleryImages });
+    } catch (error) {
+        console.error('Error saving photos:', error);
+        return res.status(500).json({ error: 'An error occurred while saving the photos.' });
+    }
 });
+
 
 ManagingGallery.get('/mobileAPI/get-gallery-images',completeLogin,async (req,res)=>{
     try{

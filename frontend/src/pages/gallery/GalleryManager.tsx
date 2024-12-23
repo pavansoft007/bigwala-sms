@@ -9,7 +9,7 @@ type Photos = Record<string, Record<string, Photo[]>>;
 
 const GalleryManager: React.FC = () => {
     const [photos, setPhotos] = useState<Photos>({});
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [eventName, setEventName] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
 
@@ -27,21 +27,23 @@ const GalleryManager: React.FC = () => {
     };
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (event.target.files && event.target.files[0]) {
-            setSelectedFile(event.target.files[0]);
+        if (event.target.files) {
+            setSelectedFiles(Array.from(event.target.files));
         }
     };
 
     const handleUpload = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
-        if (!selectedFile || !eventName) {
-            alert('Please provide both an event name and a file to upload.');
+        if (selectedFiles.length === 0 || !eventName) {
+            alert('Please provide an event name and at least one file to upload.');
             return;
         }
 
         const formData = new FormData();
-        formData.append('photo', selectedFile);
+        selectedFiles.forEach((file) => {
+            formData.append('photos', file); // Use the same field name as in your backend
+        });
         formData.append('event_name', eventName);
 
         setLoading(true);
@@ -50,13 +52,13 @@ const GalleryManager: React.FC = () => {
             await axiosInstance.post('/mobileAPI/add-new-photos', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
-            alert('Photo uploaded successfully!');
-            setSelectedFile(null);
+            alert('Photos uploaded successfully!');
+            setSelectedFiles([]);
             setEventName('');
             await fetchGalleryImages();
         } catch (error) {
-            console.error('Error uploading photo:', error);
-            alert('Failed to upload photo. Please try again.');
+            console.error('Error uploading photos:', error);
+            alert('Failed to upload photos. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -105,9 +107,10 @@ const GalleryManager: React.FC = () => {
                 </div>
 
                 <div className="mb-4">
-                    <label className="block text-gray-700 font-medium mb-2">Upload Photo:</label>
+                    <label className="block text-gray-700 font-medium mb-2">Upload Photos:</label>
                     <input
                         type="file"
+                        multiple
                         onChange={handleFileChange}
                         className="w-full text-gray-600"
                     />
@@ -118,7 +121,7 @@ const GalleryManager: React.FC = () => {
                     disabled={loading}
                     className={`w-full py-2 px-4 rounded-lg text-white font-semibold ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700 transition-colors duration-300'}`}
                 >
-                    {loading ? 'Uploading...' : 'Upload Photo'}
+                    {loading ? 'Uploading...' : 'Upload Photos'}
                 </button>
             </form>
 

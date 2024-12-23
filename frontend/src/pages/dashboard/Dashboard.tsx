@@ -188,13 +188,13 @@ const Dashboard = () => {
                         </li>
                     }
                     {
-                        hasPermission('GalleryManager') &&
+                        hasPermission('gallery') &&
                         <li>
                             <Link
-                                to="exams"
+                                to="gallery"
                                 className="block p-3 rounded-lg hover:bg-gray-700 transition-colors"
                             >
-                                exams
+                                gallery
                             </Link>
                         </li>
                     }

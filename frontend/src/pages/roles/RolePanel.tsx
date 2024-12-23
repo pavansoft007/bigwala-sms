@@ -10,18 +10,7 @@ interface Role {
 
 const RoleManagement: React.FC = () => {
     const [roles, setRoles] = useState<Role[]>([]);
-    const [permissions] = useState([
-        'student management',
-        'teacher management',
-        'homework',
-        'classroom',
-        'fee',
-        'attendance',
-        'gallery',
-        'message board',
-        'exam timetable',
-        'expenses',
-    ]);
+    const [permissions,setPermissions] = useState<string[]>([]);
     const [form, setForm] = useState({
         role_name: '',
         selectedPermissions: [] as string[],
@@ -45,6 +34,12 @@ const RoleManagement: React.FC = () => {
 
     const fetchRoles = async () => {
         try {
+            const moduleData=await axiosInstance.get('/api/get-all-module');
+            const dummyData:string[]=[];
+            moduleData.data.modulesData.forEach((item:{module_name:string})=>{
+                dummyData.push(item.module_name);
+            })
+            setPermissions(dummyData);
             const res = await axiosInstance.get('/api/roles');
             setRoles(res.data.data);
         } catch (error) {

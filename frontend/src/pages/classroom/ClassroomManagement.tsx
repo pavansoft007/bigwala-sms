@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axiosInstance from "../../services/axiosInstance.ts";
+import ClipLoader from 'react-spinners/ClipLoader';
 
 interface Classroom {
     classroom_id: number;
@@ -9,6 +10,7 @@ interface Classroom {
 
 const ClassroomManagement = () => {
     const [classrooms, setClassrooms] = useState<Classroom[]>([]);
+    const [isLoading,setIsLoading]=useState<boolean>(true);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [newClassroom, setNewClassroom] = useState({ standard: "", section: "" });
@@ -16,12 +18,15 @@ const ClassroomManagement = () => {
 
     // Fetch classrooms
     useEffect(() => {
+        setIsLoading(()=>true);
         axiosInstance
             .get("/mobileAPI/classroom")
             .then((response) => {
-                setClassrooms(response.data);
+                    setIsLoading(false);
+                    setClassrooms(response.data);
             })
             .catch(() => {
+                setIsLoading(false);
                 console.error("Error fetching classrooms");
             });
     }, []);
@@ -61,6 +66,9 @@ const ClassroomManagement = () => {
     return (
         <div className="p-6 bg-gray-100 min-h-screen">
             <h1 className="text-3xl font-bold text-center mb-8">Classroom Management</h1>
+            <div className=" flex justify-center items-center  w-full" >
+                <ClipLoader  loading={isLoading} size={50}  />
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {classrooms.map((classroom) => (
                     <div

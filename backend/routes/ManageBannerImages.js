@@ -32,7 +32,7 @@ const upload = multer({
         if (mimetype && extname) {
             return cb(null, true);
         }
-        cb("Error: Only audio files are allowed (mp3, wav, ogg,mpeg).");
+        cb("Error: Only audio or images files are allowed (mp3, wav, ogg,mpeg).");
     }
 });
 

@@ -6,6 +6,8 @@ import School from "../models/School.js";
 import { Op } from 'sequelize';
 import Classroom from "../models/Classroom.js";
 import AdminAuth from "../middleware/AdminAuth.js";
+import StudentFee from "../models/StudentFee.js";
+import StudentPayment from "../models/StudentPayment.js";
 
 const ManagingStudent = express.Router();
 
@@ -21,9 +23,10 @@ ManagingStudent.post('/api/student',AdminAuth('student management'), async (req,
             phone_number,
             address,
             enrollment_date,
-
+            fee_amount,
             standard,
-            section
+            section,
+            category_id
         } = req.body;
 
         if (!req['sessionData']?.school_id) {
@@ -83,10 +86,22 @@ ManagingStudent.post('/api/student',AdminAuth('student management'), async (req,
             original_id: newStudent.student_id
         });
 
+        const newStudentFee=await StudentFee.create({
+            fee_amount,
+            total_fee_paid:0,
+            fee_remaining:fee_amount,
+            school_id:req['sessionData']['school_id'],
+            category_id,
+            student_id:newStudent.student_id,
+            classroom_id:classroomDetails.classroom_id,
+            created_by:req['sessionData']['id']
+        });
+
         res.status(201).json({
             message: 'Student and user created successfully',
             student: newStudent,
-            user: newUser
+            user: newUser,
+            newStudentFee
         });
     } catch (error) {
         console.error('Error creating student and user:', error);
@@ -160,6 +175,9 @@ ManagingStudent.delete('/api/student/:id', AdminAuth('student management'), asyn
         if (!student) {
             return res.status(404).json({ message: 'Student not found' });
         }
+        await StudentPayment.destroy({where:{student_id:studentId,school_id:req['sessionData']['school_id']}});
+
+        await StudentFee.destroy({where:{  student_id:studentId,school_id:req['sessionData']['school_id']  }})
 
         await User.destroy({ where: { original_id: studentId,role:'student' } });
 

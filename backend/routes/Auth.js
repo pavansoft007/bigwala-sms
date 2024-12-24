@@ -198,7 +198,7 @@ Auth.post('/api/admin-login',async (req,res)=>{
                school_code:adminDetails.school_code,
                role:'admin'
             }
-            const token = await jwt.sign(tokenData,JWT_SECRET,{expiresIn: '360m'});
+            const token = await jwt.sign(tokenData,JWT_SECRET,{expiresIn: '1000m'});
             res.status(200).json({token});
          }else{
             return res.status(403).json({message:"wrong password"});

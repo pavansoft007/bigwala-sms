@@ -40,10 +40,6 @@ Student.init({
             isEmail: true
         }
     },
-    tuition_fee:{
-      type:DataTypes.DECIMAL(10,2),
-      allowNull:false
-    },
     phone_number: {
         type: DataTypes.STRING(15),
         allowNull: true,

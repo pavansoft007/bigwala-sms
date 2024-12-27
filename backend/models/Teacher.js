@@ -44,10 +44,6 @@ Teacher.init({
         type: DataTypes.STRING(15),
         allowNull: false
     },
-    subject_specialization: {
-        type: DataTypes.STRING(100),
-        allowNull: false
-    },
     hire_date: {
         type: DataTypes.DATEONLY,
         allowNull: false

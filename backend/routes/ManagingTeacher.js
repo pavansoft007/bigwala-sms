@@ -4,6 +4,7 @@ import generateTeacherID from "../services/generateTeacherID.js";
 import Teacher from "../models/Teacher.js";
 import moment from "moment";
 import User from "../models/User.js";
+import sequelize from "../config/database.js";
 
 const ManagingTeacher=express.Router();
 
@@ -14,7 +15,6 @@ ManagingTeacher.post('/api/teacher', AdminAuth('teacher management') ,async (req
             last_name,
             email,
             phone_number,
-            subject_specialization,
             hire_date,
             status,
             subject_id
@@ -31,7 +31,6 @@ ManagingTeacher.post('/api/teacher', AdminAuth('teacher management') ,async (req
             TeacherID:newTeacherID,
             email,
             phone_number,
-            subject_specialization,
             subject_id,
             hire_date:moment(hire_date, "MM-DD-YYYY").toDate(),
             school_id:req['sessionData']['school_id'],
@@ -66,6 +65,8 @@ ManagingTeacher.post('/api/teacher', AdminAuth('teacher management') ,async (req
     }
 });
 
+
+
 ManagingTeacher.put('/api/teacher/:id', AdminAuth('teacher management'), async (req, res) => {
     try {
         const teacherId = req.params.id;
@@ -74,7 +75,6 @@ ManagingTeacher.put('/api/teacher/:id', AdminAuth('teacher management'), async (
             last_name,
             email,
             phone_number,
-            subject_specialization,
             hire_date,
             status,
             subject_id,
@@ -92,7 +92,6 @@ ManagingTeacher.put('/api/teacher/:id', AdminAuth('teacher management'), async (
             last_name,
             email,
             phone_number,
-            subject_specialization,
             subject_id,
             hire_date: moment(hire_date, "MM-DD-YYYY").toDate(),
             status: status || 'Active',
@@ -113,6 +112,58 @@ ManagingTeacher.put('/api/teacher/:id', AdminAuth('teacher management'), async (
         res.status(500).json({
             message: 'An error occurred while updating the teacher',
             error: error.message
+        });
+    }
+});
+
+ManagingTeacher.get('/api/teacher/:id',AdminAuth('teacher management'),async (req,res)=>{
+    const teacherID=req.params.id;
+    const school_id=req['sessionData']['school_id'];
+    try{
+        const [teacherDetails]=await sequelize.query(
+            'SELECT *,s.subject_name,s.subject_name,c.standard,c.section FROM `teachers` INNER JOIN subjects s ON s.subject_id=teachers.subject_id INNER JOIN classrooms c ON c.classroom_id=teachers.assignedClass where c.school_id=? and  teacher_id=?'
+        ,{
+                replacements: [school_id,teacherID]
+         }
+        );
+
+
+        if(teacherDetails){
+            teacherDetails[0]['adminAccess']= teacherDetails[0]['adminAccess'] === '0';
+            res.json(teacherDetails[0]);
+        }else {
+            res.status(404).json({message:"teacher not found"});
+        }
+
+    }catch (e) {
+        console.error('Error deleting teacher:', e);
+        res.status(500).json({
+            message: 'An error occurred while getting the teacher',
+        });
+    }
+});
+
+ManagingTeacher.get('/api/teacher',AdminAuth('teacher management'),async (req,res)=>{
+    const school_id=req['sessionData']['school_id'];
+    try{
+        console.log(school_id);
+        let [teacherDetails]=await sequelize.query(
+            'SELECT *,s.subject_name,s.subject_name,c.standard,c.section FROM `teachers` left join subjects s ON s.subject_id=teachers.subject_id left join classrooms c ON c.classroom_id=teachers.assignedClass where teachers.school_id='+school_id);
+        if(teacherDetails){
+            teacherDetails=teacherDetails.map((item)=>{
+                   item['adminAccess']=item['adminAccess'] === 0;
+
+                   return item;
+            })
+            res.json(teacherDetails);
+        }else {
+            res.status(404).json({message:"teacher not found"});
+        }
+
+    }catch (e) {
+        console.error('Error getting teachers:', e);
+        res.status(500).json({
+            message: 'An error occurred while getting the teacher',
         });
     }
 });

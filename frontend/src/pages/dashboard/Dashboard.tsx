@@ -11,7 +11,7 @@ const Dashboard = () => {
 
     useEffect(() => {
       axiosInstance.get('/api/get-all-roles').then((res)=>{
-          setPermissionsData(res.data.permissions);
+          setPermissionsData(res.data.permission);
           setRole(res.data.role);
       }).catch((e)=>{
          console.error(e);

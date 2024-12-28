@@ -13,13 +13,11 @@ const AddStudent = () => {
         enrollment_date: "",
         standard: "",
         section: "",
-        tuition_fee:''
+        tuition_fee:'',
+        classroom_id:'',
+        fee_amount:0
     });
-
-    const [standards, setStandards] = useState<string[]>([]);
-    const [sections, setSections] = useState<string[]>([]);
-    const [selectedStandard, setSelectedStandard] = useState("");
-    const [selectedSection, setSelectedSection] = useState("");
+    const [classroomDetails,setClassroomDetails]=useState([]);
     const [message, setMessage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
 
@@ -27,8 +25,8 @@ const AddStudent = () => {
     useEffect(() => {
         const fetchStandards = async () => {
             try {
-                const response = await axiosInstance.get("/mobileAPI/standard");
-                setStandards(response.data);
+                const classroomRespoance=await axiosInstance.get('/mobileAPI/classroom');
+                setClassroomDetails(classroomRespoance.data);
             } catch (e) {
                 console.error("Error fetching standards:", e);
                 setError("Failed to load standards. Please try again later.");
@@ -38,32 +36,32 @@ const AddStudent = () => {
         fetchStandards();
     }, []);
 
-    const handleStandardChange = async (
-        event: React.ChangeEvent<HTMLSelectElement>
-    ) => {
-        const selected = event.target.value;
-        setSelectedStandard(selected);
-        setFormData({ ...formData, standard: selected });
+    // const handleStandardChange = async (
+    //     event: React.ChangeEvent<HTMLSelectElement>
+    // ) => {
+    //     const selected = event.target.value;
+    //     setSelectedStandard(selected);
+    //     setFormData({ ...formData, standard: selected });
+    //
+    //     if (selected) {
+    //         try {
+    //             const response = await axiosInstance.get("/mobileAPI/section?standard="+selected);
+    //             setSections(response.data);
+    //         } catch (e) {
+    //             console.error("Error fetching sections:", e);
+    //             setError("Failed to load sections. Please try again later.");
+    //         }
+    //     } else {
+    //         setSections([]);
+    //         setSelectedSection("");
+    //     }
+    // };
 
-        if (selected) {
-            try {
-                const response = await axiosInstance.get("/mobileAPI/section?standard="+selected);
-                setSections(response.data);
-            } catch (e) {
-                console.error("Error fetching sections:", e);
-                setError("Failed to load sections. Please try again later.");
-            }
-        } else {
-            setSections([]);
-            setSelectedSection("");
-        }
-    };
-
-    const handleSectionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        const selected = event.target.value;
-        setSelectedSection(selected);
-        setFormData({ ...formData, section: selected });
-    };
+    // const handleSectionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    //     const selected = event.target.value;
+    //     setSelectedSection(selected);
+    //     setFormData({ ...formData, section: selected });
+    // };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setFormData({
@@ -90,11 +88,10 @@ const AddStudent = () => {
                 enrollment_date: "",
                 standard: "",
                 section: "",
-                tuition_fee:''
+                tuition_fee:'',
+                classroom_id: '',
+                fee_amount:0
             });
-            setSelectedStandard("");
-            setSelectedSection("");
-            setSections([]);
         } catch (err: any) {
             setError(err.response?.data?.message || "An error occurred while adding the student.");
         }
@@ -195,55 +192,86 @@ const AddStudent = () => {
                         className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg"
                     />
                 </div>
+                {/*<div>*/}
+                {/*    <label className="block text-sm font-medium text-gray-700">tuition fee</label>*/}
+                {/*    <input*/}
+                {/*        type="number"*/}
+                {/*        name="tuition_fee"*/}
+                {/*        value={formData.tuition_fee}*/}
+                {/*        onChange={handleChange}*/}
+                {/*        required*/}
+                {/*        className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg"*/}
+                {/*    />*/}
+                {/*</div>*/}
+
+                {/*<div>*/}
+                {/*    <label className="block text-sm font-medium text-gray-700">Class</label>*/}
+                {/*    <select*/}
+                {/*        name="standard"*/}
+                {/*        value={selectedStandard}*/}
+                {/*        onChange={handleStandardChange}*/}
+                {/*        required*/}
+                {/*        className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg"*/}
+                {/*    >*/}
+                {/*        <option value="">Select Class</option>*/}
+                {/*        {standards.map((standard) => (*/}
+                {/*            <option key={standard} value={standard}>*/}
+                {/*                {standard}*/}
+                {/*            </option>*/}
+                {/*        ))}*/}
+                {/*    </select>*/}
+                {/*</div>*/}
+
                 <div>
-                    <label className="block text-sm font-medium text-gray-700">tuition fee</label>
+                    <label className="block text-sm font-medium text-gray-700">Class</label>
+                    <select
+                        name="classroom_id"
+                        value={formData.classroom_id}
+                        onChange={handleChange}
+                        required
+                        className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg"
+                    >
+                        <option value="">Select Class</option>
+                        {classroomDetails.map((item,index) => (
+                            <option key={index} value={item.classroom_id}>
+                                {item.standard}-{item.section}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+
+
+
+                {/*<div>*/}
+                {/*    <label className="block text-sm font-medium text-gray-700">Section</label>*/}
+                {/*    <select*/}
+                {/*        name="section"*/}
+                {/*        value={selectedSection}*/}
+                {/*        onChange={handleSectionChange}*/}
+                {/*        required*/}
+                {/*        disabled={!selectedStandard}*/}
+                {/*        className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg"*/}
+                {/*    >*/}
+                {/*        <option value="">Select Section</option>*/}
+                {/*        {sections.map((section) => (*/}
+                {/*            <option key={section} value={section}>*/}
+                {/*                {section}*/}
+                {/*            </option>*/}
+                {/*        ))}*/}
+                {/*    </select>*/}
+                {/*</div>*/}
+                <div>
+                    <label className="block text-sm font-medium text-gray-700">Fee amount</label>
                     <input
                         type="number"
-                        name="tuition_fee"
-                        value={formData.tuition_fee}
+                        name="fee_amount"
+                        value={formData.fee_amount}
                         onChange={handleChange}
                         required
                         className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg"
                     />
                 </div>
-
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Class</label>
-                    <select
-                        name="standard"
-                        value={selectedStandard}
-                        onChange={handleStandardChange}
-                        required
-                        className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg"
-                    >
-                        <option value="">Select Class</option>
-                        {standards.map((standard) => (
-                            <option key={standard} value={standard}>
-                                {standard}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Section</label>
-                    <select
-                        name="section"
-                        value={selectedSection}
-                        onChange={handleSectionChange}
-                        required
-                        disabled={!selectedStandard}
-                        className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg"
-                    >
-                        <option value="">Select Section</option>
-                        {sections.map((section) => (
-                            <option key={section} value={section}>
-                                {section}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
 
                 <div>
                     <label className="block text-sm font-medium text-gray-700">Enrollment Date</label>

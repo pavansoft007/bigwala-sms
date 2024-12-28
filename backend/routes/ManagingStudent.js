@@ -58,7 +58,6 @@ ManagingStudent.post('/api/student',AdminAuth('student management'), async (req,
                 school_id:req['sessionData']['school_id']
             }
         });
-        console.log(classroomDetails);
 
         if (existingStudent) {
             return res.status(409).json({ message: "This student already exists" });
@@ -86,6 +85,14 @@ ManagingStudent.post('/api/student',AdminAuth('student management'), async (req,
             original_id: newStudent.student_id
         });
 
+        const createdData={};
+
+        if(req['sessionData']['role'] === 'admin' ){
+            createdData['admin_id']=req['sessionData']['id']
+        }else if(req['sessionData']['role'] === 'teacher' || req['sessionData']['role'] === 'admin-teacher' ){
+            createdData['teacher_id']=req['sessionData']['teacher_id']
+        }
+
         const newStudentFee=await StudentFee.create({
             fee_amount,
             total_fee_paid:0,
@@ -94,7 +101,8 @@ ManagingStudent.post('/api/student',AdminAuth('student management'), async (req,
             category_id,
             student_id:newStudent.student_id,
             classroom_id:classroomDetails.classroom_id,
-            created_by:req['sessionData']['id']
+            created_by:req['sessionData']['role'],
+            ...createdData
         });
 
         res.status(201).json({

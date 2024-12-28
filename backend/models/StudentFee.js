@@ -5,6 +5,7 @@ import FeeCategory from "./FeeCategory.js";
 import Student from "./Student.js";
 import Classroom from "./Classroom.js";
 import Admin from "./Admin.js";
+import Teacher from "./Teacher.js";
 
 class StudentFee extends Model {}
 
@@ -60,6 +61,18 @@ StudentFee.init(
           }
         },
         created_by:{
+            type:DataTypes.STRING,
+            allowNull:false,
+        },
+        teacher_id:{
+            type:DataTypes.INTEGER,
+            allowNull:true,
+            references:{
+                model:Teacher,
+                key:'teacher_id'
+            }
+        },
+        admin_id:{
             type:DataTypes.INTEGER,
             allowNull:true,
             references:{

@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
+import {AxiosError} from 'axios';
 import axiosInstance from "../../services/axiosInstance.ts";
+
+interface Classroom{
+    classroom_id:number,
+    standard:string,
+    section:string
+}
 
 const AddStudent = () => {
     const [formData, setFormData] = useState({
@@ -17,7 +24,7 @@ const AddStudent = () => {
         classroom_id:'',
         fee_amount:0
     });
-    const [classroomDetails,setClassroomDetails]=useState([]);
+    const [classroomDetails,setClassroomDetails]=useState<Classroom[]>([]);
     const [message, setMessage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
 
@@ -92,8 +99,13 @@ const AddStudent = () => {
                 classroom_id: '',
                 fee_amount:0
             });
-        } catch (err: any) {
-            setError(err.response?.data?.message || "An error occurred while adding the student.");
+        } catch (err: unknown) {
+            // Narrow down the error type to AxiosError
+            if (err instanceof AxiosError) {
+                setError(err.response?.data?.message || "An error occurred while adding the student.");
+            } else {
+                setError("An unexpected error occurred while adding the student.");
+            }
         }
     };
 

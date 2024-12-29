@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axiosInstance from "../../services/axiosInstance.ts";
+import axios from "axios";
 interface Classroom {
     classroom_id: string;
     standard: string;
@@ -33,6 +34,7 @@ const StudentDetails = () => {
     });
 
     const [classrooms, setClassrooms] = useState<Classroom[]>([]);
+    const [studentClassroomDetails,setStudentClassroomDetails]=useState<string | null>(null);
     const [isEditMode, setIsEditMode] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [message, setMessage] = useState<string | null>(null);
@@ -42,6 +44,10 @@ const StudentDetails = () => {
             .get(`/mobileAPI/students/${id}`)
             .then((res) => {
                 setFormData(res.data);
+                console.log(formData);
+                if(res.data.assginedClassroom){
+                    setStudentClassroomDetails(res.data.standard +'-'+ res.data.section);
+                }
             })
             .catch((e) => {
                 console.error("Error fetching student details:", e);
@@ -79,14 +85,19 @@ const StudentDetails = () => {
         setError(null);
         setMessage(null);
 
+
         try {
             await axiosInstance.put(`/api/student/${id}`, formData);
             setMessage("Student details updated successfully!");
             getStudentDetails();
             setIsEditMode(false);
-        } catch (err: any) {
-            console.error("Error updating student:", err);
-            setError(err.response?.data?.message || "Failed to update student details.");
+        } catch (err) {
+            if (axios.isAxiosError(err)) {
+                setError(err.response?.data?.message || "Failed to update student details.");
+            } else {
+                console.error("Unexpected error updating student:", err);
+                setError("An unexpected error occurred.");
+            }
         }
     };
 
@@ -121,7 +132,7 @@ const StudentDetails = () => {
                         <strong>Address:</strong> {formData.address}
                     </div>
                     <div className="mb-4">
-                        <strong>Classroom:</strong> {formData.standard}-{formData.section}
+                        <strong>Classroom:</strong> {studentClassroomDetails || 'not assigned'}
                     </div>
 
                     <button

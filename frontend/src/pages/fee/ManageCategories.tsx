@@ -1,5 +1,13 @@
 import  { useEffect, useState } from "react";
 import Modal from "../../components/Modal.tsx";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table"
 import AxiosInstance from "../../services/axiosInstance.ts";
 
 interface Categories{
@@ -33,10 +41,8 @@ const FeeCategoryManager = () => {
     const handleSubmit = async () => {
         try {
             if (selectedCategory) {
-                // Edit existing category
                 await AxiosInstance.put(`/api/fee_category/${selectedCategory.category_id}`, formData);
             } else {
-                // Add new category
                 await AxiosInstance.post("/api/fee_category", formData);
             }
             fetchCategories();
@@ -48,7 +54,7 @@ const FeeCategoryManager = () => {
         }
     };
 
-    // Handle Delete
+
     const handleDelete = async (id:number) => {
         try {
             await AxiosInstance.delete(`/api/fee_category/${id}`);
@@ -59,7 +65,7 @@ const FeeCategoryManager = () => {
     };
 
     return (
-        <div className="p-4">
+        <div className="p-5 rounded border-2 shadow-xl ">
             <div className="flex justify-between">
                 <h1 className="text-2xl font-bold">Manage Fee Categories</h1>
                 <button
@@ -74,20 +80,20 @@ const FeeCategoryManager = () => {
                 </button>
             </div>
 
-            <table className="w-full mt-4 border-collapse">
-                <thead>
-                <tr>
-                    <th className="border">Category ID</th>
-                    <th className="border">Category Name</th>
-                    <th className="border">Actions</th>
-                </tr>
-                </thead>
-                <tbody>
+            <Table>
+                <TableHeader>
+                <TableRow>
+                    <TableHead >Category ID</TableHead>
+                    <TableHead >Category Name</TableHead>
+                    <TableHead className="text-center" >Actions</TableHead>
+                </TableRow>
+                </TableHeader>
+                <TableBody>
                 {feeCategories.map((category) => (
-                    <tr key={category.category_id}>
-                        <td className="border">{category.category_id}</td>
-                        <td className="border">{category.category_name}</td>
-                        <td className="border">
+                    <TableRow key={category.category_id}>
+                        <TableCell >{category.category_id}</TableCell>
+                        <TableCell >{category.category_name}</TableCell>
+                        <TableCell className="text-center" >
                             <button
                                 className="px-2 py-1 text-white bg-yellow-500 rounded"
                                 onClick={() => {
@@ -104,13 +110,13 @@ const FeeCategoryManager = () => {
                             >
                                 Delete
                             </button>
-                        </td>
-                    </tr>
+                        </TableCell>
+                    </TableRow>
                 ))}
-                </tbody>
-            </table>
+                </TableBody>
+            </Table>
 
-            {/* Modal for Add/Edit */}
+            
             <Modal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}

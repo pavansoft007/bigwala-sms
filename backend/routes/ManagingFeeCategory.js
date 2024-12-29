@@ -61,13 +61,13 @@ ManagingFeeCategory.put('/api/fee_category/:id', AdminAuth('fee'), async (req, r
 });
 
 // Delete a fee category by ID
-ManagingFeeCategory.delete('/api/fee_category/:id', AdminAuth('fee'), async (req, res) => {
-    const { id } = req.params;
+ManagingFeeCategory.delete('/api/fee_category/:category_id', AdminAuth('fee'), async (req, res) => {
+    const { category_id } = req.params;
     const school_id = req['sessionData']['school_id'];
 
     try {
         const category = await FeeCategory.findOne({
-            where: { id, school_id },
+            where: { category_id, school_id },
         });
 
         if (!category) {

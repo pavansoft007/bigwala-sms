@@ -5,13 +5,14 @@ import axiosInstance from "../../services/axiosInstance.ts";
 const Dashboard = () => {
     const [isStudentDropdownOpen, setIsStudentDropdownOpen] = useState<boolean>(false);
     const [isTeacherDropdownOpen, setIsTeacherDropdownOpen] = useState<boolean>(false);
+    const [isFeeDropdownOpen, setIsFeeDropdownOpen] = useState<boolean>(false);
     const [isUserManagementDropdownOpen,setIsUserManagementDropdownOpen]=useState<boolean>(false);
     const [role,setRole]=useState<string>('');
     const [permissionsData,setPermissionsData]=useState<string[]>([]);
 
     useEffect(() => {
       axiosInstance.get('/api/get-all-roles').then((res)=>{
-          setPermissionsData(res.data.permissions);
+          setPermissionsData(res.data.permission);
           setRole(res.data.role);
       }).catch((e)=>{
          console.error(e);
@@ -28,6 +29,9 @@ const Dashboard = () => {
 
     const toggleUserManagementDropdown=()=>{
         setIsUserManagementDropdownOpen((prevState)=>!prevState);
+    }
+    const toggleFeeDropdown=()=>{
+        setIsFeeDropdownOpen((prevState)=>!prevState);
     }
 
     const hasPermission = (link:string) =>{
@@ -112,6 +116,43 @@ const Dashboard = () => {
                                             className="block p-2 rounded-lg hover:bg-gray-600"
                                         >
                                         Manage Teachers
+                                        </Link>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                    }
+                    {
+                        hasPermission('fee') &&
+                        <li>
+                            <button
+                                className={`block w-full text-left p-3 rounded-lg ${
+                                    isFeeDropdownOpen ? "bg-gray-700" : "hover:bg-gray-700"
+                                } transition-colors`}
+                                onClick={toggleFeeDropdown}
+                            >
+                                Manage fee
+                            </button>
+                            <div
+                                className={`overflow-hidden transition-all duration-300 ${
+                                    isFeeDropdownOpen ? "max-h-40" : "max-h-0"
+                                }`}
+                            >
+                                <ul className="ml-5 space-y-1">
+                                    <li>
+                                        <Link
+                                            to="fee/categories"
+                                            className="block p-2 rounded-lg hover:bg-gray-600"
+                                        >
+                                            fee Categories
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link
+                                            to="users"
+                                            className="block p-2 rounded-lg hover:bg-gray-600"
+                                        >
+                                            users
                                         </Link>
                                     </li>
                                 </ul>

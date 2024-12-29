@@ -20,6 +20,7 @@ import RolePanel from "./pages/roles/RolePanel.tsx";
 import UserPanel from "./pages/roles/UserPanel.tsx";
 import GalleryManager from './pages/gallery/GalleryManager.tsx';
 import BannerManagement from './pages/BannerImages/BannerManagement.tsx';
+import ManageCategories from "./pages/fee/ManageCategories.tsx";
 
 function App() {
     return (
@@ -42,6 +43,9 @@ function App() {
                             <Route path="add" element={<AddTeacher />} />
                             <Route path="manage-teacher" element={<Students />}  />
                             <Route path=":id" element={<StudentDetails />} />
+                        </Route>
+                        <Route path="fee" >
+                            <Route path="categories" element={<ManageCategories />} />
                         </Route>
                         <Route path="subjects" element={<Subject />} />
                         <Route path="roles" element={<RolePanel />} />

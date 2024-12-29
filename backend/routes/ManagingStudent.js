@@ -139,7 +139,21 @@ ManagingStudent.post('/api/student', AdminAuth('student management'), async (req
         });
     }
 });
-
+ManagingStudent.get('/mobileAPI/students/:id', AdminAuth('student management'),async (req, res) => {
+    try {
+        const [student] = await sequelize.query('SELECT * FROM `students` LEFT JOIN classrooms ON classrooms.classroom_id=students.assginedClassroom WHERE student_id='+req.params.id);
+        if (!student) {
+            return res.status(404).json({ message: 'Student not found' });
+        }
+        //student[0]['']=student[0]['assginedClassroom'];
+        res.status(200).json(student[0]);
+    } catch (error) {
+        console.error('Error fetching student:', error);
+        res.status(500).json({
+            message: 'An error occurred while fetching student'
+        });
+    }
+});
 
 ManagingStudent.put('/api/student/:id', AdminAuth('student management'), async (req, res) => {
     try {

@@ -28,7 +28,7 @@ ManagingStudent.post('/api/student', AdminAuth('student management'), async (req
             fee_amount,
             standard,
             section,
-            category_id,
+            feeDetails,
             classroom_id: clientClassroomId
         } = req.body;
 
@@ -36,7 +36,7 @@ ManagingStudent.post('/api/student', AdminAuth('student management'), async (req
             return res.status(400).json({ message: "School ID not found in session data." });
         }
 
-        if (!first_name || !last_name || !standard || !section || !category_id || !fee_amount) {
+        if (!first_name) {
             return res.status(400).json({ message: "Missing required fields." });
         }
 
@@ -105,17 +105,24 @@ ManagingStudent.post('/api/student', AdminAuth('student management'), async (req
             return res.status(403).json({ message: "Unauthorized role." });
         }
 
-        const newStudentFee = await StudentFee.create({
-            fee_amount,
-            total_fee_paid: 0,
-            fee_remaining: fee_amount,
-            school_id: req['sessionData']['school_id'],
-            category_id,
-            student_id: newStudent.student_id,
-            classroom_id: classroom_id,
-            created_by: req['sessionData']['role'],
-            ...createdData
-        }, { transaction });
+        const studentFee=[];
+
+        for (let i=0;i<feeDetails.length;i++){
+           const newStudentFee = await StudentFee.create({
+                fee_amount:feeDetails[i]['total_fee'],
+                total_fee_paid: 0,
+                fee_remaining: feeDetails[i]['total_fee'],
+                school_id: req['sessionData']['school_id'],
+                category_id:feeDetails[i]['category_id'],
+                student_id: newStudent.student_id,
+                classroom_id: classroom_id,
+                created_by: req['sessionData']['role'],
+                ...createdData
+            }, { transaction });
+
+           studentFee.push(newStudentFee);
+        }
+
 
         await transaction.commit();
 
@@ -123,7 +130,7 @@ ManagingStudent.post('/api/student', AdminAuth('student management'), async (req
             message: 'Student and user created successfully',
             student: newStudent,
             user: newUser,
-            newStudentFee
+            studentFee
         });
     } catch (error) {
         await transaction.rollback();

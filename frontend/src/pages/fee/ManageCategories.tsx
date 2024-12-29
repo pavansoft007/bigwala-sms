@@ -1,17 +1,24 @@
 import  { useEffect, useState } from "react";
-import axios from "../../services/axiosInstance.ts";
 import Modal from "../../components/Modal.tsx";
+import AxiosInstance from "../../services/axiosInstance.ts";
+
+interface Categories{
+    category_id: number,
+    category_name: string,
+    description:string
+}
+
 
 const FeeCategoryManager = () => {
-    const [feeCategories, setFeeCategories] = useState([]);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedCategory, setSelectedCategory] = useState(null);
+    const [feeCategories, setFeeCategories] = useState<Categories[]>([]);
+    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+    const [selectedCategory, setSelectedCategory] = useState<Categories | null>(null);
     const [formData, setFormData] = useState({ category_name: "" });
 
 
     const fetchCategories = async () => {
         try {
-            const response = await axios.get("/api/fee_category");
+            const response = await AxiosInstance.get("/api/fee_category");
             setFeeCategories(response.data);
         } catch (error) {
             console.error("Error fetching categories:", error);
@@ -27,10 +34,10 @@ const FeeCategoryManager = () => {
         try {
             if (selectedCategory) {
                 // Edit existing category
-                await axios.put(`/api/fee_category/${selectedCategory.category_id}`, formData);
+                await AxiosInstance.put(`/api/fee_category/${selectedCategory.category_id}`, formData);
             } else {
                 // Add new category
-                await axios.post("/api/fee_category", formData);
+                await AxiosInstance.post("/api/fee_category", formData);
             }
             fetchCategories();
             setIsModalOpen(false);
@@ -42,9 +49,9 @@ const FeeCategoryManager = () => {
     };
 
     // Handle Delete
-    const handleDelete = async (id) => {
+    const handleDelete = async (id:number) => {
         try {
-            await axios.delete(`/api/fee_category/${id}`);
+            await AxiosInstance.delete(`/api/fee_category/${id}`);
             fetchCategories();
         } catch (error) {
             console.error("Error deleting category:", error);

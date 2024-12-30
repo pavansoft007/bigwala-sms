@@ -1,4 +1,4 @@
-import React, {useEffect, useState, ChangeEvent} from "react";
+import {useEffect, useState} from "react";
 import {AxiosError} from 'axios';
 import {
     Table,
@@ -68,23 +68,29 @@ const AddStudent = () => {
         fetchStandards();
     }, []);
 
-    const handleFeeToggle=(event:React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,index:number)=>{
-        const newArr:FeeDetails[]=feeDetails;
-        if(event.target.checked){
-            feeDetails.push(
-                {
-                    category_id:parseInt(event.target.value),
-                    category_name:event.target.name,
-                    total_fee:parseInt(document.getElementById('fee_amount_'+index).value) || 0
-                }
-            )
-        }else{
-            newArr.splice(index,1);
-        }
-        setFeeDetails(newArr);
-    }
+    const handleFeeToggle = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>, index: number) => {
+        const newArr: FeeDetails[] = [...feeDetails];
 
-    const handlePriceChange=(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,index)=>{
+
+        if (event.target instanceof HTMLInputElement) {
+            const feeAmountElement = document.getElementById(`fee_amount_${index}`) as HTMLInputElement | null;
+            const feeAmount = feeAmountElement ? parseInt(feeAmountElement.value) || 0 : 0;
+
+            if (event.target.checked) {
+                newArr.push({
+                    category_id: parseInt(event.target.value),
+                    category_name: event.target.name,
+                    total_fee: feeAmount,
+                });
+            } else {
+                newArr.splice(index, 1);
+            }
+            setFeeDetails(newArr);
+        }
+    };
+
+
+    const handlePriceChange=(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,index:number)=>{
         const newArr=feeDetails;
         if(newArr[index]){
             newArr[index]['total_fee']=parseInt(e.target.value);

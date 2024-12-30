@@ -2,7 +2,6 @@ import express from "express";
 import AdminAuth from "../middleware/AdminAuth.js";
 import generateTeacherID from "../services/generateTeacherID.js";
 import Teacher from "../models/Teacher.js";
-import moment from "moment";
 import User from "../models/User.js";
 import sequelize from "../config/database.js";
 
@@ -17,7 +16,8 @@ ManagingTeacher.post('/api/teacher', AdminAuth('teacher management') ,async (req
             phone_number,
             hire_date,
             status,
-            subject_id
+            subject_id,
+            salary
         } = req.body;
 
         const adminAccess = req.body.adminAccess || false;
@@ -32,7 +32,8 @@ ManagingTeacher.post('/api/teacher', AdminAuth('teacher management') ,async (req
             email,
             phone_number,
             subject_id,
-            hire_date:moment(hire_date, "MM-DD-YYYY").toDate(),
+            salary,
+            hire_date,
             school_id:req['sessionData']['school_id'],
             school_code:req['sessionData']['school_code'],
             adminAccess,
@@ -51,8 +52,7 @@ ManagingTeacher.post('/api/teacher', AdminAuth('teacher management') ,async (req
             user: newUser
         });
     } catch (error) {
-        console.error('Error creating teacher and user:', error);
-        if(error.original.errno === 1062){
+        if(error.original && error.original.errno === 1062){
             res.status(403).json({
                 message:error.errors[0].message
             })
@@ -93,7 +93,7 @@ ManagingTeacher.put('/api/teacher/:id', AdminAuth('teacher management'), async (
             email,
             phone_number,
             subject_id,
-            hire_date: moment(hire_date, "MM-DD-YYYY").toDate(),
+            hire_date: hire_date,
             status: status || 'Active',
             adminAccess
         });
@@ -146,9 +146,12 @@ ManagingTeacher.get('/api/teacher/:id',AdminAuth('teacher management'),async (re
 ManagingTeacher.get('/api/teacher',AdminAuth('teacher management'),async (req,res)=>{
     const school_id=req['sessionData']['school_id'];
     try{
-        console.log(school_id);
         let [teacherDetails]=await sequelize.query(
-            'SELECT *,s.subject_name,s.subject_name,c.standard,c.section FROM `teachers` left join subjects s ON s.subject_id=teachers.subject_id left join classrooms c ON c.classroom_id=teachers.assignedClass where teachers.school_id='+school_id);
+            `SELECT teachers.teacher_id,teachers.TeacherID,teachers.first_name,teachers.last_name,teachers.status,teachers.adminAccess,
+                     teachers.email,teachers.phone_number,
+                     s.subject_name,s.subject_name,c.standard,c.section FROM teachers left join subjects s ON s.subject_id=teachers.subject_id 
+                     left join classrooms c ON c.classroom_id=teachers.assignedClass 
+                     where teachers.school_id=${school_id}`);
         if(teacherDetails){
             teacherDetails=teacherDetails.map((item)=>{
                    item['adminAccess']=item['adminAccess'] === 0;
@@ -193,6 +196,8 @@ ManagingTeacher.delete('/api/teacher/:id', AdminAuth('teacher management'), asyn
         });
     }
 });
+
+
 
 
 export default ManagingTeacher;

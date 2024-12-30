@@ -22,24 +22,15 @@ import ManagingExam from "./routes/ManagingExam.js";
 import ManageUserRights from "./routes/ManageUserRights.js";
 import ManageBannerImages from "./routes/ManageBannerImages.js";
 import ManagingFeeCategory from "./routes/ManagingFeeCategory.js";
-const allowedOrigins = ['http://147.79.71.252:3000', 'http://localhost:3000','http://localhost:4000'];
 
 const app = express();
 app.use(express.json());
 app.use(helmet());
 app.use(cors({
-    origin: (origin, callback) => {
-        if (allowedOrigins.includes(origin) || !origin) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
+    origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true
 }));
-
-app.options('*', cors());
 
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -81,7 +72,7 @@ app.use(ManagingFeeCategory);
 
 
 dotenv.config();
-app.get('/mobileAPI/*',(req, res)=>{
+app.all('/mobileAPI/*',(req, res)=>{
     res.status(404).json({});
 });
 
@@ -89,7 +80,7 @@ app.all('/api/*',(req, res)=>{
     res.status(404).json({});
 });
 
-app.all('*',(req,res)=>{
+app.get('*',(req,res)=>{
     res.sendFile(path.resolve(__dirname, '../frontend/dist/index.html'));
 });
 

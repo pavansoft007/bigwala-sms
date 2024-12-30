@@ -60,6 +60,10 @@ Teacher.init({
       type:DataTypes.STRING(10),
       allowNull:false
     },
+    salary:{
+      type:DataTypes.INTEGER,
+      allowNull:false
+    },
     assignedClass:{
         type:DataTypes.INTEGER,
         allowNull:true,

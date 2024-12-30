@@ -41,7 +41,7 @@ function App() {
                         <Route path="teachers" element={<Teachers />} />
                         <Route path="teacher" >
                             <Route path="add" element={<AddTeacher />} />
-                            <Route path="manage-teacher" element={<Students />}  />
+                            <Route path="manage-teacher" element={<Teachers />}  />
                             <Route path=":id" element={<StudentDetails />} />
                         </Route>
                         <Route path="fee" >

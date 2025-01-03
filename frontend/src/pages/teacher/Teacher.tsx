@@ -5,6 +5,7 @@ import {
     TableCell,
     TableHead,
     TableHeader,
+    TableCaption,
     TableRow,
 } from "@/components/ui/table";
 import axiosInstance from "@/services/axiosInstance.ts";
@@ -177,30 +178,55 @@ const Teacher = () => {
                 </div>
             </div>
             <div className="overflow-x-auto">
-                <div className="flex justify-center items-center my-4">
-                    <button
-                        onClick={prevPage}
-                        disabled={currentPage === 1}
-                        className={`p-2 mx-2 rounded-lg text-center ${
-                            currentPage === 1 ? "bg-gray-300 cursor-not-allowed" : "bg-blue-500 text-white hover:bg-blue-600"
-                        }`}
-                    >
-                        Prev
-                    </button>
-                    <p className="text-gray-600">
-                        Page {currentPage} of {totalPages}
-                    </p>
-                    <button
-                        onClick={nextPage}
-                        disabled={currentPage === totalPages}
-                        className={`p-2 mx-2 rounded-lg text-center ${
-                            currentPage === totalPages ? "bg-gray-300 cursor-not-allowed" : "bg-blue-500 text-white hover:bg-blue-600"
-                        }`}
-                    >
-                        Next
-                    </button>
-                </div>
+            {/*    <div className="flex justify-center items-center my-4">*/}
+            {/*        <button*/}
+            {/*            onClick={prevPage}*/}
+            {/*            disabled={currentPage === 1}*/}
+            {/*            className={`p-2 mx-2 rounded-lg text-center ${*/}
+            {/*                currentPage === 1 ? "bg-gray-300 cursor-not-allowed" : "bg-blue-500 text-white hover:bg-blue-600"*/}
+            {/*            }`}*/}
+            {/*        >*/}
+            {/*            Prev*/}
+            {/*        </button>*/}
+            {/*        <p className="text-gray-600">*/}
+            {/*            Page {currentPage} of {totalPages}*/}
+            {/*        </p>*/}
+            {/*        <button*/}
+            {/*            onClick={nextPage}*/}
+            {/*            disabled={currentPage === totalPages}*/}
+            {/*            className={`p-2 mx-2 rounded-lg text-center ${*/}
+            {/*                currentPage === totalPages ? "bg-gray-300 cursor-not-allowed" : "bg-blue-500 text-white hover:bg-blue-600"*/}
+            {/*            }`}*/}
+            {/*        >*/}
+            {/*            Next*/}
+            {/*        </button>*/}
+            {/*    </div>*/}
                 <Table className="text-sm bg-white rounded-lg shadow-md">
+                    <TableCaption>
+                        <div className="flex justify-center items-center my-4">
+                            <button
+                                onClick={prevPage}
+                                disabled={currentPage === 1}
+                                className={`p-2 mx-2 rounded-lg text-center ${
+                                    currentPage === 1 ? "bg-gray-300 cursor-not-allowed" : "bg-blue-500 text-white hover:bg-blue-600"
+                                }`}
+                            >
+                                Prev
+                            </button>
+                            <p className="text-gray-600">
+                                Page {currentPage} of {totalPages}
+                            </p>
+                            <button
+                                onClick={nextPage}
+                                disabled={currentPage === totalPages}
+                                className={`p-2 mx-2 rounded-lg text-center ${
+                                    currentPage === totalPages ? "bg-gray-300 cursor-not-allowed" : "bg-blue-500 text-white hover:bg-blue-600"
+                                }`}
+                            >
+                                Next
+                            </button>
+                        </div>
+                    </TableCaption>
                     <TableHeader className="bg-gray-200">
                         <TableRow>
                             <TableHead>Teacher ID</TableHead>

@@ -116,12 +116,75 @@ ManagingTeacher.put('/api/teacher/:id', AdminAuth('teacher management'), async (
     }
 });
 
+ManagingTeacher.post('/api/search/teacher', AdminAuth('teacher management'), async (req, res) => {
+    const where = [];
+    const body = req.body;
+
+    if (body.email) {
+        where.push(`teachers.email = '${body.email}'`);
+    }
+    if (body.name) {
+        where.push(`(teachers.first_name LIKE '${body.name}%' OR teachers.last_name LIKE '${body.name}%')`);
+    }
+    if (body.phone_number) {
+        where.push(`teachers.phone_number = '${body.phone_number}'`);
+    }
+    if (body.TeacherID) {
+        where.push(`teachers.TeacherID = '${body.TeacherID}'`);
+    }
+    if (body.subject_name) {
+        where.push(`s.subject_name = '${body.subject_name}'`);
+    }
+    if (body.standard) {
+        if (body.section) {
+            where.push(`c.section = '${body.section}'`);
+        }
+        if (body.standard) {
+            where.push(`c.standard = '${body.standard}'`);
+        }
+    }else if (body.assignedClass) {
+        where.push(`teachers.assignedClass = '${body.assignedClass}'`);
+    }
+    if (body.subject_id) {
+        where.push(`s.subject_id = '${body.subject_id}'`);
+    }
+    if (body.status) {
+        where.push(`teachers.status = '${body.status}'`);
+    }
+
+
+    where.push(`teachers.school_id = '${req.sessionData.school_id}'`);
+
+    try {
+        let query = `
+            SELECT * FROM teachers
+            left JOIN subjects s ON s.subject_id = teachers.subject_id
+            left JOIN classrooms c ON c.classroom_id = teachers.assignedClass
+        `;
+
+        if (where.length > 0) {
+            query += ` WHERE ${where.join(' AND ')}`;
+        }
+
+        const [searchData]=await sequelize.query(query);
+
+        res.status(200).json(searchData);
+
+    } catch (e) {
+        console.error('Error searching teacher:', e);
+        res.status(500).json({
+            message: 'An error occurred while searching for the teacher',
+        });
+    }
+});
+
+
 ManagingTeacher.get('/api/teacher/:id',AdminAuth('teacher management'),async (req,res)=>{
     const teacherID=req.params.id;
     const school_id=req['sessionData']['school_id'];
     try{
         const [teacherDetails]=await sequelize.query(
-            'SELECT *,s.subject_name,s.subject_name,c.standard,c.section FROM `teachers` INNER JOIN subjects s ON s.subject_id=teachers.subject_id INNER JOIN classrooms c ON c.classroom_id=teachers.assignedClass where c.school_id=? and  teacher_id=?'
+            'SELECT *,s.subject_name,s.subject_name,c.standard,c.section FROM teachers INNER JOIN subjects s ON s.subject_id=teachers.subject_id INNER JOIN classrooms c ON c.classroom_id=teachers.assignedClass where c.school_id=? and  teacher_id=?'
         ,{
                 replacements: [school_id,teacherID]
          }

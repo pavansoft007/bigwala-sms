@@ -25,7 +25,6 @@ ManagingStudent.post('/api/student', AdminAuth('student management'), async (req
             phone_number,
             address,
             enrollment_date,
-            fee_amount,
             standard,
             section,
             feeDetails,
@@ -161,6 +160,63 @@ ManagingStudent.get('/mobileAPI/students/:id', AdminAuth('student management'),a
         });
     }
 });
+
+ManagingStudent.get('/api/search/student', AdminAuth('student management'), async (req, res) => {
+    const where = [];
+    const body = req.body;
+
+
+    if (body.email) {
+        where.push(`students.email = '${body.email}'`);
+    }
+    if (body.phone_number) {
+        where.push(`students.phone_number = '${body.phone_number}'`);
+    }
+    if (body.student_id) {
+        where.push(`students.student_id = '${body.student_id}'`);
+    }
+    if (body.admission_ID) {
+        where.push(`students.admission_ID = '${body.admission_ID}'`);
+    }
+    if (body.status) {
+        where.push(`students.status = '${body.status}'`);
+    }
+    if(body.assginedClassroom){
+        where.push(`students.assginedClassroom = '${body.assginedClassroom}'`);
+    }else if (body.standard) {
+        where.push(`classrooms.standard = '${body.standard}'`);
+        if (body.section) {
+            where.push(`classrooms.section = '${body.section}'`);
+        }
+    }
+    if (body.name) {
+        where.push(`(students.first_name LIKE '${body.name}%' OR students.last_name LIKE '${body.name}%')`);
+    }
+
+
+    where.push(`students.school_id = '${req.sessionData.school_id}'`);
+
+    try {
+        let query = `SELECT * FROM students LEFT JOIN classrooms ON classrooms.classroom_id = students.assginedClassroom`;
+
+
+        if (where.length > 0) {
+            query += ` WHERE ${where.join(' AND ')}`;
+        }
+
+
+        const [students] = await sequelize.query(query);
+
+
+        res.status(200).json(students);
+    } catch (error) {
+        console.error('Error fetching student:', error);
+        res.status(500).json({
+            message: 'An error occurred while fetching student'
+        });
+    }
+});
+
 
 ManagingStudent.put('/api/student/:id', AdminAuth('student management'), async (req, res) => {
     try {

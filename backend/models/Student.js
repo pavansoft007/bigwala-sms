@@ -35,15 +35,13 @@ Student.init({
     email: {
         type: DataTypes.STRING(100),
         allowNull: false,
-        unique: true,
         validate: {
             isEmail: true
         }
     },
     phone_number: {
         type: DataTypes.STRING(15),
-        allowNull: true,
-        unique: true
+        allowNull:false
     },
     address: {
         type: DataTypes.STRING(255),

@@ -161,7 +161,11 @@ ManagingStudent.get('/mobileAPI/students/:id', AdminAuth('student management'),a
     }
 });
 
-ManagingStudent.get('/api/search/student', AdminAuth('student management'), async (req, res) => {
+ManagingStudent.post('/api/search/student', AdminAuth('student management'), async (req, res) => {
+    const limit = parseInt(req.body.limit) || 10;
+    const page = parseInt(req.body.page) || 1;
+    const offset = (page - 1) * limit;
+
     const where = [];
     const body = req.body;
 
@@ -196,25 +200,50 @@ ManagingStudent.get('/api/search/student', AdminAuth('student management'), asyn
 
     where.push(`students.school_id = '${req.sessionData.school_id}'`);
 
-    try {
-        let query = `SELECT * FROM students LEFT JOIN classrooms ON classrooms.classroom_id = students.assginedClassroom`;
+    let baseQuery = `
+    SELECT students.*, classrooms.standard, classrooms.section 
+    FROM students 
+    LEFT JOIN classrooms ON classrooms.classroom_id = students.assginedClassroom`;
+
+    let countQuery = `
+    SELECT COUNT(*) as totalCount 
+    FROM students 
+    LEFT JOIN classrooms ON classrooms.classroom_id = students.assginedClassroom`;
 
 
-        if (where.length > 0) {
-            query += ` WHERE ${where.join(' AND ')}`;
-        }
-
-
-        const [students] = await sequelize.query(query);
-
-
-        res.status(200).json(students);
-    } catch (error) {
-        console.error('Error fetching student:', error);
-        res.status(500).json({
-            message: 'An error occurred while fetching student'
-        });
+    if (where.length > 0) {
+        const condition = `WHERE ${where.join(' AND ')}`;
+        baseQuery += ` ${condition}`;
+        countQuery += ` ${condition}`;
     }
+
+    baseQuery += ` LIMIT ${limit} OFFSET ${offset}`;
+
+    try {
+
+        const [students] = await sequelize.query(baseQuery);
+        const [countResult] = await sequelize.query(countQuery);
+
+
+        const totalCount = countResult[0]?.totalCount || 0;
+
+
+        const totalPages = Math.ceil(totalCount / limit);
+
+        res.json({
+            students,
+            pagination: {
+                totalCount,
+                totalPages,
+                currentPage: page,
+                limit,
+            },
+        });
+    } catch (error) {
+        console.error("Error executing query:", error);
+        res.status(500).json({error: "Failed to fetch students data."});
+    }
+
 });
 
 

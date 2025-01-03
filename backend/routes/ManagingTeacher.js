@@ -117,6 +117,10 @@ ManagingTeacher.put('/api/teacher/:id', AdminAuth('teacher management'), async (
 });
 
 ManagingTeacher.post('/api/search/teacher', AdminAuth('teacher management'), async (req, res) => {
+    const limit = parseInt(req.body.limit) || 10;
+    const page = parseInt(req.body.page) || 1;
+    const offset = (page - 1) * limit;
+
     const where = [];
     const body = req.body;
 
@@ -133,7 +137,7 @@ ManagingTeacher.post('/api/search/teacher', AdminAuth('teacher management'), asy
         where.push(`teachers.TeacherID = '${body.TeacherID}'`);
     }
     if (body.subject_name) {
-        where.push(`s.subject_name = '${body.subject_name}'`);
+        where.push(`s.subject_name  LIKE  '${body.subject_name}%'`);
     }
     if (body.standard) {
         if (body.section) {
@@ -155,20 +159,46 @@ ManagingTeacher.post('/api/search/teacher', AdminAuth('teacher management'), asy
 
     where.push(`teachers.school_id = '${req.sessionData.school_id}'`);
 
+    let baseQuery = `
+    SELECT teachers.*, classrooms.standard, classrooms.section 
+    FROM teachers
+             left JOIN subjects s ON s.subject_id = teachers.subject_id    
+    LEFT JOIN classrooms ON classrooms.classroom_id = teachers.assignedClass`;
+
+    let countQuery = `
+    SELECT COUNT(*) as totalCount 
+    FROM teachers
+             left JOIN subjects s ON s.subject_id = teachers.subject_id
+             LEFT JOIN classrooms ON classrooms.classroom_id = teachers.assignedClass`;
+
+
+    if (where.length > 0) {
+        const condition = `WHERE ${where.join(' AND ')}`;
+        baseQuery += ` ${condition}`;
+        countQuery += ` ${condition}`;
+    }
+
+    baseQuery += ` LIMIT ${limit} OFFSET ${offset}`;
+
     try {
-        let query = `
-            SELECT * FROM teachers
-            left JOIN subjects s ON s.subject_id = teachers.subject_id
-            left JOIN classrooms c ON c.classroom_id = teachers.assignedClass
-        `;
+        const [teachers] = await sequelize.query(baseQuery);
+        const [countResult] = await sequelize.query(countQuery);
 
-        if (where.length > 0) {
-            query += ` WHERE ${where.join(' AND ')}`;
-        }
 
-        const [searchData]=await sequelize.query(query);
+        const totalCount = countResult[0]?.totalCount || 0;
 
-        res.status(200).json(searchData);
+
+        const totalPages = Math.ceil(totalCount / limit);
+
+        res.json({
+            pagination: {
+                totalCount,
+                totalPages,
+                currentPage: page,
+                limit,
+            },
+            teachers
+        });
 
     } catch (e) {
         console.error('Error searching teacher:', e);

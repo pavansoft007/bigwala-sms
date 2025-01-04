@@ -1,33 +1,41 @@
 import { DataTypes, Model } from 'sequelize';
 import sequelize from '../config/database.js';
 import School from "./School.js";
-import Teacher from "./Teacher.js";
+import Student from "./Student.js";
 
 class MessageBoard extends Model {}
 
 MessageBoard.init({
-    messageBoard_id: {
+    message_id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true
     },
-    admission_id: {
-        type: DataTypes.STRING(25),
-        allowNull: true
+    student_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references:{
+            model: Student,
+            key: 'student_id'
+        },
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE'
     },
-    section: {
-        type: DataTypes.STRING(5),
-        allowNull: true
+    classroom_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+            model: 'classrooms',
+            key: 'classroom_id'
+        },
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE'
     },
-    standard: {
-        type: DataTypes.STRING(5),
-        allowNull: true
-    },
-    messageType: {
-        type: DataTypes.ENUM('voice', 'message'),
+    message_type: {
+        type: DataTypes.ENUM('text', 'voice'),
         allowNull: false,
     },
-    message: {
+    text_message: {
         type: DataTypes.TEXT,
         allowNull: true
     },
@@ -45,29 +53,27 @@ MessageBoard.init({
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE'
     },
-    teacher_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-            model: Teacher,
-            key: 'teacher_id'
-        },
-        onDelete: 'CASCADE',
-        onUpdate: 'CASCADE'
+    added_by: {
+        type: DataTypes.ENUM('teacher', 'admin'),
+        allowNull: false
     },
-    addedOn: {
+    added_member_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+    },
+    added_on: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
         allowNull: false
     },
-    type:{
-        type:DataTypes.ENUM('completeSchool','completeClass','student'),
-        allowNull:false
+    type: {
+        type: DataTypes.ENUM('completeSchool', 'completeClass', 'student'),
+        allowNull: false
     }
 }, {
     sequelize,
     modelName: 'MessageBoard',
-    tableName: 'messageboards',
+    tableName: 'messageBoards',
     timestamps: false
 });
 

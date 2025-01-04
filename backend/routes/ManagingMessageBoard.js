@@ -2,14 +2,13 @@ import express from "express";
 import MessageBoard from "../models/MessageBoard.js";
 import multer from 'multer';
 import path from 'path';
-import StudentAuth from "../middleware/StudentAuth.js";
-import Teacher from "../models/Teacher.js";
-import Encrypt from "../services/Encrypt.js";
 import Decrypt from "../services/Decrypt.js";
-import {Op} from "sequelize";
 import {fileURLToPath} from "url";
 import dotenv from "dotenv";
 import TeacherAuth from "../middleware/teacherAuth.js";
+import getAssignedClassroom from "../services/getAssignedClassroom.js";
+import sequelize from "../config/database.js";
+import completeLogin from "../middleware/completeLogin.js";
 dotenv.config();
 
 
@@ -43,19 +42,26 @@ const ManagingMessageBoard=express.Router();
 
 
 ManagingMessageBoard.post('/mobileAPI/add-new-message', TeacherAuth('message board'),upload.single('voice'), async (req, res) => {
-      const teacher_id = req['sessionData']['teacher_id'];
+      const added_member_id = req['sessionData']['role'] === 'admin' ? req['sessionData']['id'] : req['sessionData']['teacher_id'];
       const school_id = req['sessionData']['school_id'];
-      const { section, standard, admission_id, messageType, message,type } = req.body;
+      const role=req['sessionData']['role'];
+      const classroom_id= req['sessionData']['role'] === 'admin' ? req.body.classroom_id : await getAssignedClassroom(req['sessionData']['teacher_id'],'teacher');
+      const { student_id, messageType, text_message,type } = req.body;
+      console.log(role);
+
+      if( ( role !== 'admin' ) && type === 'completeSchool'  ){
+            return res.status(400).json({message:'invalid type'});
+      }
 
       try {
-            if (messageType === 'message') {
+            if (messageType === 'text') {
                   const newMessageBoard = await MessageBoard.create({
-                        teacher_id,
-                        standard,
-                        section,
-                        messageType,
-                        message,
-                        admission_id,
+                        student_id: type === 'student' ? student_id : null ,
+                        classroom_id,
+                        message_type:messageType,
+                        text_message,
+                        added_by:req['sessionData']['role'],
+                        added_member_id,
                         school_id,
                         type
                   });
@@ -67,12 +73,12 @@ ManagingMessageBoard.post('/mobileAPI/add-new-message', TeacherAuth('message boa
                   }
 
                   const newMessageBoard = await MessageBoard.create({
-                        teacher_id,
-                        standard,
-                        section,
+                        student_id : type === 'student' ? student_id : null,
+                        classroom_id,
                         messageType,
                         voice_location: req.file.path,
-                        admission_id,
+                        added_by:req['sessionData']['role'],
+                        added_member_id,
                         school_id,
                         type
                   });
@@ -84,48 +90,64 @@ ManagingMessageBoard.post('/mobileAPI/add-new-message', TeacherAuth('message boa
       }
 });
 
-ManagingMessageBoard.get('/mobileAPI/getMessages',StudentAuth,async (req,res)=>{
-      try{
-       MessageBoard.belongsTo(Teacher, { foreignKey: 'teacher_id' });
-       const allMessages=await MessageBoard.findAll({
-             where: {
-                   [Op.or]: [
-                         { type: 'completeSchool' },
-                         {
-                               [Op.and]: [
-                                     { section: req['sessionData']['section'] },
-                                     { standard: req['sessionData']['standard'] }
-                               ]
-                         },
-                         { admission_id: 'ADM0000002' }
-                   ]
-             },
-             include:[
-                   {
-                         model:Teacher,
-                         attributes: ['first_name', 'last_name','subject_specialization']
-                   }
-             ]
-       });
-       const formattedMessages = allMessages.map(message => {
-                  const formattedDate = new Date(message.addedOn).toLocaleDateString('en-US', {
-                        month: '2-digit',
-                        day: '2-digit',
-                        year: 'numeric'
-                  });
-                  if(message.messageType === 'voice' ){
-                        return {...message.toJSON(),addedOn: formattedDate}
+ManagingMessageBoard.post('/mobileAPI/getMessages', completeLogin, async (req, res) => {
+      try {
+            const role = req['sessionData']['role'];
+            const sessionData = req['sessionData'];
+
+            if (role === 'admin' || role === 'teacher-admin') {
+                  let where='';
+                  if(req.body.classroom_id){
+                        where += `and ( classroom_id=:classroom_id and type='completeClass')`
+                  }else if(req.body.student_id){
+                        where += ` and ( student_id=:student_id and type='student')`
                   }else{
-                        const encText = Encrypt(message.messageBoard_id+':'+req['ip']);
-                        return { ...message.toJSON(), addedOn: formattedDate , accessID:encText};
+                        where += ` and (type='completeSchool') `;
                   }
-       });
-       res.send(formattedMessages);
-      }catch (error) {
-            console.error('Error saving message:', error);
-            return res.status(500).json({ error: 'An error occurred while getting the message.' });
+                  const query = `SELECT * FROM messageBoards WHERE school_id = :schoolId ${where}`;
+                  const [allMessages] = await sequelize.query(query, {
+                        replacements: { schoolId: sessionData.school_id,classroom_id:req.body.classroom_id,student_id:req.body.student_id},
+                  });
+                  return res.send(allMessages);
+
+            } else if (role === 'teacher') {
+                  const query = `
+                        SELECT * FROM messageBoards
+                        WHERE student_id = :studentId
+                           OR (classroom_id = :classroomId AND type = 'completeClass')
+                           OR (type = 'completeSchool' AND school_id = :schoolId);
+                  `;
+                  const [allMessages] = await sequelize.query(query, {
+                        replacements: {
+                              studentId: req.body.student_id,
+                              classroomId: await getAssignedClassroom(sessionData.student_id, 'teacher'),
+                              schoolId: sessionData.school_id,
+                        },
+                  });
+                  return res.send(allMessages);
+
+            } else if (role === 'student') {
+                  const query = `
+                        SELECT * FROM messageBoards
+                        WHERE student_id = :studentId
+                           OR (classroom_id = :classroomId AND type = 'completeClass')
+                           OR (type = 'completeSchool' AND school_id = :schoolId);
+                  `;
+                  const [allMessages] = await sequelize.query(query, {
+                        replacements: {
+                              studentId: sessionData.student_id,
+                              classroomId: await getAssignedClassroom(sessionData.student_id, 'student'),
+                              schoolId: sessionData.school_id,
+                        },
+                  });
+                  return res.send(allMessages);
+            }
+      } catch (error) {
+            console.error('Error getting messages:', error);
+            return res.status(500).json({ error: 'An error occurred while getting the messages.' });
       }
 });
+
 
 ManagingMessageBoard.get('/staticFiles/voiceMessage/:id',async (req,res)=>{
       const id=req.params.id;

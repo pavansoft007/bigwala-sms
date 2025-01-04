@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import axiosInstance from "@/services/axiosInstance";
+import Classroom from "@/types/Classroom.ts";
+import FetchClassroomData from "@/services/FetchClassroomData.ts";
 
 interface Message{
     message_id:number,
@@ -8,20 +10,37 @@ interface Message{
     text_message?:string,
     message_type:string,
     voice_location?:string,
+    standard?:string,
+    section?:string,
+    admission_ID?:string,
+    first_name?:string,
+    last_name?:string,
     added_by:string,
     added_member_id:number,
+    teacher_first_name?:string,
+    teacher_last_name?:string,
+    subject_name?:string,
+    admin_name?:string,
     type:string
 }
 
 const AdminMessageBoard = () => {
     const [messages, setMessages] = useState<Message[]>([]);
+    const [classrooms,setClassrooms]=useState<Classroom[]>([]);
     const [filter, setFilter] = useState({ classroom_id: '', student_id: ''});
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
     useEffect(() => {
-        fetchMessages('fetchAll').then(()=>console.log('called the messages'));
+        fetchClassroom().then(() => console.log());
+        fetchMessages('fetchAll').then(()=>console.log());
     }, []);
+
+    const fetchClassroom=async ()=>{
+            const classroomDetail:Classroom[]=await FetchClassroomData();
+            setClassrooms(classroomDetail);
+    }
+
 
     const fetchMessages = async (type:string='') => {
         setLoading(true);
@@ -51,6 +70,8 @@ const AdminMessageBoard = () => {
         fetchMessages();
     };
 
+    //@todo need to add the student drop down
+
     return (
         <div className="admin-message-board p-6 bg-white rounded-xl min-h-screen">
             <h1 className="text-3xl font-bold text-center text-blue-600 mb-6">
@@ -65,14 +86,28 @@ const AdminMessageBoard = () => {
                     <label htmlFor="classroom_id" className="text-gray-700 font-medium">
                         Classroom ID:
                     </label>
-                    <input
-                        type="text"
+                    <select
                         id="classroom_id"
                         name="classroom_id"
                         value={filter.classroom_id}
                         onChange={handleInputChange}
                         className="mt-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
-                    />
+                    >
+                        {
+                            classrooms.map((item:Classroom)=>{
+                                return <option value={item.classroom_id} > {item.standard}-{item.section} </option>
+                            })
+                        }
+
+                    </select>
+                    {/*<input*/}
+                    {/*    type="text"*/}
+                    {/*    id="classroom_id"*/}
+                    {/*    name="classroom_id"*/}
+                    {/*    value={filter.classroom_id}*/}
+                    {/*    onChange={handleInputChange}*/}
+                    {/*    className="mt-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-blue-300"*/}
+                    {/*/>*/}
                 </div>
 
                 <div className="flex flex-col">
@@ -138,19 +173,42 @@ const AdminMessageBoard = () => {
                                 Your browser does not support the audio element.
                             </audio>
                         )}
-                        <p className="text-gray-700">
-                            <strong className="font-semibold text-gray-900">Added By:</strong> {message.added_by}
-                        </p>
-                        <p className="text-gray-700">
-                            <strong className="font-semibold text-gray-900">Classroom ID:</strong>{' '}
-                            {message.classroom_id || 'N/A'}
-                        </p>
-                        <p className="text-gray-700">
-                            <strong className="font-semibold text-gray-900">Student ID:</strong>{' '}
-                            {message.student_id || 'N/A'}
-                        </p>
+                        {
+                            message.type === 'completeSchool' && <div>
+                                <p className="text-gray-700">
+                                    <strong className="font-semibold text-gray-900">Added By:</strong>
+                                        {message.added_by === 'teacher' ? message.teacher_first_name+' '+message.teacher_last_name : message.admin_name }
+                                </p>
+                            </div>
+                        }
+                        {
+                            message.type === 'completeClass' && <div>
+                                <p className="text-gray-700">
+                                <strong className="font-semibold text-gray-900">Added By:</strong> {message.added_by}
+                                </p>
+                                <p className="text-gray-700">
+                                    <strong className="font-semibold text-gray-900">Classroom ID:</strong>{' '}
+                                    {message.standard + '-' + message.section || 'N/A'}
+                                </p>
+                            </div>
+                        }
+                        {
+                            message.type === 'student' && <div>
+                                <p className="text-gray-700">
+                                    <strong className="font-semibold text-gray-900">Added By:</strong> {message.added_by}
+                                </p>
+                                <p className="text-gray-700">
+                                    <strong className="font-semibold text-gray-900">Classroom ID:</strong>{' '}
+                                    {message.standard + '-' + message.section || 'N/A'}
+                                </p>
+                                <p className="text-gray-700">
+                                    <strong className="font-semibold text-gray-900">Student ID:</strong>{' '}
+                                    {message.admission_ID || 'N/A'}
+                                </p>
+                            </div>
+                        }
                     </div>
-                ))}
+            ))}
             </div>
         </div>
     );

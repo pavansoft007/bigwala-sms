@@ -94,78 +94,101 @@ ManagingMessageBoard.post('/mobileAPI/add-new-message', TeacherAuth('message boa
 
 ManagingMessageBoard.post('/mobileAPI/getMessages', completeLogin, async (req, res) => {
       try {
-            const role = req['sessionData']['role'];
-            const sessionData = req['sessionData'];
+            const { role, school_id, student_id } = req['sessionData'];
+            const { classroom_id, student_id: bodyStudentId, type } = req.body;
+
+            const baseQuery = `
+            SELECT 
+                messageBoards.*, 
+                c.standard, 
+                c.section, 
+                s.admission_ID, 
+                s.first_name, 
+                s.last_name,
+                a.admin_name,
+                t.first_name as teacher_frist_name,
+                t.last_name as teacher_last_name,
+                sub.subject_name
+            FROM messageBoards
+            LEFT JOIN classrooms c ON c.classroom_id = messageBoards.classroom_id
+            LEFT JOIN students s ON s.student_id = messageBoards.student_id
+            LEFT JOIN admins a ON a.admin_id=messageBoards.added_by
+            LEFT JOIN teachers t ON t.teacher_id=messageBoards.added_by
+            LEFT JOIN subjects sub ON sub.subject_id=t.subject_id
+        `;
+
+            let whereClause = '';
+            let replacements = { schoolId: school_id, classroom_id, student_id: bodyStudentId };
 
             if (role === 'admin' || role === 'teacher-admin') {
-                  let where='';
-                  if(req.body.classroom_id){
-                        where += `and ( classroom_id=:classroom_id and type='completeClass')`
-                  }else if(req.body.student_id){
-                        where += ` and ( student_id=:student_id and type='student')`
-                  }else{
-                        where += ` and (type='completeSchool') `;
+                  if (classroom_id) {
+                        whereClause = `WHERE messageBoards.school_id = :schoolId AND messageBoards.classroom_id = :classroom_id AND messageBoards.type = 'completeClass'`;
+                  } else if (bodyStudentId) {
+                        whereClause = `WHERE messageBoards.school_id = :schoolId AND messageBoards.student_id = :student_id AND messageBoards.type = 'student'`;
+                  } else {
+                        whereClause = `WHERE messageBoards.school_id = :schoolId AND messageBoards.type = 'completeSchool'`;
                   }
-                  const query = `SELECT messageBoards.*,
-                                        c.standard,c.section,s.admission_ID,s.first_name,s.last_name FROM messageBoards
-                                         LEFT JOIN classrooms c ON c.classroom_id=messageBoards.classroom_id
-                                         LEFT JOIN students s ON s.student_id=messageBoards.student_id
-                                       WHERE messageBoards.school_id = :schoolId ${req.body.type === 'fetchAll' ? '': where }`;
-                  const [allMessages] = await sequelize.query(query, {
-                        replacements: { schoolId: sessionData.school_id,classroom_id:req.body.classroom_id,student_id:req.body.student_id},
-                  });
-                  const newMessage=allMessages.map((item)=>{
-                        if(item.message_type === 'voice'){
-                              item['voice_location']=Encrypt(item.message_id+':'+req['ip']);
-                        }
-                        return item
-                  })
-                  return res.send(newMessage);
+
+                  if (type === 'fetchAll') {
+                        whereClause = `WHERE messageBoards.school_id = :schoolId`;
+                  }
 
             } else if (role === 'teacher') {
-                  const query = `
-                        SELECT messageBoards.*,
-                               c.standard,c.section,s.admission_ID,s.first_name,s.last_name FROM messageBoards
-                                                                                                       LEFT JOIN classrooms c ON c.classroom_id=messageBoards.classroom_id
-                                                                                                       LEFT JOIN students s ON s.student_id=messageBoards.student_id
-                        WHERE messageBoards.student_id = :studentId
-                           OR (messageBoards.classroom_id = :classroomId AND type = 'completeClass')
-                           OR (type = 'completeSchool' AND messageBoards.school_id = :schoolId);
-                  `;
-                  const [allMessages] = await sequelize.query(query, {
-                        replacements: {
-                              studentId: req.body.student_id,
-                              classroomId: await getAssignedClassroom(sessionData.student_id, 'teacher'),
-                              schoolId: sessionData.school_id,
-                        },
-                  });
-                  return res.send(allMessages);
+                  replacements = {
+                        studentId: bodyStudentId,
+                        classroomId: await getAssignedClassroom(student_id, 'teacher'),
+                        schoolId: school_id,
+                  };
+                  whereClause = `
+                WHERE 
+                    (messageBoards.student_id = :studentId)
+                    OR (messageBoards.classroom_id = :classroomId AND messageBoards.type = 'completeClass')
+                    OR (messageBoards.type = 'completeSchool' AND messageBoards.school_id = :schoolId)
+            `;
 
             } else if (role === 'student') {
-                  const query = `
-                        SELECT messageBoards.*,
-                               c.standard,c.section,s.admission_ID,s.first_name,s.last_name FROM messageBoards
-                                                                                                       LEFT JOIN classrooms c ON c.classroom_id=messageBoards.classroom_id
-                                                                                                       LEFT JOIN students s ON s.student_id=messageBoards.student_id
-                                 
-                        WHERE messageBoards.student_id = :studentId
-                           OR (messageBoards.classroom_id = :classroomId AND type = 'completeClass')
-                           OR (type = 'completeSchool' AND messageBoards.school_id = :schoolId);
-                  `;
-                  const [allMessages] = await sequelize.query(query, {
-                        replacements: {
-                              studentId: sessionData.student_id,
-                              classroomId: await getAssignedClassroom(sessionData.student_id, 'student'),
-                              schoolId: sessionData.school_id,
-                        },
-                  });
-                  return res.send(allMessages);
+                  replacements = {
+                        studentId: student_id,
+                        classroomId: await getAssignedClassroom(student_id, 'student'),
+                        schoolId: school_id,
+                  };
+                  whereClause = `
+                WHERE 
+                    (messageBoards.student_id = :studentId)
+                    OR (messageBoards.classroom_id = :classroomId AND messageBoards.type = 'completeClass')
+                    OR (messageBoards.type = 'completeSchool' AND messageBoards.school_id = :schoolId)
+            `;
+            } else {
+                  return res.status(403).json({ error: 'Unauthorized access.' });
             }
+
+            const query = `${baseQuery} ${whereClause}`;
+            const [allMessages] = await sequelize.query(query, { replacements });
+
+            const formattedMessages = allMessages.map(item => {
+                  if(item.added_by === 'admin'){
+                        delete item.teacher_frist_name;
+                        delete item.teacher_last_name;
+                        delete item.subject_name;
+                  }else{
+                        delete item.admin_name
+                  }
+                  if (item.message_type === 'voice') {
+                        item.voice_location = Encrypt(`${item.message_id}:${req.ip}`);
+                  }
+                  return item;
+            });
+
+            return res.send(formattedMessages);
+
       } catch (error) {
             console.error('Error getting messages:', error);
             return res.status(500).json({ error: 'An error occurred while getting the messages.' });
       }
 });
+
+//@todo backend route for the get them via there assignedClass id
+
 
 
 ManagingMessageBoard.get('/staticFiles/voiceMessage/:id',ImageCors,async (req,res)=>{

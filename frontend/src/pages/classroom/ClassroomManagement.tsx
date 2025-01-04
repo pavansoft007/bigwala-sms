@@ -1,12 +1,7 @@
 import { useEffect, useState } from "react";
 import axiosInstance from "../../services/axiosInstance.ts";
 import ClipLoader from 'react-spinners/ClipLoader';
-
-interface Classroom {
-    classroom_id: number;
-    standard: string;
-    section: string;
-}
+import Classroom from "@/types/Classroom.ts";
 
 const ClassroomManagement = () => {
     const [classrooms, setClassrooms] = useState<Classroom[]>([]);

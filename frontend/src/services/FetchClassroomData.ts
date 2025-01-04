@@ -1,4 +1,5 @@
 import axiosInstance from "@/services/axiosInstance.ts";
+import Classroom from "@/types/Classroom.ts";
 
 
 // interface Classroom {
@@ -7,7 +8,7 @@ import axiosInstance from "@/services/axiosInstance.ts";
 //     section: string;
 // }
 
-const fetchClassroomData=async ()=>{
+const fetchClassroomData =async ():Promise<Classroom[]>=>{
     try{
         const fetchClassroomData=await axiosInstance.get("/mobileAPI/classroom")
         return fetchClassroomData.data;

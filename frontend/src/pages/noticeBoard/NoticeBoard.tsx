@@ -33,7 +33,8 @@ const AdminMessageBoard = () => {
                 type
             });
             setMessages(response.data);
-        } catch (err) {
+        } catch (err:unknown) {
+            console.error('error in getting data:',err);
             setError('Failed to fetch messages. Please try again.');
         } finally {
             setLoading(false);
@@ -88,12 +89,22 @@ const AdminMessageBoard = () => {
                     />
                 </div>
 
-                <div className="flex items-end " >
+                <div className="flex items-end ">
                     <button
                         type="submit"
                         className="py-2 px-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition duration-200"
                     >
                         Fetch Messages
+                    </button>
+                    <button
+                        type="button"
+                        onClick={()=>{
+                            setFilter({ classroom_id: '', student_id: ''})
+                            fetchMessages('fetchAll').then(()=>console.log('called the messages'));
+                        }}
+                        className="py-2 px-2 mx-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition duration-200"
+                    >
+                        Clear
                     </button>
                 </div>
             </form>
@@ -105,8 +116,8 @@ const AdminMessageBoard = () => {
                 <p className="text-center text-red-500 mt-6 font-medium">{error}</p>
             )}
 
-            <div className="messages-list mt-8 grid gap-6">
-                {messages.map((message) => (
+            <div className="messages-list mt-8 grid grid-cols-3 gap-4">
+            {messages.map((message) => (
                     <div
                         key={message.message_id}
                         className="message-item bg-white p-4 rounded-lg shadow-md"

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../services/axiosInstance.ts";
 import FetchClassroomData from "@/services/FetchClassroomData.ts";
+import Classroom from "@/types/Classroom.ts";
 
 interface Student {
     student_id: string;
@@ -12,11 +13,11 @@ interface Student {
     school_id: string;
 }
 
-interface Classroom {
-    classroom_id: string;
-    standard: string;
-    section: string;
-}
+// interface Classroom {
+//     classroom_id: nu;
+//     standard: string;
+//     section: string;
+// }
 
 const Students = () => {
     const [classrooms, setClassrooms] = useState<Classroom[]>([]);

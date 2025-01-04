@@ -21,6 +21,7 @@ import UserPanel from "./pages/roles/UserPanel.tsx";
 import GalleryManager from './pages/gallery/GalleryManager.tsx';
 import BannerManagement from './pages/BannerImages/BannerManagement.tsx';
 import ManageCategories from "./pages/fee/ManageCategories.tsx";
+import NoticeBoard from "@/pages/noticeBoard/NoticeBoard.tsx";
 
 function App() {
     return (
@@ -47,6 +48,7 @@ function App() {
                         <Route path="fee" >
                             <Route path="categories" element={<ManageCategories />} />
                         </Route>
+                        <Route path="notice-board" element={<NoticeBoard />} />
                         <Route path="subjects" element={<Subject />} />
                         <Route path="roles" element={<RolePanel />} />
                         <Route path="users" element={<UserPanel />} />

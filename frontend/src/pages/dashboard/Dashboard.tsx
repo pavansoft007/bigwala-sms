@@ -196,6 +196,17 @@ const Dashboard = () => {
                         </li>
                     }
                     {
+                        hasPermission('notice board') &&
+                        <li>
+                            <Link
+                                to="notice-board"
+                                className="block p-3 rounded-lg hover:bg-gray-700 transition-colors"
+                            >
+                                Notice board
+                            </Link>
+                        </li>
+                    }
+                    {
                         hasPermission('subjects') &&
                         <li>
                             <Link

@@ -10,6 +10,7 @@ import getAssignedClassroom from "../services/getAssignedClassroom.js";
 import sequelize from "../config/database.js";
 import completeLogin from "../middleware/completeLogin.js";
 import Encrypt from "../services/Encrypt.js";
+import ImageCors from "../middleware/ImageCors.js";
 dotenv.config();
 
 
@@ -105,7 +106,7 @@ ManagingMessageBoard.post('/mobileAPI/getMessages', completeLogin, async (req, r
                   }else{
                         where += ` and (type='completeSchool') `;
                   }
-                  const query = `SELECT * FROM messageBoards WHERE school_id = :schoolId ${where}`;
+                  const query = `SELECT * FROM messageBoards WHERE school_id = :schoolId ${req.body.type === 'fetchAll' ? '': where }`;
                   const [allMessages] = await sequelize.query(query, {
                         replacements: { schoolId: sessionData.school_id,classroom_id:req.body.classroom_id,student_id:req.body.student_id},
                   });
@@ -156,7 +157,7 @@ ManagingMessageBoard.post('/mobileAPI/getMessages', completeLogin, async (req, r
 });
 
 
-ManagingMessageBoard.get('/staticFiles/voiceMessage/:id',async (req,res)=>{
+ManagingMessageBoard.get('/staticFiles/voiceMessage/:id',ImageCors,async (req,res)=>{
       const id=req.params.id;
       const decText = Decrypt(id).split(':');
       const ip=decText[decText.length-1];

@@ -106,7 +106,11 @@ ManagingMessageBoard.post('/mobileAPI/getMessages', completeLogin, async (req, r
                   }else{
                         where += ` and (type='completeSchool') `;
                   }
-                  const query = `SELECT * FROM messageBoards WHERE school_id = :schoolId ${req.body.type === 'fetchAll' ? '': where }`;
+                  const query = `SELECT messageBoards.*,
+                                        c.standard,c.section,s.admission_ID,s.first_name,s.last_name FROM messageBoards
+                                         LEFT JOIN classrooms c ON c.classroom_id=messageBoards.classroom_id
+                                         LEFT JOIN students s ON s.student_id=messageBoards.student_id
+                                       WHERE messageBoards.school_id = :schoolId ${req.body.type === 'fetchAll' ? '': where }`;
                   const [allMessages] = await sequelize.query(query, {
                         replacements: { schoolId: sessionData.school_id,classroom_id:req.body.classroom_id,student_id:req.body.student_id},
                   });
@@ -120,10 +124,13 @@ ManagingMessageBoard.post('/mobileAPI/getMessages', completeLogin, async (req, r
 
             } else if (role === 'teacher') {
                   const query = `
-                        SELECT * FROM messageBoards
-                        WHERE student_id = :studentId
-                           OR (classroom_id = :classroomId AND type = 'completeClass')
-                           OR (type = 'completeSchool' AND school_id = :schoolId);
+                        SELECT messageBoards.*,
+                               c.standard,c.section,s.admission_ID,s.first_name,s.last_name FROM messageBoards
+                                                                                                       LEFT JOIN classrooms c ON c.classroom_id=messageBoards.classroom_id
+                                                                                                       LEFT JOIN students s ON s.student_id=messageBoards.student_id
+                        WHERE messageBoards.student_id = :studentId
+                           OR (messageBoards.classroom_id = :classroomId AND type = 'completeClass')
+                           OR (type = 'completeSchool' AND messageBoards.school_id = :schoolId);
                   `;
                   const [allMessages] = await sequelize.query(query, {
                         replacements: {
@@ -136,10 +143,14 @@ ManagingMessageBoard.post('/mobileAPI/getMessages', completeLogin, async (req, r
 
             } else if (role === 'student') {
                   const query = `
-                        SELECT * FROM messageBoards
-                        WHERE student_id = :studentId
-                           OR (classroom_id = :classroomId AND type = 'completeClass')
-                           OR (type = 'completeSchool' AND school_id = :schoolId);
+                        SELECT messageBoards.*,
+                               c.standard,c.section,s.admission_ID,s.first_name,s.last_name FROM messageBoards
+                                                                                                       LEFT JOIN classrooms c ON c.classroom_id=messageBoards.classroom_id
+                                                                                                       LEFT JOIN students s ON s.student_id=messageBoards.student_id
+                                 
+                        WHERE messageBoards.student_id = :studentId
+                           OR (messageBoards.classroom_id = :classroomId AND type = 'completeClass')
+                           OR (type = 'completeSchool' AND messageBoards.school_id = :schoolId);
                   `;
                   const [allMessages] = await sequelize.query(query, {
                         replacements: {

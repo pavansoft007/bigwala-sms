@@ -85,7 +85,6 @@ ManagingGallery.get('/mobileAPI/gallery',completeLogin,async (req,res)=>{
             if (!result[date][item.event_name]) {
                 result[date][item.event_name] = [];
             }
-            console.log(item.gallery_id+':'+req['ip']);
             const encText = Encrypt(item.gallery_id+':'+req['ip']);
             result[date][item.event_name].push({ filename: encText });
 

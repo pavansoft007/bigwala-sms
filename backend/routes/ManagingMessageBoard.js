@@ -9,6 +9,7 @@ import TeacherAuth from "../middleware/teacherAuth.js";
 import getAssignedClassroom from "../services/getAssignedClassroom.js";
 import sequelize from "../config/database.js";
 import completeLogin from "../middleware/completeLogin.js";
+import Encrypt from "../services/Encrypt.js";
 dotenv.config();
 
 
@@ -75,7 +76,7 @@ ManagingMessageBoard.post('/mobileAPI/add-new-message', TeacherAuth('message boa
                   const newMessageBoard = await MessageBoard.create({
                         student_id : type === 'student' ? student_id : null,
                         classroom_id,
-                        messageType,
+                        message_type:messageType,
                         voice_location: req.file.path,
                         added_by:req['sessionData']['role'],
                         added_member_id,
@@ -108,7 +109,13 @@ ManagingMessageBoard.post('/mobileAPI/getMessages', completeLogin, async (req, r
                   const [allMessages] = await sequelize.query(query, {
                         replacements: { schoolId: sessionData.school_id,classroom_id:req.body.classroom_id,student_id:req.body.student_id},
                   });
-                  return res.send(allMessages);
+                  const newMessage=allMessages.map((item)=>{
+                        if(item.message_type === 'voice'){
+                              item['voice_location']=Encrypt(item.message_id+':'+req['ip']);
+                        }
+                        return item
+                  })
+                  return res.send(newMessage);
 
             } else if (role === 'teacher') {
                   const query = `
@@ -157,7 +164,7 @@ ManagingMessageBoard.get('/staticFiles/voiceMessage/:id',async (req,res)=>{
       if(ip === realIp[realIp.length-1]){
             const fileDetails=await MessageBoard.findOne({
                   where:{
-                        messageBoard_id:decText[0]
+                        message_id:decText[0]
                   }
             });
             const __filename = fileURLToPath(import.meta.url);

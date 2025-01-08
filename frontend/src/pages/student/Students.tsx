@@ -1,16 +1,20 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../services/axiosInstance.ts";
 import FetchClassroomData from "@/services/FetchClassroomData.ts";
 import Classroom from "@/types/Classroom.ts";
+import {Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table.tsx";
 
 interface Student {
+    admission_ID:string,
     student_id: string;
     first_name: string;
     last_name: string;
     email: string;
     phone_number: string;
     school_id: string;
+    standard:string,
+    section:string
 }
 
 // interface Classroom {
@@ -182,45 +186,107 @@ const Students = () => {
                     </div>
                 ) : students.length > 0 ? (
                     <>
-                        <div className="flex justify-center items-center my-4">
-                            <button
-                                onClick={prevPage}
-                                disabled={currentPage === 1}
-                                className={`p-2 mx-2 rounded-lg text-center ${
-                                    currentPage === 1 ? "bg-gray-300" : "bg-blue-500 text-white hover:bg-blue-600"
-                                }`}
-                            >
-                                Prev
-                            </button>
-                            <p className="text-gray-600">
-                                Page {currentPage} of {totalPages}
-                            </p>
-                            <button
-                                onClick={nextPage}
-                                disabled={currentPage === totalPages}
-                                className={`p-2 mx-2 rounded-lg text-center ${
-                                    currentPage === totalPages ? "bg-gray-300" : "bg-blue-500 text-white hover:bg-blue-600"
-                                }`}
-                            >
-                                Next
-                            </button>
-                        </div>
-                        {students.map((student) => (
-                            <div key={student.student_id} className="bg-gray-100 p-3 rounded-lg shadow-sm">
-                                <p className="font-medium text-gray-700">
-                                    {student.first_name} {student.last_name} (ID: {student.student_id})
-                                </p>
-                                <p className="text-sm text-gray-500">
-                                    Email: {student.email} | Phone: {student.phone_number}
-                                </p>
-                                <button
-                                    onClick={() => handleEdit(student.student_id)}
-                                    className="bg-green-500 hover:bg-green-600 text-white font-semibold py-1 px-3 rounded-lg transition"
-                                >
-                                    Edit
-                                </button>
-                            </div>
-                        ))}
+                        {/*<div className="flex justify-center items-center my-4">*/}
+                        {/*    <button*/}
+                        {/*        onClick={prevPage}*/}
+                        {/*        disabled={currentPage === 1}*/}
+                        {/*        className={`p-2 mx-2 rounded-lg text-center ${*/}
+                        {/*            currentPage === 1 ? "bg-gray-300" : "bg-blue-500 text-white hover:bg-blue-600"*/}
+                        {/*        }`}*/}
+                        {/*    >*/}
+                        {/*        Prev*/}
+                        {/*    </button>*/}
+                        {/*    <p className="text-gray-600">*/}
+                        {/*        Page {currentPage} of {totalPages}*/}
+                        {/*    </p>*/}
+                        {/*    <button*/}
+                        {/*        onClick={nextPage}*/}
+                        {/*        disabled={currentPage === totalPages}*/}
+                        {/*        className={`p-2 mx-2 rounded-lg text-center ${*/}
+                        {/*            currentPage === totalPages ? "bg-gray-300" : "bg-blue-500 text-white hover:bg-blue-600"*/}
+                        {/*        }`}*/}
+                        {/*    >*/}
+                        {/*        Next*/}
+                        {/*    </button>*/}
+                        {/*</div>*/}
+                        <Table className="text-sm bg-white rounded-lg shadow-md">
+                            <TableCaption>
+                                <div className="flex justify-center items-center my-4">
+                                    <button
+                                        onClick={prevPage}
+                                        disabled={currentPage === 1}
+                                        className={`p-2 mx-2 rounded-lg text-center ${
+                                            currentPage === 1 ? "bg-gray-300 cursor-not-allowed" : "bg-blue-500 text-white hover:bg-blue-600"
+                                        }`}
+                                    >
+                                        Prev
+                                    </button>
+                                    <p className="text-gray-600">
+                                        Page {currentPage} of {totalPages}
+                                    </p>
+                                    <button
+                                        onClick={nextPage}
+                                        disabled={currentPage === totalPages}
+                                        className={`p-2 mx-2 rounded-lg text-center ${
+                                            currentPage === totalPages ? "bg-gray-300 cursor-not-allowed" : "bg-blue-500 text-white hover:bg-blue-600"
+                                        }`}
+                                    >
+                                        Next
+                                    </button>
+                                </div>
+                            </TableCaption>
+                            <TableHeader className="bg-gray-200">
+                                <TableRow>
+                                    <TableHead>Student ID</TableHead>
+                                    <TableHead>Name</TableHead>
+                                    <TableHead>Email</TableHead>
+                                    <TableHead>parents Phone</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    {/*<TableHead>Subject</TableHead>*/}
+                                    {/*<TableHead>Assigned Classroom</TableHead>*/}
+                                    <TableHead>Action</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {students.map((student, index) => (
+                                    <TableRow key={index} className="hover:bg-gray-100 transition-colors">
+                                        <TableCell>{student.admission_ID}</TableCell>
+                                        <TableCell>{student.first_name} {student.last_name}</TableCell>
+                                        <TableCell>{student.email}</TableCell>
+                                        <TableCell>{student.phone_number}</TableCell>
+                                        {/*<TableCell>{student.status}</TableCell>*/}
+                                        {/*<TableCell>{student.subject_name}</TableCell>*/}
+                                        <TableCell>{student.standard}-{student.section}</TableCell>
+                                        <TableCell>
+                                            <button
+                                                onClick={() => handleEdit(student.student_id)}
+                                                className="p-2 mx-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                                                Edit
+                                            </button>
+                                            <button className="p-2 mx-1 bg-red-500 text-white rounded-lg hover:bg-red-600">
+                                                Delete
+                                            </button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                        {/*{students.map((student) => (*/}
+                        {/*    <div key={student.student_id} className="bg-gray-100 p-3 rounded-lg shadow-sm">*/}
+                        {/*        <p className="font-medium text-gray-700">*/}
+                        {/*            {student.first_name} {student.last_name} (ID: {student.student_id})*/}
+                        {/*        </p>*/}
+                        {/*        <p className="text-sm text-gray-500">*/}
+                        {/*            Email: {student.email} | Phone: {student.phone_number}*/}
+                        {/*        </p>*/}
+                        {/*        <button*/}
+                        {/*            onClick={() => handleEdit(student.student_id)}*/}
+                        {/*            className="bg-green-500 hover:bg-green-600 text-white font-semibold py-1 px-3 rounded-lg transition"*/}
+                        {/*        >*/}
+                        {/*            Edit*/}
+                        {/*        </button>*/}
+                        {/*    </div>*/}
+                        {/*))}*/}
                     </>
                 ) : (
                     <p className="text-gray-500">No students found. Adjust the filters or try again later.</p>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axiosInstance from "../../services/axiosInstance.ts";
 
 interface Photo {
@@ -119,7 +119,7 @@ const GalleryManager: React.FC = () => {
                 <button
                     type="submit"
                     disabled={loading}
-                    className={`w-full py-2 px-4 rounded-lg text-white font-semibold ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700 transition-colors duration-300'}`}
+                    className={`w-full py-2 px-4 rounded-lg text-white font-semibold ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600 transition-colors duration-300'}`}
                 >
                     {loading ? 'Uploading...' : 'Upload Photos'}
                 </button>

@@ -69,7 +69,7 @@ const FeeCategoryManager = () => {
             <div className="flex justify-between">
                 <h1 className="text-2xl font-bold">Manage Fee Categories</h1>
                 <button
-                    className="px-4 py-2 text-white bg-blue-500 rounded"
+                    className="px-4 py-1.5 text-white bg-green-500 hover:bg-green-600 rounded"
                     onClick={() => {
                         setFormData({ category_name: "" });
                         setSelectedCategory(null);
@@ -80,41 +80,43 @@ const FeeCategoryManager = () => {
                 </button>
             </div>
 
-            <Table>
-                <TableHeader>
-                <TableRow>
-                    <TableHead >Category ID</TableHead>
-                    <TableHead >Category Name</TableHead>
-                    <TableHead className="text-center" >Actions</TableHead>
-                </TableRow>
-                </TableHeader>
-                <TableBody>
-                {feeCategories.map((category) => (
-                    <TableRow key={category.category_id}>
-                        <TableCell >{category.category_id}</TableCell>
-                        <TableCell >{category.category_name}</TableCell>
-                        <TableCell className="text-center" >
-                            <button
-                                className="px-2 py-1 text-white bg-yellow-500 rounded"
-                                onClick={() => {
-                                    setSelectedCategory(category);
-                                    setFormData({ category_name: category.category_name });
-                                    setIsModalOpen(true);
-                                }}
-                            >
-                                Edit
-                            </button>
-                            <button
-                                className="ml-2 px-2 py-1 text-white bg-red-500 rounded"
-                                onClick={() => handleDelete(category.category_id)}
-                            >
-                                Delete
-                            </button>
-                        </TableCell>
-                    </TableRow>
-                ))}
-                </TableBody>
-            </Table>
+            <div className="my-4" >
+                <Table className="text-sm bg-white rounded-lg shadow-md" >
+                    <TableHeader className="bg-gray-200" >
+                        <TableRow>
+                            <TableHead >Category ID</TableHead>
+                            <TableHead >Category Name</TableHead>
+                            <TableHead className="text-center" >Actions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {feeCategories.map((category) => (
+                            <TableRow key={category.category_id} className="hover:bg-gray-100 transition-colors" >
+                                <TableCell >{category.category_id}</TableCell>
+                                <TableCell >{category.category_name}</TableCell>
+                                <TableCell className="text-center" >
+                                    <button
+                                        className="px-2 py-1 text-white bg-blue-500 hover:bg-blue-600 rounded"
+                                        onClick={() => {
+                                            setSelectedCategory(category);
+                                            setFormData({ category_name: category.category_name });
+                                            setIsModalOpen(true);
+                                        }}
+                                    >
+                                        Edit
+                                    </button>
+                                    <button
+                                        className="ml-2 px-2 py-1 text-white bg-red-500 rounded"
+                                        onClick={() => handleDelete(category.category_id)}
+                                    >
+                                        Delete
+                                    </button>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
 
             
             <Modal

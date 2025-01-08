@@ -84,6 +84,13 @@ app.get('*',(req,res)=>{
     res.sendFile(path.resolve(__dirname, '../frontend/dist/index.html'));
 });
 
+process.on('SIGINT', async () => {
+    console.log('Closing database connection...');
+    await sequelize.close();
+    console.log('Database connection closed.');
+    process.exit(0);
+});
+
 const port = process.env.PORT;
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);

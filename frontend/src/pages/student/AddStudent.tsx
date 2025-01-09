@@ -29,25 +29,48 @@ interface FeeCategory{
     description: string
 }
 
+interface FormDataWithFiles extends FormData {
+    first_name: string,
+        last_name: string,
+        date_of_birth: string,
+        gender: string,
+        email: string,
+        phone_number: string,
+        address: string,
+        enrollment_date: string,
+        standard: string,
+        section: string,
+        tuition_fee:string,
+        classroom_id:string,
+        father_name:string,
+        mother_name:string,
+        mother_phone_number:string,
+        caste:string,
+        student_photo?: File | null;
+    father_photo?: File | null;
+   
+}
+
 const AddStudent = () => {
-    const [formData, setFormData] = useState({
-        first_name: "",
-        last_name: "",
-        date_of_birth: "",
-        gender: "",
-        email: "",
-        phone_number: "",
-        address: "",
-        enrollment_date: "",
-        standard: "",
-        section: "",
-        tuition_fee:'',
-        classroom_id:'',
-        father_name:'',
-        mother_name:'',
-        mother_phone_number:'',
-        caste:'',
-        fee_amount:0
+    const [formData, setFormData] = useState<FormDataWithFiles>(() => {
+        const initialFormData = new FormData() as FormDataWithFiles;
+        initialFormData.first_name = "";
+        initialFormData.last_name = "";
+        initialFormData.date_of_birth = "";
+        initialFormData.gender = "";
+        initialFormData.email = "";
+        initialFormData.phone_number = "";
+        initialFormData.address = "";
+        initialFormData.enrollment_date = "";
+        initialFormData.standard = "";
+        initialFormData.section = "";
+        initialFormData.tuition_fee = "";
+        initialFormData.classroom_id = "";
+        initialFormData.father_name = "";
+        initialFormData.mother_name = "";
+        initialFormData.mother_phone_number = "";
+        initialFormData.caste = "";
+        return initialFormData;
     });
     const [classroomDetails,setClassroomDetails]=useState<Classroom[]>([]);
     const [feeDetails,setFeeDetails]=useState<FeeDetails[]>([]);
@@ -103,41 +126,81 @@ const AddStudent = () => {
     }
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value,
-        });
+        const { name, value, type } = e.target;
+        
+        if (type === 'file') {
+            const fileInput = e.target as HTMLInputElement;
+            const files = fileInput.files;
+            
+            if (files && files.length > 0) {
+                setFormData(prevData => ({
+                    ...prevData,
+                    [name]: files[0]
+                }));
+            }
+        } else {
+            setFormData(prevData => ({
+                ...prevData,
+                [name]: value
+            }));
+        }
     };
+
+    
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setMessage(null);
         setError(null);
         try {
-            await axiosInstance.post("/api/student", {
-                ...formData,
-                feeDetails
+            const backendFormData = new FormData();
+            
+            // Append all non-file fields
+            Object.entries(formData).forEach(([key, value]) => {
+                if (key !== 'student_photo' && key !== 'father_photo') {
+                    backendFormData.append(key, value as string);
+                }
+            });
+            
+            // Append files if they exist
+            if (formData.student_photo) {
+                backendFormData.append('student_photo', formData.student_photo);
+            }
+            if (formData.father_photo) {
+                backendFormData.append('father_photo', formData.father_photo);
+            }
+            
+            // Append fee details
+            feeDetails.forEach((detail, i) => {
+                backendFormData.append(`feeDetails[${i}][total_fee]`, detail.total_fee.toString());
+                backendFormData.append(`feeDetails[${i}][category_id]`, detail.category_id.toString());
+            });
+
+            // Make sure to set the correct content type in the headers
+            await axiosInstance.post("/api/student", backendFormData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
             });
             setMessage("Student added successfully!");
-            setFormData({
-                first_name: "",
-                last_name: "",
-                date_of_birth: "",
-                gender: "",
-                email: "",
-                phone_number: "",
-                address: "",
-                enrollment_date: "",
-                standard: "",
-                section: "",
-                tuition_fee:'',
-                classroom_id: '',
-                father_name:'',
-                mother_name:'',
-                mother_phone_number:'',
-                caste:'',
-                fee_amount:0
-            });
+            const newFormData = new FormData() as FormDataWithFiles;
+            newFormData.first_name = "";
+            newFormData.last_name = "";
+            newFormData.date_of_birth = "";
+            newFormData.gender = "";
+            newFormData.email = "";
+            newFormData.phone_number = "";
+            newFormData.address = "";
+            newFormData.enrollment_date = "";
+            newFormData.standard = "";
+            newFormData.section = "";
+            newFormData.tuition_fee = "";
+            newFormData.classroom_id = "";
+            newFormData.father_name = "";
+            newFormData.mother_name = "";
+            newFormData.mother_phone_number = "";
+            newFormData.caste = "";
+            setFormData(newFormData);
         } catch (err: unknown) {
             if (err instanceof AxiosError) {
                 setError(err.response?.data?.message || "An error occurred while adding the student.");
@@ -313,6 +376,24 @@ const AddStudent = () => {
                             required
                             className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg"
                         />
+                    </div>
+                    <div className="mb-4">
+                    <label className="block text-gray-700 font-medium mb-2">Student photo:</label>
+                    <input
+                        type="file"
+                        name="student_photo"
+                        onChange={handleChange}
+                        className="w-full text-gray-600"
+                    />
+                    </div>
+                    <div className="mb-4">
+                    <label className="block text-gray-700 font-medium mb-2">father photo:</label>
+                    <input
+                        type="file"
+                        name="father_photo"
+                        onChange={handleChange}
+                        className="w-full text-gray-600"
+                    />
                     </div>
                     <div className="mt-2">
                         <label className="block text-sm font-medium text-gray-700">caste</label>

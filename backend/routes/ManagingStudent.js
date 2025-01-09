@@ -28,6 +28,11 @@ ManagingStudent.post('/api/student', AdminAuth('student management'), async (req
             standard,
             section,
             feeDetails,
+            caste,
+            sub_caste,
+            mother_name,
+            father_name,
+            mother_phone_number,
             classroom_id: clientClassroomId
         } = req.body;
 
@@ -86,6 +91,11 @@ ManagingStudent.post('/api/student', AdminAuth('student management'), async (req
             assignedClassroom: classroom_id,
             school_code: schoolDetails.school_code,
             status: 'Active',
+            caste,
+            sub_caste,
+            mother_name,
+            father_name,
+            mother_phone_number,
             school_id: req['sessionData']['school_id']
         }, { transaction });
 

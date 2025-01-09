@@ -52,8 +52,6 @@ ManagingStudent.post('/api/student', AdminAuth('student management'),upload.fiel
 ]), async (req, res) => {
     const transaction = await sequelize.transaction();
     try {
-        // console.log(req.files.student_photo[0].path);
-        // return res.send('got the data');
         const {
             first_name,
             last_name,
@@ -132,7 +130,7 @@ ManagingStudent.post('/api/student', AdminAuth('student management'),upload.fiel
             student_photo:req.files.student_photo[0].path,
             status: 'Active',
             caste,
-            sub_caste,
+            sub_caste:'',
             mother_name,
             father_name,
             mother_phone_number,

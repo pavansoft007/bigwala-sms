@@ -43,6 +43,10 @@ const AddStudent = () => {
         section: "",
         tuition_fee:'',
         classroom_id:'',
+        father_name:'',
+        mother_name:'',
+        mother_phone_number:'',
+        caste:'',
         fee_amount:0
     });
     const [classroomDetails,setClassroomDetails]=useState<Classroom[]>([]);
@@ -128,6 +132,10 @@ const AddStudent = () => {
                 section: "",
                 tuition_fee:'',
                 classroom_id: '',
+                father_name:'',
+                mother_name:'',
+                mother_phone_number:'',
+                caste:'',
                 fee_amount:0
             });
         } catch (err: unknown) {
@@ -149,8 +157,8 @@ const AddStudent = () => {
             {error && <p className="text-red-500 mb-4">{error}</p>}
 
             <form onSubmit={handleSubmit} className="space-y-4 flex justify-around ">
-                <div className={blockCss} >
-                    <div className="mt-2"  >
+                <div className={blockCss}>
+                    <div className="mt-2">
                         <label className="block text-sm font-medium text-gray-700">First Name</label>
                         <input
                             type="text"
@@ -162,7 +170,7 @@ const AddStudent = () => {
                         />
                     </div>
 
-                    <div className="mt-2"  >
+                    <div className="mt-2">
                         <label className="block text-sm font-medium text-gray-700">Last Name</label>
                         <input
                             type="text"
@@ -174,7 +182,7 @@ const AddStudent = () => {
                         />
                     </div>
 
-                    <div className="mt-2"  >
+                    <div className="mt-2">
                         <label className="block text-sm font-medium text-gray-700">Date of Birth</label>
                         <input
                             type="date"
@@ -186,7 +194,7 @@ const AddStudent = () => {
                         />
                     </div>
 
-                    <div className="mt-2"  >
+                    <div className="mt-2">
                         <label className="block text-sm font-medium text-gray-700">Gender</label>
                         <select
                             name="gender"
@@ -201,7 +209,32 @@ const AddStudent = () => {
                         </select>
                     </div>
 
-                    <div className="mt-2"  >
+                    <div className="mt-2">
+                        <label className="block text-sm font-medium text-gray-700">father name</label>
+                        <input
+                            type="text"
+                            name="father_name"
+                            value={formData.father_name}
+                            onChange={handleChange}
+                            required
+                            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg"
+                        />
+                    </div>
+
+                    <div className="mt-2">
+                        <label className="block text-sm font-medium text-gray-700">mother name</label>
+                        <input
+                            type="text"
+                            name="mother_name"
+                            value={formData.mother_name}
+                            onChange={handleChange}
+                            required
+                            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg"
+                        />
+                    </div>
+
+
+                    <div className="mt-2">
                         <label className="block text-sm font-medium text-gray-700">Email</label>
                         <input
                             type="email"
@@ -213,7 +246,7 @@ const AddStudent = () => {
                         />
                     </div>
 
-                    <div className="mt-2"  >
+                    <div className="mt-2">
                         <label className="block text-sm font-medium text-gray-700">Phone Number</label>
                         <input
                             type="tel"
@@ -225,8 +258,20 @@ const AddStudent = () => {
                         />
                     </div>
 
+                    <div className="mt-2">
+                        <label className="block text-sm font-medium text-gray-700">mother Phone Number</label>
+                        <input
+                            type="tel"
+                            name="mother_phone_number"
+                            value={formData.mother_phone_number}
+                            onChange={handleChange}
+                            required
+                            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg"
+                        />
+                    </div>
 
-                    <div className="mt-2"  >
+
+                    <div className="mt-2">
                         <label className="block text-sm font-medium text-gray-700">Address</label>
                         <input
                             type="text"
@@ -238,7 +283,9 @@ const AddStudent = () => {
                         />
                     </div>
 
-                    <div className="mt-2"  >
+                </div>
+                <div className={blockCss}>
+                    <div className="mt-2">
                         <label className="block text-sm font-medium text-gray-700">Class</label>
                         <select
                             name="classroom_id"
@@ -256,10 +303,7 @@ const AddStudent = () => {
                         </select>
                     </div>
 
-                </div>
-                <div className={blockCss} >
-
-                    <div className="mt-2"  >
+                    <div className="mt-2">
                         <label className="block text-sm font-medium text-gray-700">Enrollment Date</label>
                         <input
                             type="date"
@@ -270,8 +314,28 @@ const AddStudent = () => {
                             className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg"
                         />
                     </div>
-                    <div className="my-3" >
-                        <h3 className="text-center text-xl" >Fee management</h3>
+                    <div className="mt-2">
+                        <label className="block text-sm font-medium text-gray-700">caste</label>
+                        <select
+                            name="caste"
+                            value={formData.caste}
+                            onChange={handleChange}
+                            required
+                            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg"
+                        >
+                            <option value="">Select Caste</option>
+                            <option value="OC">OC</option>
+                            <option value="BC-A">BC-A</option>
+                            <option value="BC-B">BC-B</option>
+                            <option value="BC-C">BC-C</option>
+                            <option value="BC-D">BC-D</option>
+                            <option value="BC-E">BC-E</option>
+                            <option value="ST">ST</option>
+                            <option value="SC">SC</option>
+                        </select>
+                    </div>
+                    <div className="my-3">
+                        <h3 className="text-center text-xl">Fee management</h3>
                     </div>
 
                     <div>
@@ -281,21 +345,23 @@ const AddStudent = () => {
                                     <TableHead></TableHead>
                                     <TableHead>s.no</TableHead>
                                     <TableHead>category</TableHead>
-                                    <TableHead className="text-center" >fee</TableHead>
+                                    <TableHead className="text-center">fee</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {
-                                    feeCategory.map((item: FeeCategory, index: number)=>{
+                                    feeCategory.map((item: FeeCategory, index: number) => {
                                         return <TableRow>
-                                            <TableCell><input type="checkbox" name={item.category_name} value={item.category_id}  onChange={(event)=>handleFeeToggle(event,index)} /></TableCell>
-                                            <TableCell>{index+1}</TableCell>
+                                            <TableCell><input type="checkbox" name={item.category_name}
+                                                              value={item.category_id}
+                                                              onChange={(event) => handleFeeToggle(event, index)}/></TableCell>
+                                            <TableCell>{index + 1}</TableCell>
                                             <TableCell>{item.category_name}</TableCell>
-                                            <TableCell className="text-center" ><input type="number"
-                                                                                       onChange={(event) => handlePriceChange(event, index)}
-                                                                                       id={'fee_amount_'+index}
-                                                                                       className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg"
-                                                                                       placeholder={'enter the fee '+item.category_name} /></TableCell>
+                                            <TableCell className="text-center"><input type="number"
+                                                                                      onChange={(event) => handlePriceChange(event, index)}
+                                                                                      id={'fee_amount_' + index}
+                                                                                      className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg"
+                                                                                      placeholder={'enter the fee ' + item.category_name}/></TableCell>
                                         </TableRow>
                                     })
                                 }

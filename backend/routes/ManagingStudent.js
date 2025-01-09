@@ -9,13 +9,51 @@ import AdminAuth from "../middleware/AdminAuth.js";
 import StudentFee from "../models/StudentFee.js";
 import StudentPayment from "../models/StudentPayment.js";
 import sequelize from "../config/database.js";
+import multer from "multer";
+import path from "path";
 
 const ManagingStudent = express.Router();
 
 
-ManagingStudent.post('/api/student', AdminAuth('student management'), async (req, res) => {
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'uploads/profileImages/');
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, uniqueSuffix + path.extname(file.originalname));
+    }
+});
+
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: 10 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+        const filetypes = /mp3|wav|jpeg|png|jpg/;
+        const mimetype = filetypes.test(file.mimetype);
+        const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+
+        if (mimetype && extname) {
+            return cb(null, true);
+        }
+        cb("Error: Only phone files are allowed (mp3, wav, ogg,mpeg).");
+    }
+});
+
+
+ManagingStudent.post('/api/student', AdminAuth('student management'),upload.fields([
+    {
+        name:'student_photo',
+        maxCount:1
+    },{
+        name:'father_photo',
+        maxCount:1
+    }
+]), async (req, res) => {
     const transaction = await sequelize.transaction();
     try {
+        // console.log(req.files.student_photo[0].path);
+        // return res.send('got the data');
         const {
             first_name,
             last_name,
@@ -90,6 +128,8 @@ ManagingStudent.post('/api/student', AdminAuth('student management'), async (req
             enrollment_date,
             assignedClassroom: classroom_id,
             school_code: schoolDetails.school_code,
+            father_photo:req.files.father_photo[0].path,
+            student_photo:req.files.student_photo[0].path,
             status: 'Active',
             caste,
             sub_caste,

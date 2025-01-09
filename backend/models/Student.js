@@ -39,6 +39,14 @@ Student.init({
             isEmail: true
         }
     },
+    student_photo:{
+        type: DataTypes.STRING(255),
+        allowNull: true
+    },
+    father_photo:{
+        type: DataTypes.STRING(255),
+        allowNull: true
+    },
     phone_number: {
         type: DataTypes.STRING(15),
         allowNull:false

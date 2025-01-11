@@ -130,10 +130,9 @@ Auth.post('/mobileAPI/otp-verify', otpTokenVerification, async (req, res) => {
                teacher: teacherDetails
             });
          }else if(currentUser.role === 'admin'){
-            const [adminDetail]=await sequelize.query(`SELECT * FROM admins left JOIN schools s on s.school_id=admins.school_id where admins.admin_phone_number='${currentUser.phone_number}'`);
+            const [mainAdminDetails] = sequelize.query(`SELECT * FROM admins left JOIN schools s on s.school_id=admins.school_id where admins.admin_phone_number='${currentUser.phone_number}';`);
             //const admin=await Admin.findOne({ where: {admin_phone_number:currentUser.phone_number} });
-            const admin=adminDetail[0];
-
+             const admin=mainAdminDetails[0];
             if(!admin){
                return res.status(404).json({ message: 'Teacher not found' });
             }
@@ -141,7 +140,7 @@ Auth.post('/mobileAPI/otp-verify', otpTokenVerification, async (req, res) => {
                role:'admin',
                id:admin.admin_id,
                school_id:admin.school_id,
-               school_code:admin.school_code,
+
                name:admin.admin_name,
                email:admin.admin_email
             }

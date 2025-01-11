@@ -39,6 +39,14 @@ Student.init({
             isEmail: true
         }
     },
+    student_photo:{
+        type: DataTypes.STRING(255),
+        allowNull: true
+    },
+    father_photo:{
+        type: DataTypes.STRING(255),
+        allowNull: true
+    },
     phone_number: {
         type: DataTypes.STRING(15),
         allowNull:false
@@ -55,6 +63,26 @@ Student.init({
         type: DataTypes.ENUM('Active', 'Inactive'),
         allowNull: false,
         defaultValue: 'Active'
+    },
+    mother_name:{
+        type:DataTypes.STRING(225),
+        allowNull:false
+    },
+    father_name:{
+        type:DataTypes.STRING(225),
+        allowNull:false
+    },
+    mother_phone_number:{
+        type:DataTypes.STRING(20),
+        allowNull:false
+    },
+    caste: {
+        type: DataTypes.ENUM('OC','BC-A','BC-B','BC-C','BC-D','BC-E','SC','ST'),
+        allowNull: false,
+    },
+    sub_caste:{
+        type:DataTypes.STRING(225),
+        allowNull:false
     },
     assginedClassroom:{
         type:DataTypes.INTEGER,

@@ -25,6 +25,7 @@ import ManagingFeeCategory from "./routes/ManagingFeeCategory.js";
 
 const app = express();
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(helmet());
 app.use(cors({
     origin: '*',
@@ -82,6 +83,13 @@ app.all('/api/*',(req, res)=>{
 
 app.get('*',(req,res)=>{
     res.sendFile(path.resolve(__dirname, '../frontend/dist/index.html'));
+});
+
+process.on('SIGINT', async () => {
+    console.log('Closing database connection...');
+    await sequelize.close();
+    console.log('Database connection closed.');
+    process.exit(0);
 });
 
 const port = process.env.PORT;

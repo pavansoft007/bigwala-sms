@@ -198,4 +198,44 @@ ManagingClassrooms.post('/mobileAPI/teacher-assign-classroom',semiAdminAuth('cla
 });
 
 //@todo need to add the delete route
+ManagingClassrooms.delete('/mobileAPI/classroom/:classroomID', adminAuth('classroom'), async (req, res) => {
+    const classroomID = req.params.classroomID;
+    const schoolID = req.sessionData['school_id'];
+
+    try {
+        const studentsInClassroom = await Student.findAll({
+            where: { assginedClassroom: classroomID }
+        });
+
+        if (studentsInClassroom.length > 0) {
+            return res.status(400).json({ message: 'Cannot delete classroom. There are students assigned to this classroom.' });
+        }
+
+        const teachersInClassroom = await Teacher.findAll({
+            where: { assignedClass: classroomID }
+        });
+
+        if (teachersInClassroom.length > 0) {
+            return res.status(400).json({ message: 'Cannot delete classroom. There are teachers assigned to this classroom.' });
+        }
+
+        const deletedClassroom = await Classroom.destroy({
+            where: { classroom_id: classroomID, school_id: schoolID }
+        });
+
+        if (deletedClassroom === 1) {
+            return res.status(200).json({ message: 'Classroom deleted successfully' });
+        } else {
+            return res.status(404).json({ message: 'Classroom not found or already deleted' });
+        }
+    } catch (error) {
+        console.error('Error deleting classroom:', error);
+        res.status(500).json({
+            message: 'An error occurred while deleting the classroom',
+            error: error.message
+        });
+    }
+});
+
+
 export default ManagingClassrooms;

@@ -146,16 +146,20 @@ const RoleManagement: React.FC = () => {
 
     return (
         <div className="container mx-auto p-6">
-            <h1 className="text-3xl font-bold mb-6 text-gray-800">Manage Roles</h1>
 
             {/* Create Role Button */}
-            <div className="mb-6">
+            <div className="mb-2 flex justify-between">
+                <div>
+                <h1 className="text-3xl font-bold mb-6 text-gray-800">Manage Roles</h1>
+                </div>
+                <div>
                 <button
                     onClick={() => setIsCreateModalOpen(true)}
                     className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
                 >
                     Create New Role
                 </button>
+                </div>
             </div>
 
             {/* Create Role Modal */}

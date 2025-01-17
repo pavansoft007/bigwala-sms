@@ -21,15 +21,19 @@ const AdminAuth = (required) => {
                     `SELECT permissions, r.role_name 
                      FROM admins 
                      INNER JOIN roles r ON r.role_id = admins.role_id 
-                     WHERE admin_id = ${tokenDetails["id"]}`
+                     WHERE admin_id = :adminId`,
+                    {
+                        replacements: { adminId: tokenDetails.id },
+                        type: sequelize.QueryTypes.SELECT
+                    }
                 );
 
-                if (result[0]["role_name"] === "admin") {
+                if (result["role_name"] === "admin") {
                     req["sessionData"] = tokenDetails;
                     return next();
                 }
 
-                const permissions = result[0]["permissions"];
+                const permissions = result["permissions"];
                 for (const item of permissions) {
                     if (item === required) {
                         req["sessionData"] = tokenDetails;

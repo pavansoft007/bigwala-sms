@@ -32,7 +32,7 @@ const upload = multer({
         if (mimetype && extname) {
             return cb(null, true);
         }
-        cb("Error: Only audio or images files are allowed (mp3, wav, ogg,mpeg).");
+        cb("Error: Only  images files are allowed (mp3,wav,jpeg,png,jpg).");
     }
 });
 
@@ -62,7 +62,7 @@ ManageBannerImages.post('/api/bannerImage', AdminAuth('banner Images'), upload.a
         return res.status(500).json({ error: 'An error occurred while saving the Banner.' });
     }
 });
-ManagingGallery.get('/mobileAPI/bannerImages', completeLogin, async (req, res) => {
+ManageBannerImages.get('/mobileAPI/bannerImages', completeLogin, async (req, res) => {
     try {
         const school_id = req['sessionData']?.school_id;
         if (!school_id) {
@@ -86,8 +86,22 @@ ManagingGallery.get('/mobileAPI/bannerImages', completeLogin, async (req, res) =
     }
 });
 
+ManageBannerImages.delete('/api/bannerImages/:id',AdminAuth('banner Images'),async (req,res)=>{
+     const bannerID=req.params.id;
+     try{
+        const bannerDetails=await BannerImages.findByPk(bannerID);
+        await bannerDetails.destroy();
+        res.send(200).json({message:'deleted sussesfully'});
 
-ManagingGallery.get('/staticFiles/bannerImages/:id',ImageCors,async (req,res)=>{
+    }catch (error) {
+        console.error('Error deleting the images:', error);
+        return res.status(500).json({ error: 'An error occurred while deleting the image.' });
+    }
+});
+
+
+
+ManageBannerImages.get('/staticFiles/bannerImages/:id',ImageCors,async (req,res)=>{
     const id=req.params.id;
     try {
         const decText = Decrypt(id).split(':');

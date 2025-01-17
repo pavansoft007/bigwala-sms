@@ -1,272 +1,139 @@
 import { Link, Outlet } from "react-router-dom";
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import axiosInstance from "../../services/axiosInstance.ts";
 
+type DropdownState = {
+    student: boolean;
+    teacher: boolean;
+    fee: boolean;
+    userManagement: boolean;
+};
+
 const Dashboard = () => {
-    const [isStudentDropdownOpen, setIsStudentDropdownOpen] = useState<boolean>(false);
-    const [isTeacherDropdownOpen, setIsTeacherDropdownOpen] = useState<boolean>(false);
-    const [isFeeDropdownOpen, setIsFeeDropdownOpen] = useState<boolean>(false);
-    const [isUserManagementDropdownOpen,setIsUserManagementDropdownOpen]=useState<boolean>(false);
-    const [role,setRole]=useState<string>('');
-    const [permissionsData,setPermissionsData]=useState<string[]>([]);
+    const [openState, setOpenState] = useState<DropdownState>({
+        student: false,
+        teacher: false,
+        fee: false,
+        userManagement: false,
+    });
+
+    const [role, setRole] = useState<string>('');
+    const [permissionsData, setPermissionsData] = useState<string[]>([]);
 
     useEffect(() => {
-      axiosInstance.get('/api/get-all-roles').then((res)=>{
-          setPermissionsData(res.data.permission);
-          setRole(res.data.role);
-      }).catch((e)=>{
-         console.error(e);
-      });
+        axiosInstance.get('/api/get-all-roles')
+            .then((res) => {
+                setPermissionsData(res.data.permission);
+                setRole(res.data.role);
+            })
+            .catch((e) => {
+                console.error(e);
+            });
     }, []);
 
-    const toggleStudentDropdown = () => {
-        setIsStudentDropdownOpen((prevState) => !prevState);
+    const toggleDropdown = (moduleName: keyof DropdownState) => {
+        // Close all dropdowns and only open the clicked one
+        setOpenState((prevState) => ({
+            ...prevState,
+            [moduleName]: !prevState[moduleName],
+            student: moduleName === 'student' ? !prevState.student : false,
+            teacher: moduleName === 'teacher' ? !prevState.teacher : false,
+            fee: moduleName === 'fee' ? !prevState.fee : false,
+            userManagement: moduleName === 'userManagement' ? !prevState.userManagement : false,
+        }));
     };
 
-    const toggleTeacherDropdown = () => {
-        setIsTeacherDropdownOpen((prevState) => !prevState);
-    };
-
-    const toggleUserManagementDropdown=()=>{
-        setIsUserManagementDropdownOpen((prevState)=>!prevState);
-    }
-    const toggleFeeDropdown=()=>{
-        setIsFeeDropdownOpen((prevState)=>!prevState);
-    }
-
-    const hasPermission = (link:string) =>{
-        if(role === 'admin'){
-              return true;
+    const hasPermission = (link: string) => {
+        if (role === 'admin') {
+            return true;
         }
         return permissionsData.includes(link);
+    };
+
+    const renderDropdownMenu = (moduleName: keyof DropdownState, items: string[], routes: string[]) => {
+        if (!hasPermission(moduleName)) return null;
+        return (
+            <li>
+                <button
+                    className={`block w-full text-left p-3 rounded-lg ${openState[moduleName] ? "bg-gray-700" : "hover:bg-gray-700"}`}
+                    onClick={() => toggleDropdown(moduleName)}
+                >
+                    {moduleName.charAt(0).toUpperCase() + moduleName.slice(1)}
+                </button>
+                <div
+                    className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                        openState[moduleName] ? "max-h-40" : "max-h-0"
+                    }`}
+                >
+                    <ul className="ml-5 space-y-1">
+                        {items.map((item, index) => (
+                            <li key={item}>
+                                <Link to={routes[index]} className="block p-2 rounded-lg hover:bg-gray-600">
+                                    {item}
+                                </Link>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            </li>
+        );
     };
 
     return (
         <div className="flex min-h-screen bg-gray-100">
             <div className="w-64 bg-gray-800 text-white">
                 <div className="p-5">
-                    <h1 className="text-2xl font-semibold tracking-wide">Admin Dashboard</h1>
+                    <h1 className="text-2xl font-semibold tracking-wide" > <Link to='' > Admin Dashboard </Link> </h1>
                 </div>
                 <ul className="space-y-2">
-                    {
-                        hasPermission('student management') && <li>
-                            <button
-                                className={`block w-full text-left p-3 rounded-lg ${
-                                    isStudentDropdownOpen ? "bg-gray-700" : "hover:bg-gray-700"
-                                } transition-colors`}
-                                onClick={toggleStudentDropdown}
-                            >
-                                Students
-                            </button>
-                            <div
-                                className={`overflow-hidden transition-all duration-300 ${
-                                    isStudentDropdownOpen ? "max-h-40" : "max-h-0"
-                                }`}
-                            >
-                                <ul className="ml-5 space-y-1">
-                                    <li>
-                                        <Link
-                                            to="students/add"
-                                            className="block p-2 rounded-lg hover:bg-gray-600"
-                                        >
-                                            Add Student
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link
-                                            to="students/manage-student"
-                                            className="block p-2 rounded-lg hover:bg-gray-600"
-                                        >
-                                            Manage Students
-                                        </Link>
-                                    </li>
-                                </ul>
-                            </div>
-                        </li>
-                    }
-
-
-                    {hasPermission('teacher management') &&
+                    {renderDropdownMenu('student', ['Add Student', 'Manage Students'], ['students/add', 'students/manage-student'])}
+                    {renderDropdownMenu('teacher', ['Add Teacher', 'Manage Teachers'], ['teacher/add', 'teacher/manage-teacher'])}
+                    {renderDropdownMenu('fee', ['Fee Categories', 'Users'], ['fee/categories', 'users'])}
+                    {renderDropdownMenu('userManagement', ['Roles', 'Users'], ['roles', 'users'])}
+                    {hasPermission('notice board') && (
                         <li>
-                            <button
-                                className={`block w-full text-left p-3 rounded-lg ${
-                                    isTeacherDropdownOpen ? "bg-gray-700" : "hover:bg-gray-700"
-                                } transition-colors`}
-                                onClick={toggleTeacherDropdown}
-                            >
-                                Teachers
-                            </button>
-                            <div
-                                className={`overflow-hidden transition-all duration-300 ${
-                                    isTeacherDropdownOpen  ? "max-h-40" : "max-h-0"
-                                }`}
-                            >
-                                <ul className="ml-5 space-y-1">
-                                    <li>
-                                        <Link
-                                            to="teacher/add"
-                                            className="block p-2 rounded-lg hover:bg-gray-600"
-                                        >
-                                            Add Teacher
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link
-                                            to="teacher/manage-teacher"
-                                            className="block p-2 rounded-lg hover:bg-gray-600"
-                                        >
-                                        Manage Teachers
-                                        </Link>
-                                    </li>
-                                </ul>
-                            </div>
-                        </li>
-                    }
-                    {
-                        hasPermission('fee') &&
-                        <li>
-                            <button
-                                className={`block w-full text-left p-3 rounded-lg ${
-                                    isFeeDropdownOpen ? "bg-gray-700" : "hover:bg-gray-700"
-                                } transition-colors`}
-                                onClick={toggleFeeDropdown}
-                            >
-                                Manage fee
-                            </button>
-                            <div
-                                className={`overflow-hidden transition-all duration-300 ${
-                                    isFeeDropdownOpen ? "max-h-40" : "max-h-0"
-                                }`}
-                            >
-                                <ul className="ml-5 space-y-1">
-                                    <li>
-                                        <Link
-                                            to="fee/categories"
-                                            className="block p-2 rounded-lg hover:bg-gray-600"
-                                        >
-                                            fee Categories
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link
-                                            to="users"
-                                            className="block p-2 rounded-lg hover:bg-gray-600"
-                                        >
-                                            users
-                                        </Link>
-                                    </li>
-                                </ul>
-                            </div>
-                        </li>
-                    }
-                    {
-                        hasPermission('roles') && <li>
-                            <button
-                                className={`block w-full text-left p-3 rounded-lg ${
-                                    isUserManagementDropdownOpen ? "bg-gray-700" : "hover:bg-gray-700"
-                                } transition-colors`}
-                                onClick={toggleUserManagementDropdown}
-                            >
-                                Manage admins
-                            </button>
-                            <div
-                                className={`overflow-hidden transition-all duration-300 ${
-                                    isUserManagementDropdownOpen ? "max-h-40" : "max-h-0"
-                                }`}
-                            >
-                                <ul className="ml-5 space-y-1">
-                                    <li>
-                                        <Link
-                                            to="roles"
-                                            className="block p-2 rounded-lg hover:bg-gray-600"
-                                        >
-                                            roles
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link
-                                            to="users"
-                                            className="block p-2 rounded-lg hover:bg-gray-600"
-                                        >
-                                            users
-                                        </Link>
-                                    </li>
-                                </ul>
-                            </div>
-                        </li>
-                    }
-                    {
-                        hasPermission('notice board') &&
-                        <li>
-                            <Link
-                                to="notice-board"
-                                className="block p-3 rounded-lg hover:bg-gray-700 transition-colors"
-                            >
+                            <Link to="notice-board" className="block p-3 rounded-lg hover:bg-gray-700 transition-colors">
                                 Notice board
                             </Link>
                         </li>
-                    }
-                    {
-                        hasPermission('subjects') &&
+                    )}
+                    {hasPermission('subjects') && (
                         <li>
-                            <Link
-                                to="subjects"
-                                className="block p-3 rounded-lg hover:bg-gray-700 transition-colors"
-                            >
-                                subjects
+                            <Link to="subjects" className="block p-3 rounded-lg hover:bg-gray-700 transition-colors">
+                                Subjects
                             </Link>
                         </li>
-                    }
-                    {
-                        hasPermission('classroom') &&
+                    )}
+                    {hasPermission('classroom') && (
                         <li>
-                            <Link
-                                to="classroom"
-                                className="block p-3 rounded-lg hover:bg-gray-700 transition-colors"
-                            >
-                                classroom
+                            <Link to="classroom" className="block p-3 rounded-lg hover:bg-gray-700 transition-colors">
+                                Classroom
                             </Link>
                         </li>
-                    }
-                    {
-                        hasPermission('exams') &&
+                    )}
+                    {hasPermission('exams') && (
                         <li>
-                            <Link
-                                to="exams"
-                                className="block p-3 rounded-lg hover:bg-gray-700 transition-colors"
-                            >
-                                exams
+                            <Link to="exams" className="block p-3 rounded-lg hover:bg-gray-700 transition-colors">
+                                Exams
                             </Link>
                         </li>
-                    }
-                    {
-                        hasPermission('gallery') &&
+                    )}
+                    {hasPermission('gallery') && (
                         <li>
-                            <Link
-                                to="gallery"
-                                className="block p-3 rounded-lg hover:bg-gray-700 transition-colors"
-                            >
-                                gallery
+                            <Link to="gallery" className="block p-3 rounded-lg hover:bg-gray-700 transition-colors">
+                                Gallery
                             </Link>
                         </li>
-                    }
-                    {
-                        hasPermission('banner Images') &&
+                    )}
+                    {hasPermission('banner Images') && (
                         <li>
-                            <Link
-                                to="bannerImages"
-                                className="block p-3 rounded-lg hover:bg-gray-700 transition-colors"
-                            >
-                                banner Images
+                            <Link to="bannerImages" className="block p-3 rounded-lg hover:bg-gray-700 transition-colors">
+                                Banner Images
                             </Link>
                         </li>
-                    }
-
+                    )}
                     <li>
-                        <Link
-                            to="settings"
-                            className="block p-3 rounded-lg hover:bg-gray-700 transition-colors"
-                        >
+                        <Link to="settings" className="block p-3 rounded-lg hover:bg-gray-700 transition-colors">
                             Settings
                         </Link>
                     </li>
@@ -274,7 +141,7 @@ const Dashboard = () => {
             </div>
 
             <div className="flex-1 p-5">
-                <Outlet/>
+                <Outlet />
             </div>
         </div>
     );

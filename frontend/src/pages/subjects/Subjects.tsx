@@ -9,6 +9,7 @@ interface Subject {
 
 const AddSubjects = () => {
     const [subjects, setSubjects] = useState<Subject[]>([]);
+    const [loading, setLoading] = useState(false);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -16,13 +17,16 @@ const AddSubjects = () => {
     const [currentSubject, setCurrentSubject] = useState<Subject | null>(null);
 
     useEffect(() => {
+        setLoading(true);
         axiosInstance
             .get("/api/subject")
             .then((res) => {
                 setSubjects(res.data);
+                setLoading(false);
             })
             .catch(() => {
                 console.error("Error in getting the subjects");
+                setLoading(false);
             });
     }, []);
 
@@ -80,41 +84,49 @@ const AddSubjects = () => {
     return (
         <div className="p-6 bg-gray-100 min-h-screen">
             <h1 className="text-3xl font-bold text-center mb-8">Subjects List</h1>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {subjects.map((subject) => (
-                    <div
-                        key={subject.subject_id}
-                        className="bg-white shadow-lg rounded-lg p-4 hover:shadow-xl transition-shadow duration-300"
-                    >
-                        <h2 className="text-xl font-semibold text-gray-800 mb-2">
-                            {subject.subject_name}
-                        </h2>
-                        <p className="text-gray-600">
-                            <strong>Code:</strong> {subject.subject_code}
-                        </p>
-                        <div className="mt-2 flex space-x-2">
-                            <button
-                                className="text-blue-500 hover:underline"
-                                onClick={() => {
-                                    setCurrentSubject(subject);
-                                    setIsEditModalOpen(true);
-                                }}
-                            >
-                                Edit
-                            </button>
-                            <button
-                                className="text-red-500 hover:underline"
-                                onClick={() => {
-                                    setCurrentSubject(subject);
-                                    setIsDeleteModalOpen(true);
-                                }}
-                            >
-                                Delete
-                            </button>
+            {loading ? (
+                <div className="flex justify-center items-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500"></div>
+                </div>
+            ) : subjects.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    {subjects.map((subject) => (
+                        <div
+                            key={subject.subject_id}
+                            className="bg-white shadow-lg rounded-lg p-4 hover:shadow-xl transition-shadow duration-300"
+                        >
+                            <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                                {subject.subject_name}
+                            </h2>
+                            <p className="text-gray-600">
+                                <strong>Code:</strong> {subject.subject_code}
+                            </p>
+                            <div className="mt-2 flex space-x-2">
+                                <button
+                                    className="text-blue-500 hover:underline"
+                                    onClick={() => {
+                                        setCurrentSubject(subject);
+                                        setIsEditModalOpen(true);
+                                    }}
+                                >
+                                    Edit
+                                </button>
+                                <button
+                                    className="text-red-500 hover:underline"
+                                    onClick={() => {
+                                        setCurrentSubject(subject);
+                                        setIsDeleteModalOpen(true);
+                                    }}
+                                >
+                                    Delete
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                ))}
-            </div>
+                    ))}
+                </div>
+            ) : (
+                <p className="text-center text-gray-500">No subjects available</p>
+            )}
             <div className="mt-8 text-center">
                 <button
                     className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"

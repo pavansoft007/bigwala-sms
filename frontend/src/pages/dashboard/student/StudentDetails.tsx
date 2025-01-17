@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import axiosInstance from "../../services/axiosInstance.ts";
+import axiosInstance from "../../../services/axiosInstance.ts";
 import axios from "axios";
 interface Classroom {
     classroom_id: string;

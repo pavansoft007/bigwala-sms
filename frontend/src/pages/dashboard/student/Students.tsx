@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axiosInstance from "../../services/axiosInstance.ts";
+import axiosInstance from "../../../services/axiosInstance.ts";
 import FetchClassroomData from "@/services/FetchClassroomData.ts";
 import Classroom from "@/types/Classroom.ts";
 import {Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table.tsx";

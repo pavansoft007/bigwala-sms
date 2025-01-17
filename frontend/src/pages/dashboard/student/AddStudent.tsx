@@ -9,7 +9,7 @@ import {
     TableRow,
 } from "@/components/ui/table"
 
-import axiosInstance from "../../services/axiosInstance.ts";
+import axiosInstance from "../../../services/axiosInstance.ts";
 
 interface Classroom{
     classroom_id:number,

@@ -1,6 +1,6 @@
 // src/pages/BannerManagement.tsx
 import { useState, useEffect, ChangeEvent, FormEvent } from "react";
-import axiosInstance from "../../services/axiosInstance";
+import axiosInstance from "@/services/axiosInstance";
 
 
 const BannerManagement = () => {

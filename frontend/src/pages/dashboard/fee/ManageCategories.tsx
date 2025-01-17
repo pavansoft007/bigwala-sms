@@ -1,5 +1,5 @@
 import  { useEffect, useState } from "react";
-import Modal from "../../components/Modal.tsx";
+import Modal from "@/components/Modal.tsx";
 import {
     Table,
     TableBody,
@@ -8,7 +8,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import AxiosInstance from "../../services/axiosInstance.ts";
+import AxiosInstance from "@/services/axiosInstance.ts";
 
 interface Categories{
     category_id: number,

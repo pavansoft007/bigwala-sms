@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import axiosInstance from "../../services/axiosInstance";
-import Modal from "../../components/Modal";
+import axiosInstance from "../../../services/axiosInstance";
+import Modal from "../../../components/Modal";
 
 interface Role {
     role_id: number;

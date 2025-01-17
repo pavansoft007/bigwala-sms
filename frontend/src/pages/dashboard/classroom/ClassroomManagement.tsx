@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axiosInstance from "../../services/axiosInstance.ts";
+import axiosInstance from "@/services/axiosInstance.ts";
 import ClipLoader from 'react-spinners/ClipLoader';
 import Classroom from "@/types/Classroom.ts";
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axiosInstance from "../../services/axiosInstance.ts";
+import axiosInstance from "@/services/axiosInstance.ts";
 
 interface Photo {
     filename: string;

@@ -22,6 +22,7 @@ import GalleryManager from '@/pages/dashboard/gallery/GalleryManager.tsx';
 import BannerManagement from '@/pages/dashboard/BannerImages/BannerManagement.tsx';
 import ManageCategories from "@/pages/dashboard/fee/ManageCategories";
 import NoticeBoard from "@/pages/dashboard/noticeBoard/NoticeBoard.tsx";
+import TeacherDetails from "./pages/dashboard/teacher/TeacherDetails";
 
 function App() {
     return (
@@ -43,7 +44,7 @@ function App() {
                         <Route path="teacher" >
                             <Route path="add" element={<AddTeacher />} />
                             <Route path="manage-teacher" element={<Teachers />}  />
-                            <Route path=":id" element={<StudentDetails />} />
+                            <Route path=":id" element={<TeacherDetails />} />
                         </Route>
                         <Route path="fee" >
                             <Route path="categories" element={<ManageCategories />} />

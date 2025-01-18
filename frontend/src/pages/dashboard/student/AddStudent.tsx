@@ -176,7 +176,7 @@ const AddStudent = () => {
                 backendFormData.append(`feeDetails[${i}][category_id]`, detail.category_id.toString());
             });
 
-            // Make sure to set the correct content type in the headers
+            
             await axiosInstance.post("/api/student", backendFormData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
@@ -377,24 +377,29 @@ const AddStudent = () => {
                             className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg"
                         />
                     </div>
-                    <div className="mb-4">
-                    <label className="block text-gray-700 font-medium mb-2">Student photo:</label>
-                    <input
-                        type="file"
-                        name="student_photo"
-                        onChange={handleChange}
-                        className="w-full text-gray-600"
-                    />
+                    <div className="mb-4 flex flex-row mt-2">
+                        <div>
+                        <label className="block text-gray-700 font-medium mb-2">Student photo:</label>
+                        <input
+                           type="file"
+                           name="student_photo"
+                           onChange={handleChange}
+                           className="w-full text-gray-600"
+                        />
+                        </div>
+                        <div>
+                           <label className="block text-gray-700 font-medium mb-2">father photo:</label>
+                           <input
+                              type="file"
+                              name="father_photo"
+                              onChange={handleChange}
+                              className="w-full text-gray-600"
+                            />
+                        </div>
                     </div>
-                    <div className="mb-4">
-                    <label className="block text-gray-700 font-medium mb-2">father photo:</label>
-                    <input
-                        type="file"
-                        name="father_photo"
-                        onChange={handleChange}
-                        className="w-full text-gray-600"
-                    />
-                    </div>
+                    {/* <div className="mb-4">
+                    
+                    </div> */}
                     <div className="mt-2">
                         <label className="block text-sm font-medium text-gray-700">caste</label>
                         <select
@@ -419,7 +424,7 @@ const AddStudent = () => {
                         <h3 className="text-center text-xl">Fee management</h3>
                     </div>
 
-                    <div>
+                    <div className="h-64 overflow-scroll" >
                         <Table>
                             <TableHeader>
                                 <TableRow>

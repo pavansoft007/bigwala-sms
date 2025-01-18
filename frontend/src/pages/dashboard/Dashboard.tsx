@@ -50,15 +50,16 @@ const Dashboard = () => {
         return permissionsData.includes(link);
     };
 
-    const renderDropdownMenu = (moduleName: keyof DropdownState, items: string[], routes: string[]) => {
-        if (!hasPermission(moduleName)) return null;
+    const renderDropdownMenu = (moduleName: keyof DropdownState,name:string,items: string[], routes: string[]) => {
+        if (!hasPermission(name)) return null;
         return (
             <li>
                 <button
                     className={`block w-full text-left p-3 rounded-lg ${openState[moduleName] ? "bg-gray-700" : "hover:bg-gray-700"}`}
                     onClick={() => toggleDropdown(moduleName)}
                 >
-                    {moduleName.charAt(0).toUpperCase() + moduleName.slice(1)}
+                    {/* {name.charAt(0).toUpperCase() + moduleName.slice(1)} */}
+                    {name}
                 </button>
                 <div
                     className={`overflow-hidden transition-all duration-300 ease-in-out ${
@@ -86,10 +87,10 @@ const Dashboard = () => {
                     <h1 className="text-2xl font-semibold tracking-wide" > <Link to='' > Admin Dashboard </Link> </h1>
                 </div>
                 <ul className="space-y-2">
-                    {renderDropdownMenu('student', ['Add Student', 'Manage Students'], ['students/add', 'students/manage-student'])}
-                    {renderDropdownMenu('teacher', ['Add Teacher', 'Manage Teachers'], ['teacher/add', 'teacher/manage-teacher'])}
-                    {renderDropdownMenu('fee', ['Fee Categories', 'Users'], ['fee/categories', 'users'])}
-                    {renderDropdownMenu('userManagement', ['Roles', 'Users'], ['roles', 'users'])}
+                    {renderDropdownMenu('student','student management', ['Add Student', 'Manage Students'], ['students/add', 'students/manage-student'])}
+                    {renderDropdownMenu('teacher','teacher management', ['Add Teacher', 'Manage Teachers'], ['teacher/add', 'teacher/manage-teacher'])}
+                    {renderDropdownMenu('fee','fee managment', ['Fee Categories', 'Users'], ['fee/categories', 'users'])}
+                    {renderDropdownMenu('userManagement','user managment' ,['Roles', 'Users'], ['roles', 'users'])}
                     {hasPermission('notice board') && (
                         <li>
                             <Link to="notice-board" className="block p-3 rounded-lg hover:bg-gray-700 transition-colors">

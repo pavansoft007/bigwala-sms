@@ -47,7 +47,7 @@ const BannerManagement = () => {
     };
 
     const getBannerImageUrl = (encryptedId: string) =>
-        `${import.meta.env.VITE_API_URL}/staticFiles/bannerImages/${encryptedId}`;
+        `${import.meta.env.VITE_API_URL || '' }/staticFiles/bannerImages/${encryptedId}`;
 
     return (
         <div className="container mx-auto p-6">

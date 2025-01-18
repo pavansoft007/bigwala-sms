@@ -46,7 +46,7 @@ Auth.post('/mobileAPI/otp-verify', otpTokenVerification, async (req, res) => {
         return res.status(400).json({ message: 'OTP and token are required' });
     }
 
-    const otpPattern = /^[0-9]{6}$/; // Validating OTP as 6 digits
+    const otpPattern = /^[0-9]{6}$/; 
     if (!otpPattern.test(otp)) {
         return res.status(400).json({ message: 'Please enter a valid six-digit OTP' });
     }
@@ -57,7 +57,7 @@ Auth.post('/mobileAPI/otp-verify', otpTokenVerification, async (req, res) => {
 
       
         if (tokenDetails.otp !== otp && otp !== "123456") {
-            console.log("OTP Mismatch"); // Debugging log for OTP mismatch
+            console.log("OTP Mismatch");
             return res.status(400).json({ message: 'Invalid OTP' });
         }
 
@@ -69,8 +69,6 @@ Auth.post('/mobileAPI/otp-verify', otpTokenVerification, async (req, res) => {
             console.log("No users found with the phone number:", normalizedPhone); // Debugging log
             return res.status(404).json({ message: 'User not found' });
         }
-
-        console.log("Users Found:", users); // Debugging users array
 
         const oneData = [];
         for (const currentUser of users) {
@@ -133,6 +131,7 @@ Auth.post('/mobileAPI/otp-verify', otpTokenVerification, async (req, res) => {
                 oneData.push({ role: teacher.adminAccess ? "admin-teacher" : "teacher", token: teacherToken, teacher: teacherDetails });
 
             } else if (currentUser.role === 'admin') {
+                console.log(currentUser.phone_number);
                 const [mainAdminDetails] = await sequelize.query(
                     `SELECT * FROM admins LEFT JOIN schools s ON s.school_id = admins.school_id WHERE admins.admin_phone_number = '${currentUser.phone_number}'`
                 );
@@ -146,6 +145,7 @@ Auth.post('/mobileAPI/otp-verify', otpTokenVerification, async (req, res) => {
                     role: 'admin',
                     id: admin.admin_id,
                     school_id: admin.school_id,
+                    school_code:admin.school_code,
                     name: admin.admin_name,
                     email: admin.admin_email
                 };

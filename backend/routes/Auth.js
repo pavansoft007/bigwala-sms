@@ -119,7 +119,7 @@ Auth.post('/mobileAPI/otp-verify', otpTokenVerification, async (req, res) => {
                     last_name: teacher.last_name,
                     email: teacher.email,
                     phone_number: teacher.phone_number,
-                    subject_specialization: teacher.subject_specialization,
+                    subject_id: teacher.subject_id,
                     hire_date: teacher.hire_date,
                     status: teacher.status,
                     school_id: teacher.school_id,

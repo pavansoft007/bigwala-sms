@@ -116,7 +116,6 @@ ManageBannerImages.get('/staticFiles/bannerImages/:id',ImageCors,async (req,res)
             const __filename = fileURLToPath(import.meta.url);
             const __dirname = path.dirname(__filename);
             const completePath=path.parse(__dirname)['dir'];
-            console.log(fileDetails['filename']);
             if(fileDetails['filename']){
                 res.sendFile(path.join(completePath,fileDetails['filename']));
             }else{

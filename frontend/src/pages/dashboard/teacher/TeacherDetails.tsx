@@ -1,6 +1,7 @@
 import axiosInstance from "@/services/axiosInstance";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import Classroom from "@/types/Classroom";
 
 type TeacherData = {
   teacher_id: number;
@@ -27,15 +28,16 @@ type TeacherData = {
 const TeacherDetails = () => {
   const { id } = useParams();
   const [teacherData, setTeacherData] = useState<TeacherData | null>(null);
-  const [isEditing, setIsEditing] = useState(false); // State to toggle between view and edit modes
+  const [isEditing, setIsEditing] = useState(false); 
   const [formData, setFormData] = useState<TeacherData | null>(null);
+  const [classroomDetals,setClassroomDetails]=useState<Classroom[]>([]);
 
   const getTeacherDetails = async () => {
     try {
       const response = await axiosInstance.get("/api/teacher/" + id);
       console.log(response.data);
       setTeacherData(response.data);
-      setFormData(response.data); // Initialize form data
+      setFormData(response.data);
     } catch (e) {
       console.error("Error in getting teacher details:", e);
     }
@@ -45,7 +47,7 @@ const TeacherDetails = () => {
     getTeacherDetails();
   }, [id]);
 
-  // Handle form field changes
+  
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     if (formData) {
@@ -53,12 +55,12 @@ const TeacherDetails = () => {
     }
   };
 
-  // Toggle editing mode
+  
   const toggleEdit = () => {
     setIsEditing(!isEditing);
   };
 
-  // Handle form submission (optional)
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (formData) {
@@ -86,17 +88,7 @@ const TeacherDetails = () => {
       </div>
 
       <div className="bg-white shadow-lg rounded-lg p-6 space-y-6">
-        {/* Edit Toggle Button */}
-        <div className="text-right">
-          <button
-            onClick={toggleEdit}
-            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition"
-          >
-            {isEditing ? "Cancel Edit" : "Edit Details"}
-          </button>
-        </div>
-
-        {/* Teacher Information */}
+        
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
             <div className="text-lg font-medium">
@@ -252,10 +244,10 @@ const TeacherDetails = () => {
             </div>
           </div>
         </div>
-
-        {/* Save Button */}
+        <div className="flex flex-row-reverse" >
+          {/* Save Button */}
         {isEditing && (
-          <div className="text-right mt-4">
+          <div className="text-right mx-4">
             <button
               onClick={handleSubmit}
               className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition"
@@ -264,6 +256,17 @@ const TeacherDetails = () => {
             </button>
           </div>
         )}
+        <div className="text-right">
+          <button
+            onClick={toggleEdit}
+            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition"
+          >
+            {isEditing ? "Cancel Edit" : "Edit Details"}
+          </button>
+        </div>
+        </div>
+
+        
       </div>
     </div>
   );

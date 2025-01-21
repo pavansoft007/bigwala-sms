@@ -146,6 +146,7 @@ Auth.post('/mobileAPI/otp-verify', otpTokenVerification, async (req, res) => {
                     role: 'admin',
                     id: admin.admin_id,
                     school_id: admin.school_id,
+                    school_code: admin.school_code,
                     name: admin.admin_name,
                     email: admin.admin_email
                 };

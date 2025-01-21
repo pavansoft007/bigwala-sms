@@ -2,6 +2,7 @@ import axiosInstance from "@/services/axiosInstance";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Classroom from "@/types/Classroom";
+import fetchClassroomData from "@/services/FetchClassroomData";
 
 type TeacherData = {
   teacher_id: number;
@@ -30,10 +31,13 @@ const TeacherDetails = () => {
   const [teacherData, setTeacherData] = useState<TeacherData | null>(null);
   const [isEditing, setIsEditing] = useState(false); 
   const [formData, setFormData] = useState<TeacherData | null>(null);
-  const [classroomDetals,setClassroomDetails]=useState<Classroom[]>([]);
+  const [classroomDetails,setClassroomDetails]=useState<Classroom[]>([]);
 
   const getTeacherDetails = async () => {
     try {
+      const classDetails:Promise<Classroom[]>=fetchClassroomData();
+      console.log(classDetails);
+      setClassroomDetails(await classDetails);
       const response = await axiosInstance.get("/api/teacher/" + id);
       console.log(response.data);
       setTeacherData(response.data);
@@ -150,13 +154,26 @@ const TeacherDetails = () => {
             <div className="text-lg font-medium">
               <span className="font-semibold">Assigned Class:</span>{" "}
               {isEditing ? (
-                <input
-                  type="text"
-                  name="standard"
-                  value={formData?.standard || ""}
-                  onChange={handleChange}
-                  className="border p-2 rounded-md w-full"
-                />
+                // <input
+                //   type="text"
+                //   name="standard"
+                //   value={formData?.standard || ""}
+                //   onChange={handleChange}
+                //   className="border p-2 rounded-md w-full"
+                // />
+                <select
+                            name="assginedClassroom"
+                            value={teacherData.assignedClass}
+                            onChange={handleChange}
+                            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg"
+                        >
+                            <option value="">Select Classroom</option>
+                            {classroomDetails.map((classroom) => (
+                                <option key={classroom.classroom_id} value={classroom.classroom_id}>
+                                    {classroom.standard} - {classroom.section}
+                                </option>
+                            ))}
+                        </select>
               ) : (
                 `${teacherData.standard} - ${teacherData.section}`
               )}

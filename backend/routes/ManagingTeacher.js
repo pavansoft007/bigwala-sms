@@ -1,10 +1,16 @@
 import express from "express";
+import path from "path";
 import AdminAuth from "../middleware/AdminAuth.js";
 import generateTeacherID from "../services/generateTeacherID.js";
 import Teacher from "../models/Teacher.js";
 import User from "../models/User.js";
 import sequelize from "../config/database.js";
 import upload from "../services/multerService.js";
+import { Sequelize } from "sequelize";
+import Encrypt from "../services/Encrypt.js";
+import Decrypt from "../services/Decrypt.js";
+import ImageCors from "../middleware/ImageCors.js";
+import {fileURLToPath} from "url";
 const ManagingTeacher = express.Router();
 
 ManagingTeacher.post(
@@ -30,17 +36,10 @@ ManagingTeacher.post(
 
       const adminAccess = req.body.adminAccess || false;
 
-      const newTeacherID = await generateTeacherID(
-        req["sessionData"]["school_code"]
-      );
-      const teacher_photo = req.files["teacher_photo"]
-        ? req.files["teacher_photo"][0].path
-        : null;
-      const teacher_qualification_certificate = req.files[
-        "teacher_qualification_certificate"
-      ]
-        ? req.files["teacher_qualification_certificate"][0].path
-        : null;
+      const newTeacherID = await generateTeacherID(req["sessionData"]["school_code"]);
+      const teacher_photo = req.files["teacher_photo"]? req.files["teacher_photo"][0].path: null;
+      const teacher_qualification_certificate = req.files["teacher_qualification_certificate"]? req.files["teacher_qualification_certificate"][0].path: null;
+      
       const newTeacher = await Teacher.create({
         first_name,
         last_name,
@@ -58,6 +57,7 @@ ManagingTeacher.post(
         teacher_photo,
         teacher_qualification_certificate,
       });
+
       const newUser = await User.create({
         phone_number,
         role: adminAccess ? "admin-teacher" : "teacher",
@@ -153,10 +153,7 @@ ManagingTeacher.put(
   }
 );
 
-ManagingTeacher.post(
-  "/api/search/teacher",
-  AdminAuth("teacher management"),
-  async (req, res) => {
+ManagingTeacher.post("/api/search/teacher",AdminAuth("teacher management"),async (req, res) => {
     const limit = parseInt(req.body.limit) || 10;
     const page = parseInt(req.body.page) || 1;
     const offset = (page - 1) * limit;
@@ -251,10 +248,7 @@ ManagingTeacher.post(
   }
 );
 
-ManagingTeacher.get(
-  "/api/teacher/:id",
-  AdminAuth("teacher management"),
-  async (req, res) => {
+ManagingTeacher.get("/api/teacher/:id",AdminAuth("teacher management"),async (req, res) => {
     const teacherID = req.params.id;
     const school_id = req["sessionData"]["school_id"];
     try {
@@ -262,13 +256,17 @@ ManagingTeacher.get(
         "SELECT *,s.subject_name,s.subject_name,c.standard,c.section FROM teachers INNER JOIN subjects s ON s.subject_id=teachers.subject_id INNER JOIN classrooms c ON c.classroom_id=teachers.assignedClass where c.school_id=? and  teacher_id=?",
         {
           replacements: [school_id, teacherID],
+          type: Sequelize.QueryTypes.SELECT
         }
       );
 
       if (teacherDetails) {
-        teacherDetails[0]["adminAccess"] =
-          teacherDetails[0]["adminAccess"] === "0";
-        res.json(teacherDetails[0]);
+        teacherDetails["adminAccess"] = teacherDetails["adminAccess"] === "0";
+        if(teacherDetails["teacher_photo"]){
+          teacherDetails["teacher_photo"]=Encrypt(teacherDetails["teacher_photo"]+ (req['ip'] || '0.0.0.0') );
+        }
+      
+        res.json(teacherDetails);
       } else {
         res.status(404).json({ message: "teacher not found" });
       }
@@ -281,10 +279,24 @@ ManagingTeacher.get(
   }
 );
 
-ManagingTeacher.get(
-  "/api/teacher",
-  AdminAuth("teacher management"),
-  async (req, res) => {
+ManagingTeacher.get('/staticFiles/teacher/:id',ImageCors,(req,res)=>{
+  const id=req.params.id;
+  const decText = Decrypt(id).split(':');
+  const ip=decText[decText.length-1];
+  const realIp=req['ip'].split(':');
+  if(ip === realIp[realIp.length-1]){
+    
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    const completePath=path.parse(__dirname)['dir'];
+    res.sendFile(path.join(completePath,decText[0]));
+  }else{
+    res.send('you have no access');
+  }
+
+});
+
+ManagingTeacher.get("/api/teacher",AdminAuth("teacher management"),async (req, res) => {
     const school_id = req["sessionData"]["school_id"];
     try {
       let [teacherDetails] = await sequelize.query(
@@ -313,10 +325,7 @@ ManagingTeacher.get(
   }
 );
 
-ManagingTeacher.delete(
-  "/api/teacher/:id",
-  AdminAuth("teacher management"),
-  async (req, res) => {
+ManagingTeacher.delete("/api/teacher/:id",AdminAuth("teacher management"),async (req, res) => {
     try {
       const teacherId = req.params.id;
 
@@ -334,9 +343,7 @@ ManagingTeacher.delete(
 
       await teacher.destroy();
 
-      res
-        .status(200)
-        .json({ message: "Teacher and associated user deleted successfully" });
+      res.status(200).json({ message: "Teacher and associated user deleted successfully" });
     } catch (error) {
       console.error("Error deleting teacher:", error);
       res.status(500).json({

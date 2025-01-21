@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Classroom from "@/types/Classroom";
 import fetchClassroomData from "@/services/FetchClassroomData";
+import Subject from "@/types/Subject";
+import fetchSubjectsData from "@/services/FetchSubjectsData";
 
 type TeacherData = {
   teacher_id: number;
@@ -32,12 +34,14 @@ const TeacherDetails = () => {
   const [isEditing, setIsEditing] = useState(false); 
   const [formData, setFormData] = useState<TeacherData | null>(null);
   const [classroomDetails,setClassroomDetails]=useState<Classroom[]>([]);
+  const [SubjectDetails,setSubjectDetails]=useState<Subject[]>([]);
 
   const getTeacherDetails = async () => {
     try {
       const classDetails:Promise<Classroom[]>=fetchClassroomData();
-      console.log(classDetails);
+      const SubjectDetails:Promise<Subject[]>=fetchSubjectsData();
       setClassroomDetails(await classDetails);
+      setSubjectDetails(await SubjectDetails);
       const response = await axiosInstance.get("/api/teacher/" + id);
       console.log(response.data);
       setTeacherData(response.data);
@@ -52,7 +56,7 @@ const TeacherDetails = () => {
   }, [id]);
 
   
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     if (formData) {
       setFormData({ ...formData, [name]: value });
@@ -140,13 +144,26 @@ const TeacherDetails = () => {
             <div className="text-lg font-medium">
               <span className="font-semibold">Subject:</span>{" "}
               {isEditing ? (
-                <input
-                  type="text"
-                  name="subject_name"
-                  value={formData?.subject_name || ""}
-                  onChange={handleChange}
-                  className="border p-2 rounded-md w-full"
-                />
+                // <input
+                //   type="text"
+                //   name="subject_name"
+                //   value={formData?.subject_name || ""}
+                //   onChange={handleChange}
+                //   className="border p-2 rounded-md w-full"
+                // />
+                <select
+                            name="subject_id"
+                            value={teacherData.subject_id}
+                            onChange={handleChange}
+                            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg"
+                        >
+                            <option value="">Select Subject</option>
+                            {SubjectDetails.map((subject) => (
+                                <option key={subject.subject_id} value={subject.subject_id}>
+                                    {subject.subject_name}-{subject.subject_code}
+                                </option>
+                            ))}
+                        </select>
               ) : (
                 teacherData.subject_name
               )}
@@ -154,13 +171,6 @@ const TeacherDetails = () => {
             <div className="text-lg font-medium">
               <span className="font-semibold">Assigned Class:</span>{" "}
               {isEditing ? (
-                // <input
-                //   type="text"
-                //   name="standard"
-                //   value={formData?.standard || ""}
-                //   onChange={handleChange}
-                //   className="border p-2 rounded-md w-full"
-                // />
                 <select
                             name="assginedClassroom"
                             value={teacherData.assignedClass}

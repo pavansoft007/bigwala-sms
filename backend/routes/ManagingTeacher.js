@@ -139,6 +139,13 @@ ManagingTeacher.put(
         { where: { original_id: teacherId } }
       );
 
+      if(teacher["teacher_photo"]){
+        teacher["teacher_photo"]=Encrypt(teacher["teacher_photo"]+ (req['ip'] || '0.0.0.0') );
+      }
+      if(teacher["teacher_qualification_certificate"]){
+        teacher["teacher_qualification_certificate"]=Encrypt(teacher["teacher_qualification_certificate"]+ (req['ip'] || '0.0.0.0') );
+      }
+
       res.status(200).json({
         message: "Teacher updated successfully",
         teacher,
@@ -230,6 +237,15 @@ ManagingTeacher.post("/api/search/teacher",AdminAuth("teacher management"),async
 
       const totalPages = Math.ceil(totalCount / limit);
 
+      for(let i=0;i<teachers.length;i++){
+        if(teachers[i]["teacher_photo"]){
+          teachers[i]["teacher_photo"]=Encrypt(teachers[i]["teacher_photo"]+ (req['ip'] || '0.0.0.0') );
+        }
+        if(teachers[i]["teacher_qualification_certificate"]){
+          teachers[i]["teacher_qualification_certificate"]=Encrypt(teachers[i]["teacher_qualification_certificate"]+ (req['ip'] || '0.0.0.0') );
+        }  
+      }
+
       res.json({
         pagination: {
           totalCount,
@@ -264,6 +280,9 @@ ManagingTeacher.get("/api/teacher/:id",AdminAuth("teacher management"),async (re
         teacherDetails["adminAccess"] = teacherDetails["adminAccess"] === "0";
         if(teacherDetails["teacher_photo"]){
           teacherDetails["teacher_photo"]=Encrypt(teacherDetails["teacher_photo"]+ (req['ip'] || '0.0.0.0') );
+        }
+        if(teacherDetails["teacher_qualification_certificate"]){
+          teacherDetails["teacher_qualification_certificate"]=Encrypt(teacherDetails["teacher_qualification_certificate"]+ (req['ip'] || '0.0.0.0') );
         }
       
         res.json(teacherDetails);

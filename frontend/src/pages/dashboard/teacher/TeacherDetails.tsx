@@ -36,14 +36,21 @@ const TeacherDetails = () => {
   const [classroomDetails,setClassroomDetails]=useState<Classroom[]>([]);
   const [SubjectDetails,setSubjectDetails]=useState<Subject[]>([]);
 
-  const getTeacherDetails = async () => {
+
+  const getSyncData=async ()=>{
     try {
       const classDetails:Promise<Classroom[]>=fetchClassroomData();
       const SubjectDetails:Promise<Subject[]>=fetchSubjectsData();
       setClassroomDetails(await classDetails);
       setSubjectDetails(await SubjectDetails);
+    } catch (e) {
+      console.error("Error in getting sync details:", e);
+    }
+  }
+
+  const getTeacherDetails = async () => {
+    try {
       const response = await axiosInstance.get("/api/teacher/" + id);
-      console.log(response.data);
       setTeacherData(response.data);
       setFormData(response.data);
     } catch (e) {
@@ -52,6 +59,7 @@ const TeacherDetails = () => {
   };
 
   useEffect(() => {
+    getSyncData();
     getTeacherDetails();
   }, [id]);
 
@@ -76,6 +84,7 @@ const TeacherDetails = () => {
         await axiosInstance.put(`/api/teacher/${id}`, formData);
         setIsEditing(false);
         alert("Teacher details updated successfully!");
+        getTeacherDetails();
       } catch (e) {
         console.error("Error saving teacher details:", e);
       }
@@ -144,16 +153,9 @@ const TeacherDetails = () => {
             <div className="text-lg font-medium">
               <span className="font-semibold">Subject:</span>{" "}
               {isEditing ? (
-                // <input
-                //   type="text"
-                //   name="subject_name"
-                //   value={formData?.subject_name || ""}
-                //   onChange={handleChange}
-                //   className="border p-2 rounded-md w-full"
-                // />
                 <select
                             name="subject_id"
-                            value={teacherData.subject_id}
+                            value={formData?.subject_id || ''}
                             onChange={handleChange}
                             className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg"
                         >
@@ -173,7 +175,7 @@ const TeacherDetails = () => {
               {isEditing ? (
                 <select
                             name="assginedClassroom"
-                            value={teacherData.assignedClass}
+                            value={formData?.assignedClass || ""}
                             onChange={handleChange}
                             className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg"
                         >

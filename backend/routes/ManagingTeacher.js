@@ -268,7 +268,7 @@ ManagingTeacher.get("/api/teacher/:id",AdminAuth("teacher management"),async (re
     const school_id = req["sessionData"]["school_id"];
     try {
       const [teacherDetails] = await sequelize.query(
-        "SELECT *,s.subject_name,s.subject_name,c.standard,c.section FROM teachers INNER JOIN subjects s ON s.subject_id=teachers.subject_id INNER JOIN classrooms c ON c.classroom_id=teachers.assignedClass where c.school_id=? and  teacher_id=?",
+        "SELECT *,s.subject_name,s.subject_name,c.standard,c.section FROM teachers LEFT JOIN subjects s ON s.subject_id=teachers.subject_id LEFT JOIN classrooms c ON c.classroom_id=teachers.assignedClass where teachers.school_id=? and  teacher_id=?",
         {
           replacements: [school_id, teacherID],
           type: Sequelize.QueryTypes.SELECT

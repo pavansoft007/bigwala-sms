@@ -1,4 +1,5 @@
 import React, { useEffect, useState} from "react";
+import { useNavigate } from "react-router-dom";
 import {
     Table,
     TableBody,
@@ -9,7 +10,7 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import axiosInstance from "@/services/axiosInstance.ts";
-//import debounce from "lodash.debounce";
+
 
 interface Classroom {
     classroom_id: string;
@@ -46,6 +47,7 @@ const Teacher = () => {
     const [classrooms, setClassrooms] = useState<Classroom[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const navigate=useNavigate();
 
     useEffect(() => {
         getClassroomDetails();
@@ -82,10 +84,14 @@ const Teacher = () => {
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setSearchInfo((prev) => ({ ...prev, [name]: value }));
-        //debounceFetchTeachers();
+        
     };
 
-    //const debounceFetchTeachers = useCallback(debounce(fetchTeachers, 300), []);
+    const handleEdit = (id: number) => {
+        navigate(`/dashboard/teacher/${id}`);
+    };
+
+    
 
     const prevPage = () => {
         if (currentPage > 1) fetchTeachers(currentPage - 1);
@@ -133,7 +139,7 @@ const Teacher = () => {
             status: '',
             limit: 10,
         });
-        //fetchTeachers();
+        
     }
 
     return (
@@ -250,7 +256,12 @@ const Teacher = () => {
                                 <TableCell>{teacher.subject_name}</TableCell>
                                 <TableCell>{teacher.standard}-{teacher.section}</TableCell>
                                 <TableCell>
-                                    <button className="p-2 mx-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                                    <button 
+                                      
+                                      onClick={()=>handleEdit(teacher.teacher_id)}
+                                      className="p-2 mx-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                                
+                                    >
                                         Edit
                                     </button>
                                     <button className="p-2 mx-1 bg-red-500 text-white rounded-lg hover:bg-red-600">

@@ -2,11 +2,12 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axiosInstance from "../../../services/axiosInstance.ts";
 import axios from "axios";
-interface Classroom {
-    classroom_id: string;
-    standard: string;
-    section: string;
-}
+import Classroom from "@/types/Classroom.ts";
+// interface Classroom {
+//     classroom_id: string;
+//     standard: string;
+//     section: string;
+// }
 
 // interface Student {
 //     student_id: string;

@@ -80,6 +80,18 @@ Teacher.init({
             model: School,
             key: 'school_id'
         }
+    },
+    teachers_qualification: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    teacher_photo: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    teacher_qualification_certificate: {
+        type: DataTypes.STRING,
+        allowNull: true
     }
 }, {
     sequelize,

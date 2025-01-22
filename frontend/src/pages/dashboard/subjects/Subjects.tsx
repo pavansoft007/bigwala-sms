@@ -1,11 +1,6 @@
 import { useEffect, useState } from "react";
 import axiosInstance from "../../../services/axiosInstance.ts";
-
-interface Subject {
-    subject_id: number;
-    subject_name: string;
-    subject_code: string;
-}
+import Subject from "@/types/Subject.ts";
 
 const AddSubjects = () => {
     const [subjects, setSubjects] = useState<Subject[]>([]);

@@ -171,7 +171,7 @@ Auth.post('/api/admin-login', async (req, res) => {
 
     try {
         const [adminDetails] = await sequelize.query(
-            'SELECT * FROM admins INNER JOIN schools s ON admins.school_id = s.school_id WHERE admin_email = :email',
+            `SELECT * FROM admins INNER JOIN schools s ON admins.school_id = s.school_id WHERE admin_email = :email`,
             {
                 replacements: { email },
                 type: Sequelize.QueryTypes.SELECT

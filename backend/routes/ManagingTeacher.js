@@ -104,20 +104,18 @@ ManagingTeacher.put(
         subject_id,
         adminAccess,
         teachers_qualification,
+        salary
       } = req.body;
+
+      
 
       const teacher = await Teacher.findByPk(teacherId);
       if (!teacher) {
         return res.status(404).json({ message: "Teacher not found" });
       }
 
-      const teacher_photo = req.files["teacher_photo"]
-        ? req.files["teacher_photo"][0].path
-        : teacher.teacher_photo;
-      const teacher_qualification_certificate = req.files[
-        "teacher_qualification_certificate"
-      ]
-        ? req.files["teacher_qualification_certificate"][0].path
+      const teacher_photo = req.files["teacher_photo"]? req.files["teacher_photo"][0].path: teacher.teacher_photo;
+      const teacher_qualification_certificate = req.files["teacher_qualification_certificate"]? req.files["teacher_qualification_certificate"][0].path
         : teacher.teacher_qualification_certificate;
 
       await teacher.update({
@@ -125,6 +123,7 @@ ManagingTeacher.put(
         last_name,
         email,
         phone_number,
+        salary,
         subject_id,
         hire_date: hire_date,
         status: status || "Active",
@@ -135,7 +134,7 @@ ManagingTeacher.put(
       });
 
       await User.update(
-        { role: adminAccess ? "admin-teacher" : "teacher" },
+        { role: adminAccess ? "admin-teacher" : "teacher" , phone_number:teacher.phone_number },
         { where: { original_id: teacherId } }
       );
 

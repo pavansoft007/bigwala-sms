@@ -21,6 +21,8 @@ type TeacherData = {
   assignedClass: number;
   school_id: number;
   salary: number;
+  teacher_qualification_certificate: string;
+  teacher_photo: string;
   subject_name: string;
   subject_code: string;
   classroom_id: number;
@@ -31,16 +33,16 @@ type TeacherData = {
 const TeacherDetails = () => {
   const { id } = useParams();
   const [teacherData, setTeacherData] = useState<TeacherData | null>(null);
-  const [isEditing, setIsEditing] = useState(false); 
+  const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<TeacherData | null>(null);
-  const [classroomDetails,setClassroomDetails]=useState<Classroom[]>([]);
-  const [SubjectDetails,setSubjectDetails]=useState<Subject[]>([]);
+  const [classroomDetails, setClassroomDetails] = useState<Classroom[]>([]);
+  const [SubjectDetails, setSubjectDetails] = useState<Subject[]>([]);
 
 
-  const getSyncData=async ()=>{
+  const getSyncData = async () => {
     try {
-      const classDetails:Promise<Classroom[]>=fetchClassroomData();
-      const SubjectDetails:Promise<Subject[]>=fetchSubjectsData();
+      const classDetails: Promise<Classroom[]> = fetchClassroomData();
+      const SubjectDetails: Promise<Subject[]> = fetchSubjectsData();
       setClassroomDetails(await classDetails);
       setSubjectDetails(await SubjectDetails);
     } catch (e) {
@@ -63,7 +65,7 @@ const TeacherDetails = () => {
     getTeacherDetails();
   }, [id]);
 
-  
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     if (formData) {
@@ -71,17 +73,44 @@ const TeacherDetails = () => {
     }
   };
 
-  
+
   const toggleEdit = () => {
     setIsEditing(!isEditing);
   };
 
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (formData) {
       try {
-        await axiosInstance.put(`/api/teacher/${id}`, formData);
+        const form = new FormData();
+  
+        
+        for (const key in formData) {
+          if (Object.prototype.hasOwnProperty.call(formData, key)) {
+            form.append(key as keyof TeacherData, formData[key as keyof TeacherData] as string | Blob);
+          }
+        }
+  
+        
+        const photoInput = document.querySelector("input[name='teacher_photo']") as HTMLInputElement;
+        const certificateInput = document.querySelector("input[name='teacher_qualification_certificate']") as HTMLInputElement;
+  
+        if (photoInput?.files?.[0]) {
+          form.append("teacher_photo", photoInput.files[0]);
+        }
+  
+        if (certificateInput?.files?.[0]) {
+          form.append("teacher_qualification_certificate", certificateInput.files[0]);
+        }
+  
+        
+        await axiosInstance.put(`/api/teacher/${id}`, form, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+  
         setIsEditing(false);
         alert("Teacher details updated successfully!");
         getTeacherDetails();
@@ -90,6 +119,8 @@ const TeacherDetails = () => {
       }
     }
   };
+  
+  
 
   if (!teacherData) {
     return <div className="text-center text-xl">Loading...</div>;
@@ -97,15 +128,24 @@ const TeacherDetails = () => {
 
   return (
     <div className="container mx-auto p-6">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-semibold text-gray-800">
-          {teacherData.first_name} {teacherData.last_name}
-        </h1>
-        <p className="text-lg text-gray-600">Teacher Details</p>
+      <div className="text-center mb-8 flex items-center ml-2 space-x-4">
+        <img
+          src={`${import.meta.env.VITE_API_URL}/staticFiles/teacher/${teacherData.teacher_photo}`}
+          alt="teacher photo"
+          className="w-32 h-32 rounded-full object-cover"
+        />
+        <div>
+          <h1 className="text-3xl font-semibold text-gray-800">
+            {teacherData.first_name} {teacherData.last_name}
+          </h1>
+          <p className="text-lg text-gray-600">Teacher Details</p>
+        </div>
       </div>
 
+
+
       <div className="bg-white shadow-lg rounded-lg p-6 space-y-6">
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
             <div className="text-lg font-medium">
@@ -154,18 +194,18 @@ const TeacherDetails = () => {
               <span className="font-semibold">Subject:</span>{" "}
               {isEditing ? (
                 <select
-                            name="subject_id"
-                            value={formData?.subject_id || ''}
-                            onChange={handleChange}
-                            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg"
-                        >
-                            <option value="">Select Subject</option>
-                            {SubjectDetails.map((subject) => (
-                                <option key={subject.subject_id} value={subject.subject_id}>
-                                    {subject.subject_name}-{subject.subject_code}
-                                </option>
-                            ))}
-                        </select>
+                  name="subject_id"
+                  value={formData?.subject_id || ''}
+                  onChange={handleChange}
+                  className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg"
+                >
+                  <option value="">Select Subject</option>
+                  {SubjectDetails.map((subject) => (
+                    <option key={subject.subject_id} value={subject.subject_id}>
+                      {subject.subject_name}-{subject.subject_code}
+                    </option>
+                  ))}
+                </select>
               ) : (
                 teacherData.subject_name
               )}
@@ -174,18 +214,18 @@ const TeacherDetails = () => {
               <span className="font-semibold">Assigned Class:</span>{" "}
               {isEditing ? (
                 <select
-                            name="assginedClassroom"
-                            value={formData?.assignedClass || ""}
-                            onChange={handleChange}
-                            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg"
-                        >
-                            <option value="">Select Classroom</option>
-                            {classroomDetails.map((classroom) => (
-                                <option key={classroom.classroom_id} value={classroom.classroom_id}>
-                                    {classroom.standard} - {classroom.section}
-                                </option>
-                            ))}
-                        </select>
+                  name="assginedClassroom"
+                  value={formData?.assignedClass || ""}
+                  onChange={handleChange}
+                  className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg"
+                >
+                  <option value="">Select Classroom</option>
+                  {classroomDetails.map((classroom) => (
+                    <option key={classroom.classroom_id} value={classroom.classroom_id}>
+                      {classroom.standard} - {classroom.section}
+                    </option>
+                  ))}
+                </select>
               ) : (
                 `${teacherData.standard} - ${teacherData.section}`
               )}
@@ -228,6 +268,7 @@ const TeacherDetails = () => {
                 <input
                   type="text"
                   name="school_code"
+                  readOnly
                   value={formData?.school_code || ""}
                   onChange={handleChange}
                   className="border p-2 rounded-md w-full"
@@ -268,34 +309,72 @@ const TeacherDetails = () => {
                   className="border p-2 rounded-md w-full"
                 />
               ) : (
-                `$${teacherData.salary}`
+                `${teacherData.salary}`
               )}
             </div>
+
+            {
+              isEditing && <div className="text-lg font-medium">
+              <span className="font-semibold">Teacher Photo:</span>{" "}
+              <input
+                  type="file"
+                  name="teacher_photo"
+                  accept="image/*"
+                  onChange={(e) => handleChange(e)}
+                  className="border p-2 rounded-md w-full"
+                />
+            </div>
+            }
+
+            <div className="text-lg font-medium">
+              <span className="font-semibold">Qualification Certificate:</span>{" "}
+              {isEditing ? (
+                <input
+                  type="file"
+                  name="teacher_qualification_certificate"
+                  accept="application/pdf,image/*"
+                  onChange={(e) => handleChange(e)}
+                  className="border p-2 rounded-md w-full"
+                />
+              ) : (
+                teacherData.teacher_qualification_certificate && (
+                  <a
+                    href={`${import.meta.env.VITE_API_URL}/staticFiles/teacher/${teacherData.teacher_qualification_certificate}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-500"
+                  >
+                    View Qualification Certificate
+                  </a>
+                )
+              )}
+            </div>
+
           </div>
         </div>
         <div className="flex flex-row-reverse" >
           {/* Save Button */}
-        {isEditing && (
-          <div className="text-right mx-4">
+          {isEditing && (
+            <div className="text-right mx-4">
+              <button
+                onClick={handleSubmit}
+                className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition"
+              >
+                Save Changes
+              </button>
+            </div>
+          )}
+          <div className="text-right">
             <button
-              onClick={handleSubmit}
-              className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition"
+              onClick={toggleEdit}
+              className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition"
             >
-              Save Changes
+              {isEditing ? "Cancel Edit" : "Edit Details"}
             </button>
           </div>
-        )}
-        <div className="text-right">
-          <button
-            onClick={toggleEdit}
-            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition"
-          >
-            {isEditing ? "Cancel Edit" : "Edit Details"}
-          </button>
-        </div>
         </div>
 
-        
+
       </div>
     </div>
   );

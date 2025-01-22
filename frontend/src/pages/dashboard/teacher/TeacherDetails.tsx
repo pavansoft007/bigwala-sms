@@ -214,7 +214,7 @@ const TeacherDetails = () => {
               <span className="font-semibold">Assigned Class:</span>{" "}
               {isEditing ? (
                 <select
-                  name="assginedClassroom"
+                  name="assignedClass"
                   value={formData?.assignedClass || ""}
                   onChange={handleChange}
                   className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg"

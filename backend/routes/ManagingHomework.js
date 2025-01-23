@@ -108,7 +108,7 @@ ManagingHomework.post('/mobileAPI/homework', teacherAuth('homework'), async (req
 
 
 
-ManagingHomework.get('/mobileAPI/homework', completeLogin, async (req, res) => {
+ManagingHomework.post('/mobileAPI/get-homework', completeLogin, async (req, res) => {
     try {
         const sessionDetails = req['sessionData'];
         const homeworkData = {}; 

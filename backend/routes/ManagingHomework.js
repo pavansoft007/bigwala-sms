@@ -108,83 +108,109 @@ ManagingHomework.post('/mobileAPI/homework', teacherAuth('homework'), async (req
 
 
 
-ManagingHomework.get('/mobileAPI/homework', completeLogin,async (req, res) => {
+ManagingHomework.post('/mobileAPI/get-homework', completeLogin, async (req, res) => {
     try {
-        const sessionDetails=req['sessionData'];
-        const homeworkData={
-            today:[],
-            yesterday:[]
-        }
+        const sessionDetails = req['sessionData'];
+        const homeworkData = {}; 
+        
         const now = new Date();
         const today = now.toLocaleDateString('en-CA');
-        now.setDate(now.getDate() - 1);
-        const yesterday = now.toLocaleDateString('en-CA');
-        if(sessionDetails['role']=== 'student'){
-            const [homeworkDetails] = await
-                sequelize.query(`SELECT homework_id,context,s.subject_name,s.subject_code ,homeworks.addedDate
-                                              FROM homeworks 
-                                                  INNER JOIN classrooms c ON c.classroom_id=homeworks.classroom_id 
-                                                  INNER JOIN subjects s ON s.subject_id=homeworks.subject_id 
-                                              WHERE c.standard=${sessionDetails['standard']} && c.section='${sessionDetails['section']}' 
-                                                        && (homeworks.addedDate ='${today}' or homeworks.addedDate='${yesterday}') ;`);
+        
+        
+        const sevenDaysAgo = new Date(now);
+        sevenDaysAgo.setDate(now.getDate() - 7);
+        const startDate = sevenDaysAgo.toLocaleDateString('en-CA'); 
 
-
-            homeworkDetails.forEach((item)=>{
-                if(item.addedDate === today){
-                    homeworkData.today.push(item);
-                }else if(item.addedDate === yesterday){
-                    homeworkData.yesterday.push(item);
+        if (sessionDetails['role'] === 'student') {
+            const [homeworkDetails] = await sequelize.query(`
+                SELECT homework_id, context, s.subject_name, s.subject_code, homeworks.addedDate
+                FROM homeworks 
+                INNER JOIN classrooms c ON c.classroom_id = homeworks.classroom_id 
+                INNER JOIN subjects s ON s.subject_id = homeworks.subject_id 
+                WHERE c.standard = :standard 
+                    AND c.section = :section
+                    AND homeworks.addedDate BETWEEN :startDate AND :today;
+            `,{
+                replacements:{
+                    standard:sessionDetails['standard'],
+                    section:sessionDetails['section'],
+                    startDate,today
                 }
-            })
+            });
+
+            homeworkDetails.forEach((item) => {
+                const date = item.addedDate; 
+                if (!homeworkData[date]) {
+                    homeworkData[date] = [];
+                }
+                homeworkData[date].push(item);
+            });
+
             return res.json(homeworkData);
-        }else{
-            const standard=req.body.standard;
-            const section=req.body.section;
-            if(!standard || !section){
-                if(sessionDetails['role']==='teacher' || sessionDetails['role']==='admin-teacher'){
-                    const teacherDetails=await Teacher.findOne({
-                        where:{
-                            school_id:req['sessionData']['school_id'],
-                            teacher_id:req['sessionData']['teacher_id']
-                        },attributes:['assignedClass']
+        } else {
+            const standard = req.body.standard;
+            const section = req.body.section;
+
+            if (!standard || !section) {
+                if (sessionDetails['role'] === 'teacher' || sessionDetails['role'] === 'admin-teacher') {
+                    const teacherDetails = await Teacher.findOne({
+                        where: {
+                            school_id: req['sessionData']['school_id'],
+                            teacher_id: req['sessionData']['teacher_id']
+                        },
+                        attributes: ['assignedClass']
                     });
 
-
-
-                    const [homeworkDetails]=await sequelize.query(`SELECT homework_id,context,s.subject_name,s.subject_code,homeworks.addedDate 
-                                                                                        FROM homeworks 
-                                                                                            INNER JOIN classrooms c ON c.classroom_id=homeworks.classroom_id  
-                                                                                            INNER JOIN subjects s ON s.subject_id=homeworks.subject_id 
-                                                                                        WHERE homeworks.addedDate ="${today}" or homeworks.addedDate="${yesterday}" && homeworks.classroom_id=`+teacherDetails['assignedClass']);
-
-                    homeworkDetails.forEach((item)=>{
-                        if(item.addedDate === today){
-                            homeworkData.today.push(item);
-                        }else if(item.addedDate === yesterday){
-                            homeworkData.yesterday.push(item);
+                    const [homeworkDetails] = await sequelize.query(`
+                        SELECT homework_id, context, s.subject_name, s.subject_code, homeworks.addedDate 
+                        FROM homeworks 
+                        INNER JOIN classrooms c ON c.classroom_id = homeworks.classroom_id  
+                        INNER JOIN subjects s ON s.subject_id = homeworks.subject_id 
+                        WHERE homeworks.addedDate BETWEEN :startDate AND :today 
+                            AND homeworks.classroom_id = :assignedClass ;
+                    `,{
+                        replacements:{
+                            startDate,today,assignedClass:teacherDetails['assignedClass']
                         }
-                    })
+                    });
+
+                    homeworkDetails.forEach((item) => {
+                        const date = item.addedDate;
+                        if (!homeworkData[date]) {
+                            homeworkData[date] = [];
+                        }
+                        homeworkData[date].push(item);
+                    });
+
                     return res.status(200).json(homeworkData);
-                }else {
-                    res.status(404).json({ message:"plz enter the section and standard details" });
+                } else {
+                    return res.status(404).json({ message: "Please enter the section and standard details" });
                 }
             }
-            const [homeworkDetails] = await
-                sequelize.query(`SELECT homework_id,context,s.subject_name,s.subject_code,homeworks.addedDate 
-                                                          FROM homeworks 
-                                                              INNER JOIN classrooms c ON c.classroom_id=homeworks.classroom_id 
-                                                              INNER JOIN subjects s ON s.subject_id=homeworks.subject_id 
-                                                          WHERE c.standard=${standard} && c.section='${section}' 
-                                                                    && homeworks.addedDate ='${today}' && homeworks.addedDate='${yesterday}';`);
 
-            homeworkDetails.forEach((item)=>{
-                if(item.addedDate === today){
-                    homeworkData.today.push(item);
-                }else if(item.addedDate === yesterday){
-                    homeworkData.yesterday.push(item);
+            const [homeworkDetails] = await sequelize.query(`
+                SELECT homework_id, context, s.subject_name, s.subject_code, homeworks.addedDate 
+                FROM homeworks 
+                INNER JOIN classrooms c ON c.classroom_id = homeworks.classroom_id 
+                INNER JOIN subjects s ON s.subject_id = homeworks.subject_id 
+                WHERE c.standard = :standard 
+                    AND c.section = :section 
+                    AND homeworks.addedDate BETWEEN :startDate AND :today;
+            `,{
+                replacements:{
+                    standard, section, startDate, today
                 }
-            })
-            return  res.json(homeworkData);
+            });
+
+            homeworkDetails.forEach((item) => {
+                const date = item.addedDate;
+                if (!homeworkData[date]) {
+                    homeworkData[date] = [];
+                }
+                homeworkData[date].push(item);
+            });
+
+            return res.json(homeworkData);
         }
     } catch (e) {
         console.log("Error in getting the data: ", e);
@@ -193,6 +219,8 @@ ManagingHomework.get('/mobileAPI/homework', completeLogin,async (req, res) => {
         });
     }
 });
+
+
 
 ManagingHomework.get('/mobileAPI/homework/:id',teacherAuth('homework'),async (req,res)=>{
     try{

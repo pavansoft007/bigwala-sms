@@ -1,10 +1,12 @@
 import axiosInstance from "@/services/axiosInstance";
+import axios from "axios";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Classroom from "@/types/Classroom";
 import fetchClassroomData from "@/services/FetchClassroomData";
 import Subject from "@/types/Subject";
 import fetchSubjectsData from "@/services/FetchSubjectsData";
+import Modal from "@/components/Modal";
 
 type TeacherData = {
   teacher_id: number;
@@ -37,6 +39,11 @@ const TeacherDetails = () => {
   const [formData, setFormData] = useState<TeacherData | null>(null);
   const [classroomDetails, setClassroomDetails] = useState<Classroom[]>([]);
   const [SubjectDetails, setSubjectDetails] = useState<Subject[]>([]);
+  const [title,setTitle]=useState('processing......');
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPOPUP,setShowPOPUP]=useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("Saving teacher details...");
+
 
 
   const getSyncData = async () => {
@@ -79,8 +86,12 @@ const TeacherDetails = () => {
   };
 
 
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setShowPOPUP(true);
+    setIsLoading(true);
+    setTitle('processing......');
     if (formData) {
       try {
         const form = new FormData();
@@ -110,12 +121,24 @@ const TeacherDetails = () => {
             "Content-Type": "multipart/form-data",
           },
         });
-  
+
+
+        setLoadingMessage('updated the teachers');
         setIsEditing(false);
-        alert("Teacher details updated successfully!");
+        setIsLoading(false);
+        setTitle('successfully');
         getTeacherDetails();
-      } catch (e) {
-        console.error("Error saving teacher details:", e);
+      } 
+      catch (e) {
+        setTitle('error');
+          console.error("Error saving teacher details:", e);
+          if (axios.isAxiosError(e)) {
+               setLoadingMessage(e.response?.data?.message || "An error occurred while saving.");
+          } else {
+                 setLoadingMessage("An unknown error occurred.");
+          }
+          setIsLoading(false);
+        
       }
     }
   };
@@ -264,21 +287,6 @@ const TeacherDetails = () => {
           {/* Advanced Information */}
           <div className="space-y-4">
             <div className="text-lg font-medium">
-              <span className="font-semibold">School Code:</span>{" "}
-              {isEditing ? (
-                <input
-                  type="text"
-                  name="school_code"
-                  readOnly
-                  value={formData?.school_code || ""}
-                  onChange={handleChange}
-                  className="border p-2 rounded-md w-full"
-                />
-              ) : (
-                teacherData.school_code
-              )}
-            </div>
-            <div className="text-lg font-medium">
               <span className="font-semibold">Admin Access:</span>{" "}
               {isEditing ? (
                 <input
@@ -377,6 +385,13 @@ const TeacherDetails = () => {
 
 
       </div>
+
+      <Modal isOpen={showPOPUP} onClose={() => setShowPOPUP(false)} title={title} disableClose={isLoading}>
+          <div className="w-80 text-center">
+                     <p>{loadingMessage}</p>
+              </div>
+      </Modal>
+
     </div>
   );
 };

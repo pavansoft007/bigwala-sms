@@ -22,6 +22,7 @@ import ManagingExam from "./routes/ManagingExam.js";
 import ManageUserRights from "./routes/ManageUserRights.js";
 import ManageBannerImages from "./routes/ManageBannerImages.js";
 import ManagingFeeCategory from "./routes/ManagingFeeCategory.js";
+import ManagingStaticFiles from "./routes/ManagingStaticFiles.js";
 
 const app = express();
 app.use(express.json());
@@ -70,6 +71,7 @@ app.use(ManagingExam);
 app.use(ManageUserRights);
 app.use(ManageBannerImages);
 app.use(ManagingFeeCategory);
+app.use(ManagingStaticFiles);
 
 
 dotenv.config();

@@ -153,7 +153,7 @@ const TeacherDetails = () => {
     <div className="container mx-auto p-6">
       <div className="text-center mb-8 flex items-center ml-2 space-x-4">
         <img
-          src={ teacherData.teacher_photo ? `${import.meta.env.VITE_API_URL}/staticFiles/teacher/${teacherData.teacher_photo}`
+          src={ teacherData.teacher_photo ? `${import.meta.env.VITE_API_URL}/staticFiles/photos/${teacherData.teacher_photo}`
                : '/blank-profile-picture.png' }
           alt="teacher photo"
           className="w-32 h-32 rounded-full object-cover"
@@ -348,7 +348,7 @@ const TeacherDetails = () => {
               ) : (
                 teacherData.teacher_qualification_certificate && (
                   <a
-                    href={`${import.meta.env.VITE_API_URL}/staticFiles/teacher/${teacherData.teacher_qualification_certificate}`}
+                    href={`${import.meta.env.VITE_API_URL}/staticFiles/photos/${teacherData.teacher_qualification_certificate}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-500"

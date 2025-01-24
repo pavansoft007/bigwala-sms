@@ -1,5 +1,4 @@
 import express from "express";
-import path from "path";
 import AdminAuth from "../middleware/AdminAuth.js";
 import generateTeacherID from "../services/generateTeacherID.js";
 import Teacher from "../models/Teacher.js";
@@ -8,9 +7,6 @@ import sequelize from "../config/database.js";
 import upload from "../services/multerService.js";
 import { Sequelize } from "sequelize";
 import Encrypt from "../services/Encrypt.js";
-import Decrypt from "../services/Decrypt.js";
-import ImageCors from "../middleware/ImageCors.js";
-import {fileURLToPath} from "url";
 const ManagingTeacher = express.Router();
 
 ManagingTeacher.post(
@@ -297,22 +293,6 @@ ManagingTeacher.get("/api/teacher/:id",AdminAuth("teacher management"),async (re
   }
 );
 
-ManagingTeacher.get('/staticFiles/teacher/:id',ImageCors,(req,res)=>{
-  const id=req.params.id;
-  const decText = Decrypt(id).split(':');
-  const ip=decText[decText.length-1];
-  const realIp=req['ip'].split(':');
-  if(ip === realIp[realIp.length-1]){
-    
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = path.dirname(__filename);
-    const completePath=path.parse(__dirname)['dir'];
-    res.sendFile(path.join(completePath,decText[0]));
-  }else{
-    res.send('you have no access');
-  }
-
-});
 
 ManagingTeacher.get("/api/teacher",AdminAuth("teacher management"),async (req, res) => {
     const school_id = req["sessionData"]["school_id"];

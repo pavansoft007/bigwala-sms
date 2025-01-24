@@ -8,37 +8,11 @@ import Encrypt from "../services/Encrypt.js";
 import ImageCors from "../middleware/ImageCors.js";
 import Decrypt from "../services/Decrypt.js";
 import {fileURLToPath} from "url";
-import ManagingGallery from "./ManagingGallery.js";
-
-
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'uploads/bannerImages/');
-    },
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, uniqueSuffix + path.extname(file.originalname));
-    }
-});
-
-const upload = multer({
-    storage: storage,
-    limits: { fileSize: 10 * 1024 * 1024 },
-    fileFilter: (req, file, cb) => {
-        const filetypes = /mp3|wav|jpeg|png|jpg/;
-        const mimetype = filetypes.test(file.mimetype);
-        const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-
-        if (mimetype && extname) {
-            return cb(null, true);
-        }
-        cb("Error: Only  images files are allowed (mp3,wav,jpeg,png,jpg).");
-    }
-});
+import upload from "../services/multerService.js";
 
 const ManageBannerImages=express.Router();
 
-ManageBannerImages.post('/api/bannerImage', AdminAuth('banner Images'), upload.array('photos', 10),async (req,res)=>{
+ManageBannerImages.post('/api/bannerImage', AdminAuth('banner Images'),upload.fields([{name:'photo',maxCount:10}]) ,async (req,res)=>{
     try {
         const school_id = req['sessionData']['school_id'];
 
@@ -48,7 +22,7 @@ ManageBannerImages.post('/api/bannerImage', AdminAuth('banner Images'), upload.a
         }
 
         const galleryImages = await Promise.all(
-            req.files.map(file =>
+            req.files.photo.map(file =>
                 BannerImages.create({
                     school_id,
                     filename: file.path,
@@ -76,7 +50,7 @@ ManageBannerImages.get('/mobileAPI/bannerImages', completeLogin, async (req, res
         });
 
         const StaticFileData = completeData.map((item) => {
-            return Encrypt(`${item.banner_id}:${req['ip'] || '0.0.0.0'}`);
+            return Encrypt(`${item.filename}:${req['ip'] || '0.0.0.0'}`);
         });
 
         res.json(StaticFileData);

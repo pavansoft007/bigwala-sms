@@ -16,7 +16,8 @@ const Navbar = () => {
 
   async function getUserINFO(){
     const data:NavDetails=await axiosInstance.get('/api/navbar');
-    console.log(data);       
+    console.log(data);
+    setUserName('');       
   };
   
 

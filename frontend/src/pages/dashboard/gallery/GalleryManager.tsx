@@ -75,7 +75,7 @@ const GalleryManager: React.FC = () => {
                             {images.map((image, index) => (
                                 <img
                                     key={index}
-                                    src={`${import.meta.env.VITE_API_URL}/staticFiles/gallery/${image.filename}`}
+                                    src={`${import.meta.env.VITE_API_URL}/staticFiles/photos/${image.filename}`}
                                     alt="Gallery"
                                     className="w-36 h-36 object-cover rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300"
                                 />
@@ -125,7 +125,7 @@ const GalleryManager: React.FC = () => {
                 </button>
             </form>
 
-            <div className="bg-white rounded-lg p-6 shadow-lg">
+            <div className="bg-white rounded-lg p-6 shadow-lg" >
                 {renderGallery()}
             </div>
         </div>

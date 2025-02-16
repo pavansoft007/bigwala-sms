@@ -15,7 +15,7 @@ import {
     FaBars,
     FaTimes
 } from "react-icons/fa";
-import { BiDotsHorizontalRounded } from "react-icons/bi";
+import {BiDotsHorizontalRounded} from "react-icons/bi";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -36,9 +36,9 @@ const DashboardSideBar = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [role, setRole] = useState("");
     const [userInfo, setUserInfo] = useState<UserData>({
-        admin_name:'',
-        school_name:'',
-        role_name:''
+        admin_name: '',
+        school_name: '',
+        role_name: ''
     });
     const [permissionsData, setPermissionsData] = useState<string[]>([]);
 
@@ -68,8 +68,9 @@ const DashboardSideBar = () => {
 
     return (
         <div className="flex flex-row min-h-screen bg-gray-100">
-            <div className={`fixed md:relative bg-gray-800 text-white w-64 md:w-72 transition-all duration-300 ${isOpen ? "left-0" : "-left-64"} md:left-0 h-screen flex flex-col overflow-y-auto`}>
-            <div className="p-5 flex items-center justify-between md:justify-start">
+            <div
+                className={`fixed md:relative bg-gray-800 text-white w-64 md:w-72 transition-all duration-300 ${isOpen ? "left-0" : "-left-64"} md:left-0 h-screen flex flex-col overflow-y-auto`}>
+                <div className="p-5 flex items-center justify-between md:justify-start">
                     <h1 className="text-2xl font-bold">{userInfo.school_name}</h1>
                     <button className="md:hidden text-white" onClick={() => setIsOpen(false)}>
                         <FaTimes size={24}/>
@@ -166,14 +167,16 @@ const DashboardSideBar = () => {
                     </div>
 
                     <div className="px-3 flex flex-row ">
-                        <div className="ml-2 flex items-center justify-center " >
+                        <div className="ml-2 flex items-center justify-center ">
                             <DropdownMenu>
-                                <DropdownMenuTrigger> <BiDotsHorizontalRounded /> </DropdownMenuTrigger>
+                                <DropdownMenuTrigger> <BiDotsHorizontalRounded/> </DropdownMenuTrigger>
                                 <DropdownMenuContent>
                                     <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                                    <DropdownMenuSeparator />
+                                    <DropdownMenuSeparator/>
                                     <DropdownMenuItem>Profile</DropdownMenuItem>
-                                    <DropdownMenuItem> <Link to="/logout" className="text-red-500 text-bold">Logout</Link> </DropdownMenuItem>
+                                    <DropdownMenuItem> <Link to="/logout"
+                                                             className="text-red-500 text-bold">Logout</Link>
+                                    </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </div>
@@ -187,7 +190,7 @@ const DashboardSideBar = () => {
             </button>
 
             <div className="flex-1 p-5  ml-2 overflow-y-auto h-screen">
-                <Outlet />
+                <Outlet/>
             </div>
 
         </div>

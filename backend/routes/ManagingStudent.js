@@ -219,18 +219,18 @@ ManagingStudent.get(
     AdminAuth("student management"),
     async (req, res) => {
         try {
-            const student_id=req.params.id;
+            const student_id = req.params.id;
             const [student] = await sequelize.query(
                 "SELECT * FROM `students` LEFT JOIN classrooms ON classrooms.classroom_id=students.assginedClassroom WHERE student_id=:student_id"
-                ,{
-                    replacements:{
+                , {
+                    replacements: {
                         student_id
                     },
                     type: Sequelize.QueryTypes.SELECT
                 }
             );
-            student['student_photo']=Encrypt(student['student_photo']+':'+req.ip);
-            student['father_photo']=Encrypt(student['father_photo']+':'+req.ip);
+            student['student_photo'] = Encrypt(student['student_photo'] + ':' + req.ip);
+            student['father_photo'] = Encrypt(student['father_photo'] + ':' + req.ip);
             if (!student) {
                 return res.status(404).json({message: "Student not found"});
             }

@@ -68,10 +68,10 @@ GettingData.get('/api/dashboard', adminAuth('all'), async (req, res) => {
           from admins
                    inner JOIN schools s on admins.school_id = s.school_id
                    inner join roles r on admins.role_id = r.role_id
-          WHERE admins.admin_id = :school_id;`
+          WHERE admins.admin_id = :admin_id;`
             , {
                 replacements: {
-                    school_id: req['sessionData']['school_id']
+                    admin_id: req['sessionData']['id']
                 },
                 type: Sequelize.QueryTypes.SELECT
             }

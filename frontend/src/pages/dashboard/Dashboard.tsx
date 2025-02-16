@@ -15,6 +15,15 @@ import {
     FaBars,
     FaTimes
 } from "react-icons/fa";
+import { BiDotsHorizontalRounded } from "react-icons/bi";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import getProfileImage from "@/services/getProfileImage.ts";
 
 interface UserData {
@@ -58,7 +67,7 @@ const DashboardSideBar = () => {
     };
 
     return (
-        <div className="flex min-h-screen bg-gray-100">
+        <div className="flex flex-row min-h-screen bg-gray-100">
             <div
                 className={`fixed md:relative bg-gray-800 text-white w-64 md:w-72 transition-all duration-300 ${isOpen ? "left-0" : "-left-64"} md:left-0 min-h-screen flex flex-col`}>
                 <div className="p-5 flex items-center justify-between md:justify-start">
@@ -141,14 +150,28 @@ const DashboardSideBar = () => {
                 </ul>
                 {/* Profile Section */}
                 <div className="p-5 bg-gray-900 flex justify-between items-center">
-                    <div className="px-3">
+                    <div className="px-3 flex flex-row">
                         <img src={getProfileImage(userInfo.admin_name)} alt={userInfo.admin_name}
                              className="w-10 h-10 rounded-full mr-3"/>
+                        <div>
+                            <p className="text-base  "> {userInfo.admin_name} </p>
+                            <p className="text-sm text-gray-400">{userInfo?.role_name}</p>
+                        </div>
                     </div>
 
-                    <div className="px-3">
-                        <p className="text-base  "> {userInfo.admin_name} </p>
-                        <p className="text-sm text-gray-400">{userInfo?.role_name}</p>
+                    <div className="px-3 flex flex-row ">
+                        <div className="ml-2 flex items-center justify-center " >
+                            <DropdownMenu>
+                                <DropdownMenuTrigger> <BiDotsHorizontalRounded /> </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem>Profile</DropdownMenuItem>
+                                    <DropdownMenuItem> <Link to="/logout" className="text-red-500 text-bold">Logout</Link> </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -157,7 +180,7 @@ const DashboardSideBar = () => {
                 <FaBars size={24}/>
             </button>
 
-            <div >
+            <div className="flex-1 p-5 ml-2">
                 <Outlet />
             </div>
         </div>

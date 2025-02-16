@@ -1,5 +1,5 @@
-import React, { useEffect, useState} from "react";
-import { useNavigate } from "react-router-dom";
+import  { useEffect, useState} from "react";
+import {Link, useNavigate} from "react-router-dom";
 import {
     Table,
     TableBody,
@@ -10,13 +10,8 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import axiosInstance from "@/services/axiosInstance.ts";
+import Classroom from "@/types/Classroom.ts";
 
-
-interface Classroom {
-    classroom_id: string;
-    standard: string;
-    section: string;
-}
 
 interface TeacherDetails {
     teacher_id: number;
@@ -144,7 +139,20 @@ const Teacher = () => {
 
     return (
         <div className="bg-gray-100 rounded-lg shadow-md p-6">
-            <h1 className="text-4xl mb-4 text-center font-bold text-gray-700">Manage Teachers</h1>
+            <div className="flex justify-between mb-2" >
+                <div>
+                    <h1 className="text-4xl mb-4 text-center font-bold text-gray-700">Manage Teachers</h1>
+                </div>
+                <div>
+                    <button
+                        className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 mb-6"
+                    >
+                        <Link to='/dashboard/teachers/add'>
+                            Add new Teacher
+                        </Link>
+                    </button>
+                </div>
+            </div>
             <div className="bg-white p-4 rounded-lg shadow-sm mb-6">
                 <h2 className="text-lg font-semibold mb-3 text-gray-600">Search Teachers</h2>
                 <div className="flex flex-wrap gap-4">

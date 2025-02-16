@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import axiosInstance from "../../../services/axiosInstance";
 import Modal from "@/components/Modal.tsx";
 import User from "@/types/User.ts";
+import {Link} from "react-router-dom";
 
 interface Role {
     role_id: number;
@@ -105,6 +106,13 @@ const UserManagement: React.FC = () => {
                     <h1 className="text-3xl font-bold mb-6 text-gray-800">Manage Admin Users</h1>
                 </div>
                 <div>
+                    <button
+                        className="px-4 mx-2 py-2 bg-green-500 text-white rounded hover:bg-green-600 mb-6"
+                    >
+                        <Link to='/dashboard/roles'>
+                            Manage roles
+                        </Link>
+                    </button>
                     <button
                         onClick={() => setIsCreateModalOpen(true)}
                         className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 mb-6"

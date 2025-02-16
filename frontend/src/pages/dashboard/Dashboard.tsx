@@ -23,7 +23,8 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
+import Role from "@/types/Role.ts";
 import getProfileImage from "@/services/getProfileImage.ts";
 
 interface UserData {
@@ -43,13 +44,13 @@ const DashboardSideBar = () => {
     const [permissionsData, setPermissionsData] = useState<string[]>([]);
 
     const fetchUserDetails = async () => {
-        await axiosInstance.get('/api/dashboard').then((res) => {
+        await axiosInstance.get<UserData>('/api/dashboard').then((res) => {
             setUserInfo(res.data);
         }).catch((e) => console.error(e));
     }
 
     const fetchRoleDetails = async () => {
-        axiosInstance.get("/api/get-all-roles")
+        axiosInstance.get< {permission:Role[],role:string} >("/api/get-all-roles")
             .then((res) => {
                 setPermissionsData(res.data.permission);
                 setRole(res.data.role);
@@ -161,8 +162,8 @@ const DashboardSideBar = () => {
                         <img src={getProfileImage(userInfo.admin_name)} alt={userInfo.admin_name}
                              className="w-10 h-10 rounded-full mr-3"/>
                         <div>
-                            <p className="text-base  "> {userInfo.admin_name} </p>
-                            <p className="text-sm text-gray-400">{userInfo?.role_name}</p>
+                            <p className="text-sm font-medium">{userInfo.admin_name}</p>
+                            <p className="text-xs text-gray-400">{userInfo?.role_name}</p>
                         </div>
                     </div>
 

@@ -1,5 +1,5 @@
 // src/pages/BannerManagement.tsx
-import { useState, useEffect, ChangeEvent, FormEvent } from "react";
+import {useState, useEffect, ChangeEvent, FormEvent} from "react";
 import axiosInstance from "@/services/axiosInstance";
 
 
@@ -34,7 +34,7 @@ const BannerManagement = () => {
         Array.from(fileInput).forEach((file) => formData.append('photos', file));
 
         try {
-            const response = await axiosInstance.post('/api/bannerImage', formData, {
+            const response = await axiosInstance.post<{ message: string }>('/api/bannerImage', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -47,7 +47,7 @@ const BannerManagement = () => {
     };
 
     const getBannerImageUrl = (encryptedId: string) =>
-        `${import.meta.env.VITE_API_URL || '' }/staticFiles/bannerImages/${encryptedId}`;
+        `${import.meta.env.VITE_API_URL || ''}/staticFiles/bannerImages/${encryptedId}`;
 
     return (
         <div className="container mx-auto p-6">

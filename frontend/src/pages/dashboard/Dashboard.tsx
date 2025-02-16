@@ -1,151 +1,200 @@
-import { Link, Outlet } from "react-router-dom";
-import { useEffect, useState } from "react";
+import {Link, Outlet} from "react-router-dom";
+import {useEffect, useState} from "react";
 import axiosInstance from "../../services/axiosInstance.ts";
+import {
+    FaUserGraduate,
+    FaChalkboardTeacher,
+    FaMoneyBillWave,
+    FaUsersCog,
+    FaBell,
+    FaBook,
+    FaSchool,
+    FaClipboardList,
+    FaImages,
+    FaCog,
+    FaBars,
+    FaTimes
+} from "react-icons/fa";
+import {BiDotsHorizontalRounded} from "react-icons/bi";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import getProfileImage from "@/services/getProfileImage.ts";
 
-type DropdownState = {
-    student: boolean;
-    teacher: boolean;
-    fee: boolean;
-    userManagement: boolean;
-};
+interface UserData {
+    admin_name: string,
+    school_name: string,
+    role_name: string
+}
 
-const Dashboard = () => {
-    const [openState, setOpenState] = useState<DropdownState>({
-        student: false,
-        teacher: false,
-        fee: false,
-        userManagement: false,
+const DashboardSideBar = () => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [role, setRole] = useState("");
+    const [userInfo, setUserInfo] = useState<UserData>({
+        admin_name: '',
+        school_name: '',
+        role_name: ''
     });
-
-    const [role, setRole] = useState<string>('');
     const [permissionsData, setPermissionsData] = useState<string[]>([]);
 
-    useEffect(() => {
-        axiosInstance.get('/api/get-all-roles')
+    const fetchUserDetails = async () => {
+        await axiosInstance.get('/api/dashboard').then((res) => {
+            setUserInfo(res.data);
+        }).catch((e) => console.error(e));
+    }
+
+    const fetchRoleDetails = async () => {
+        axiosInstance.get("/api/get-all-roles")
             .then((res) => {
                 setPermissionsData(res.data.permission);
                 setRole(res.data.role);
             })
-            .catch((e) => {
-                console.error(e);
-            });
+            .catch((e) => console.error(e));
+    }
+
+    useEffect(() => {
+        fetchUserDetails();
+        fetchRoleDetails();
     }, []);
 
-    const toggleDropdown = (moduleName: keyof DropdownState) => {
-        // Close all dropdowns and only open the clicked one
-        setOpenState((prevState) => ({
-            ...prevState,
-            [moduleName]: !prevState[moduleName],
-            student: moduleName === 'student' ? !prevState.student : false,
-            teacher: moduleName === 'teacher' ? !prevState.teacher : false,
-            fee: moduleName === 'fee' ? !prevState.fee : false,
-            userManagement: moduleName === 'userManagement' ? !prevState.userManagement : false,
-        }));
-    };
-
     const hasPermission = (link: string) => {
-        if (role === 'admin') {
-            return true;
-        }
-        return permissionsData.includes(link);
-    };
-
-    const renderDropdownMenu = (moduleName: keyof DropdownState,name:string,items: string[], routes: string[]) => {
-        if (!hasPermission(name)) return null;
-        return (
-            <li>
-                <button
-                    className={`block w-full text-left p-3 rounded-lg ${openState[moduleName] ? "bg-gray-700" : "hover:bg-gray-700"}`}
-                    onClick={() => toggleDropdown(moduleName)}
-                >
-                    {/* {name.charAt(0).toUpperCase() + moduleName.slice(1)} */}
-                    {name}
-                </button>
-                <div
-                    className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                        openState[moduleName] ? "max-h-40" : "max-h-0"
-                    }`}
-                >
-                    <ul className="ml-5 space-y-1">
-                        {items.map((item, index) => (
-                            <li key={item}>
-                                <Link to={routes[index]} className="block p-2 rounded-lg hover:bg-gray-600">
-                                    {item}
-                                </Link>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            </li>
-        );
+        return ["admin", "principal", "vice-principal"].includes(role) || permissionsData.includes(link);
     };
 
     return (
-        <div className="flex min-h-screen bg-gray-100">
-            <div className="w-64 bg-gray-800 text-white">
-                <div className="p-5">
-                    <h1 className="text-2xl font-semibold tracking-wide" > <Link to='' > Admin Dashboard </Link> </h1>
+        <div className="flex flex-row min-h-screen bg-gray-100">
+            <div
+                className={`fixed md:relative bg-gray-800 text-white w-64 md:w-72 transition-all duration-300 ${isOpen ? "left-0" : "-left-64"} md:left-0 h-screen flex flex-col overflow-y-auto`}>
+                <div className="p-5 flex items-center justify-between md:justify-start">
+                    <h1 className="text-2xl font-bold">{userInfo.school_name}</h1>
+                    <button className="md:hidden text-white" onClick={() => setIsOpen(false)}>
+                        <FaTimes size={24}/>
+                    </button>
                 </div>
-                <ul className="space-y-2">
-                    {renderDropdownMenu('student','student management', ['Add Student', 'Manage Students'], ['students/add', 'students/manage-student'])}
-                    {renderDropdownMenu('teacher','teacher management', ['Add Teacher', 'Manage Teachers'], ['teacher/add', 'teacher/manage-teacher'])}
-                    {renderDropdownMenu('fee','fee managment', ['Fee Categories', 'Users'], ['fee/categories', 'users'])}
-                    {renderDropdownMenu('userManagement','user managment' ,['Roles', 'Users'], ['roles', 'users'])}
-                    {hasPermission('notice board') && (
+                <ul className="space-y-2 p-3 flex-1 overflow-y-auto">
+                    {hasPermission("student management") && (
                         <li>
-                            <Link to="notice-board" className="block p-3 rounded-lg hover:bg-gray-700 transition-colors">
-                                Notice board
+                            <Link to="students/manage-student"
+                                  className="flex items-center p-3 rounded-lg hover:bg-gray-700">
+                                <FaUserGraduate className="mr-3"/> Student Management
                             </Link>
                         </li>
                     )}
-                    {hasPermission('subjects') && (
+                    {hasPermission("teacher management") && (
                         <li>
-                            <Link to="subjects" className="block p-3 rounded-lg hover:bg-gray-700 transition-colors">
-                                Subjects
+                            <Link to="teacher/manage-teacher"
+                                  className="flex items-center p-3 rounded-lg hover:bg-gray-700">
+                                <FaChalkboardTeacher className="mr-3"/> Teacher Management
                             </Link>
                         </li>
                     )}
-                    {hasPermission('classroom') && (
+                    {hasPermission("fee management") && (
                         <li>
-                            <Link to="classroom" className="block p-3 rounded-lg hover:bg-gray-700 transition-colors">
-                                Classroom
+                            <Link to="fee/categories" className="flex items-center p-3 rounded-lg hover:bg-gray-700">
+                                <FaMoneyBillWave className="mr-3"/> Fee Management
                             </Link>
                         </li>
                     )}
-                    {hasPermission('exams') && (
+                    {hasPermission("user management") && (
                         <li>
-                            <Link to="exams" className="block p-3 rounded-lg hover:bg-gray-700 transition-colors">
-                                Exams
+                            <Link to="users" className="flex items-center p-3 rounded-lg hover:bg-gray-700">
+                                <FaUsersCog className="mr-3"/> User Management
                             </Link>
                         </li>
                     )}
-                    {hasPermission('gallery') && (
+                    {hasPermission("notice board") && (
                         <li>
-                            <Link to="gallery" className="block p-3 rounded-lg hover:bg-gray-700 transition-colors">
-                                Gallery
+                            <Link to="notice-board" className="flex items-center p-3 rounded-lg hover:bg-gray-700">
+                                <FaBell className="mr-3"/> Notice Board
                             </Link>
                         </li>
                     )}
-                    {hasPermission('banner Images') && (
+                    {hasPermission("subjects") && (
                         <li>
-                            <Link to="bannerImages" className="block p-3 rounded-lg hover:bg-gray-700 transition-colors">
-                                Banner Images
+                            <Link to="subjects" className="flex items-center p-3 rounded-lg hover:bg-gray-700">
+                                <FaBook className="mr-3"/> Subjects
+                            </Link>
+                        </li>
+                    )}
+                    {hasPermission("classroom") && (
+                        <li>
+                            <Link to="classroom" className="flex items-center p-3 rounded-lg hover:bg-gray-700">
+                                <FaSchool className="mr-3"/> Classroom
+                            </Link>
+                        </li>
+                    )}
+                    {hasPermission("exams") && (
+                        <li>
+                            <Link to="exams" className="flex items-center p-3 rounded-lg hover:bg-gray-700">
+                                <FaClipboardList className="mr-3"/> Exams
+                            </Link>
+                        </li>
+                    )}
+                    {hasPermission("gallery") && (
+                        <li>
+                            <Link to="gallery" className="flex items-center p-3 rounded-lg hover:bg-gray-700">
+                                <FaImages className="mr-3"/> Gallery
+                            </Link>
+                        </li>
+                    )}
+                    {hasPermission("banner Images") && (
+                        <li>
+                            <Link to="bannerImages" className="flex items-center p-3 rounded-lg hover:bg-gray-700">
+                                <FaImages className="mr-3"/> App Banner Images
                             </Link>
                         </li>
                     )}
                     <li>
-                        <Link to="settings" className="block p-3 rounded-lg hover:bg-gray-700 transition-colors">
-                            Settings
+                        <Link to="settings" className="flex items-center p-3 rounded-lg hover:bg-gray-700">
+                            <FaCog className="mr-3"/> Settings
                         </Link>
                     </li>
                 </ul>
+                {/* Profile Section */}
+                <div className="p-5 bg-gray-900 flex justify-between items-center">
+                    <div className="px-3 flex flex-row">
+                        <img src={getProfileImage(userInfo.admin_name)} alt={userInfo.admin_name}
+                             className="w-10 h-10 rounded-full mr-3"/>
+                        <div>
+                            <p className="text-base  "> {userInfo.admin_name} </p>
+                            <p className="text-sm text-gray-400">{userInfo?.role_name}</p>
+                        </div>
+                    </div>
+
+                    <div className="px-3 flex flex-row ">
+                        <div className="ml-2 flex items-center justify-center ">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger> <BiDotsHorizontalRounded/> </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                                    <DropdownMenuSeparator/>
+                                    <DropdownMenuItem>Profile</DropdownMenuItem>
+                                    <DropdownMenuItem> <Link to="/logout"
+                                                             className="text-red-500 text-bold">Logout</Link>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+
+                    </div>
+                </div>
             </div>
 
-            <div className="flex-1 p-5">
-                <Outlet />
+            <button className="fixed top-5 left-5 md:hidden text-gray-800" onClick={() => setIsOpen(true)}>
+                <FaBars size={24}/>
+            </button>
+
+            <div className="flex-1 p-5  ml-2 overflow-y-auto h-screen">
+                <Outlet/>
             </div>
+
         </div>
     );
 };
 
-export default Dashboard;
+export default DashboardSideBar;

@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import {Routes, Route} from "react-router-dom";
 import Home from "@/pages/Home.tsx";
 import About from "@/pages/About.tsx";
 import Contact from "@/pages/Contact.tsx";
@@ -28,40 +28,40 @@ function App() {
     return (
         <div>
             <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/login" element={<Login />} />
-                <Route element={<ProtectedRoute />}>
-                    <Route path="/dashboard" element={<Dashboard />}>
-                        <Route path="" element={<Dashboard_main />  } />
-                        <Route path="students" >
-                            <Route path="add" element={<AddStudent />} />
-                            <Route path="manage-student" element={<Students />}  />
-                            <Route path=":id" element={<StudentDetails />} />
+                <Route path="/" element={<Home/>}/>
+                <Route path="/about" element={<About/>}/>
+                <Route path="/contact" element={<Contact/>}/>
+                <Route path="/login" element={<Login/>}/>
+                <Route element={<ProtectedRoute/>}>
+                    <Route path="/dashboard" element={<Dashboard/>}>
+                        <Route path="" element={<Dashboard_main/>}/>
+                        <Route path="students">
+                            <Route path="add" element={<AddStudent/>}/>
+                            <Route path="manage-student" element={<Students/>}/>
+                            <Route path=":id" element={<StudentDetails/>}/>
                         </Route>
-                        <Route path="teachers" element={<Teachers />} />
-                        <Route path="teacher" >
-                            <Route path="add" element={<AddTeacher />} />
-                            <Route path="manage-teacher" element={<Teachers />}  />
-                            <Route path=":id" element={<TeacherDetails />} />
+                        <Route path="teachers" element={<Teachers/>}/>
+                        <Route path="teacher">
+                            <Route path="add" element={<AddTeacher/>}/>
+                            <Route path="manage-teacher" element={<Teachers/>}/>
+                            <Route path=":id" element={<TeacherDetails/>}/>
                         </Route>
-                        <Route path="fee" >
-                            <Route path="categories" element={<ManageCategories />} />
+                        <Route path="fee">
+                            <Route path="categories" element={<ManageCategories/>}/>
                         </Route>
-                        <Route path="notice-board" element={<NoticeBoard />} />
-                        <Route path="subjects" element={<Subject />} />
-                        <Route path="roles" element={<RolePanel />} />
-                        <Route path="users" element={<UserPanel />} />
-                        <Route path="classroom" element={<ClassroomManagement />} />
-                        <Route path="settings" element={<Settings />} />
-                        <Route path="gallery" element={<GalleryManager />} />
-                        <Route path="bannerImages" element={<BannerManagement />} />
-                        <Route path="*" element={<NotFound />} />
+                        <Route path="notice-board" element={<NoticeBoard/>}/>
+                        <Route path="subjects" element={<Subject/>}/>
+                        <Route path="roles" element={<RolePanel/>}/>
+                        <Route path="users" element={<UserPanel/>}/>
+                        <Route path="classroom" element={<ClassroomManagement/>}/>
+                        <Route path="settings" element={<Settings/>}/>
+                        <Route path="gallery" element={<GalleryManager/>}/>
+                        <Route path="bannerImages" element={<BannerManagement/>}/>
+                        <Route path="*" element={<NotFound/>}/>
                     </Route>
                 </Route>
-                <Route path="logout" element={<Logout />} />
-                <Route path="*" element={<NotFound />} />
+                <Route path="logout" element={<Logout/>}/>
+                <Route path="*" element={<NotFound/>}/>
             </Routes>
         </div>
     );

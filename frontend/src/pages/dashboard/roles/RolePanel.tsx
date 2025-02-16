@@ -1,16 +1,11 @@
 import { useState, useEffect } from 'react';
 import axiosInstance from "../../../services/axiosInstance";
 import Modal from "../../../components/Modal";
-
-interface Role {
-    role_id: number;
-    role_name: string;
-    permissions: string[];
-}
+import Role from '@/types/Role';
 
 const RoleManagement: React.FC = () => {
     const [roles, setRoles] = useState<Role[]>([]);
-    const [permissions,setPermissions] = useState<string[]>([]);
+    const [permissions, setPermissions] = useState<string[]>([]);
     const [form, setForm] = useState({
         role_name: '',
         selectedPermissions: [] as string[],
@@ -34,9 +29,9 @@ const RoleManagement: React.FC = () => {
 
     const fetchRoles = async () => {
         try {
-            const moduleData=await axiosInstance.get('/api/get-all-module');
-            const dummyData:string[]=[];
-            moduleData.data.modulesData.forEach((item:{module_name:string})=>{
+            const moduleData = await axiosInstance.get('/api/get-all-module');
+            const dummyData: string[] = [];
+            moduleData.data.modulesData.forEach((item: { module_name: string }) => {
                 dummyData.push(item.module_name);
             })
             setPermissions(dummyData);
@@ -150,15 +145,15 @@ const RoleManagement: React.FC = () => {
             {/* Create Role Button */}
             <div className="mb-2 flex justify-between">
                 <div>
-                <h1 className="text-3xl font-bold mb-6 text-gray-800">Manage Roles</h1>
+                    <h1 className="text-3xl font-bold mb-6 text-gray-800">Manage Roles</h1>
                 </div>
                 <div>
-                <button
-                    onClick={() => setIsCreateModalOpen(true)}
-                    className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-                >
-                    Create New Role
-                </button>
+                    <button
+                        onClick={() => setIsCreateModalOpen(true)}
+                        className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                    >
+                        Create New Role
+                    </button>
                 </div>
             </div>
 
@@ -176,7 +171,7 @@ const RoleManagement: React.FC = () => {
                             placeholder="Enter role name"
                             className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                             value={form.role_name}
-                            onChange={(e) => setForm({...form, role_name: e.target.value})}
+                            onChange={(e) => setForm({ ...form, role_name: e.target.value })}
                             required
                         />
                     </div>
@@ -219,7 +214,7 @@ const RoleManagement: React.FC = () => {
                             placeholder="Enter role name"
                             className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                             value={editForm.role_name}
-                            onChange={(e) => setEditForm({...editForm, role_name: e.target.value})}
+                            onChange={(e) => setEditForm({ ...editForm, role_name: e.target.value })}
                             required
                         />
                     </div>
@@ -254,35 +249,35 @@ const RoleManagement: React.FC = () => {
                 <div className="overflow-x-auto">
                     <table className="table-auto w-full text-left">
                         <thead>
-                        <tr className="bg-gray-100">
-                            <th className="px-4 py-2 text-gray-600">Role Name</th>
-                            <th className="px-4 py-2 text-gray-600">Permissions</th>
-                            <th className="px-4 py-2 text-center text-gray-600">Actions</th>
-                        </tr>
+                            <tr className="bg-gray-100">
+                                <th className="px-4 py-2 text-gray-600">Role Name</th>
+                                <th className="px-4 py-2 text-gray-600">Permissions</th>
+                                <th className="px-4 py-2 text-center text-gray-600">Actions</th>
+                            </tr>
                         </thead>
                         <tbody>
-                        {roles.map((role) => (
-                            <tr key={role.role_id} className="hover:bg-gray-50">
-                                <td className="px-4 py-2 border">{role.role_name}</td>
-                                <td className="px-4 py-2 border">
-                                    {role.permissions ? role.permissions.join(', ') : 'No permissions'}
-                                </td>
-                                <td className="px-4 py-2 text-center border">
-                                    <button
-                                        className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 mr-2"
-                                        onClick={() => handleEditOpen(role)}
-                                    >
-                                        Edit
-                                    </button>
-                                    <button
-                                        className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                                        onClick={() => handleDeleteRole(role.role_id)}
-                                    >
-                                        Delete
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
+                            {roles.map((role) => (
+                                <tr key={role.role_id} className="hover:bg-gray-50">
+                                    <td className="px-4 py-2 border">{role.role_name}</td>
+                                    <td className="px-4 py-2 border">
+                                        {role.permissions ? role.permissions.join(', ') : 'No permissions'}
+                                    </td>
+                                    <td className="px-4 py-2 text-center border">
+                                        <button
+                                            className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 mr-2"
+                                            onClick={() => handleEditOpen(role)}
+                                        >
+                                            Edit
+                                        </button>
+                                        <button
+                                            className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                                            onClick={() => handleDeleteRole(role.role_id)}
+                                        >
+                                            Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
                         </tbody>
                     </table>
                 </div>

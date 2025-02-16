@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import axiosInstance from "../../../services/axiosInstance.ts";
 import FetchClassroomData from "@/services/FetchClassroomData.ts";
 import Classroom from "@/types/Classroom.ts";
@@ -16,12 +16,6 @@ interface Student {
     standard:string,
     section:string
 }
-
-// interface Classroom {
-//     classroom_id: nu;
-//     standard: string;
-//     section: string;
-// }
 
 const Students = () => {
     const [classrooms, setClassrooms] = useState<Classroom[]>([]);
@@ -98,7 +92,22 @@ const Students = () => {
 
     return (
         <div className="p-5">
-            <h2 className="text-3xl font-bold text-center mb-5">Manage Students</h2>
+            <div className="flex justify-between mb-2 " >
+                <div>
+                    <h2 className="text-3xl font-bold text-center mb-5">Manage Students</h2>
+                </div>
+                <div>
+                    <button
+                        className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 mb-6"
+                    >
+                        <Link to='/dashboard/students/add'>
+                            Add new student
+                        </Link>
+                    </button>
+                </div>
+
+            </div>
+
 
             {/* Search Form */}
             <div className="bg-white p-4 rounded-lg shadow-sm mb-6">

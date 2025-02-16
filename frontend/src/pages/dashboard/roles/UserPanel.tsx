@@ -1,14 +1,9 @@
 import { useState, useEffect } from 'react';
 import axiosInstance from "../../../services/axiosInstance";
-import Modal from "../../../components/Modal";
+import Modal from "@/components/Modal.tsx";
+import User from "@/types/User.ts";
+import {Link} from "react-router-dom";
 
-interface User {
-    admin_id: number;
-    admin_name: string;
-    admin_email: string;
-    admin_phone_number: string;
-    role_id: string;
-}
 interface Role {
     role_id: number;
     role_name: string;
@@ -26,6 +21,7 @@ const UserManagement: React.FC = () => {
     });
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [currentEditUser, setCurrentEditUser] = useState<User | null>(null);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false); // New state for the create user modal
 
     // Fetch users and roles
     useEffect(() => {
@@ -50,6 +46,7 @@ const UserManagement: React.FC = () => {
             await axiosInstance.post('/api/users', form);
             fetchUsers();
             resetForm();
+            setIsCreateModalOpen(false); // Close modal after submit
         } catch (error) {
             console.error('Error creating user:', error);
         }
@@ -104,11 +101,74 @@ const UserManagement: React.FC = () => {
 
     return (
         <div className="container mx-auto p-6">
-            <h1 className="text-3xl font-bold mb-6 text-gray-800">Manage Admin Users</h1>
+            <div className="flex justify-between" >
+                <div>
+                    <h1 className="text-3xl font-bold mb-6 text-gray-800">Manage Admin Users</h1>
+                </div>
+                <div>
+                    <button
+                        className="px-4 mx-2 py-2 bg-green-500 text-white rounded hover:bg-green-600 mb-6"
+                    >
+                        <Link to='/dashboard/roles'>
+                            Manage roles
+                        </Link>
+                    </button>
+                    <button
+                        onClick={() => setIsCreateModalOpen(true)}
+                        className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 mb-6"
+                    >
+                        Create Admin User
+                    </button>
+                </div>
+            </div>
 
-            {/* User Creation Form */}
-            <div className="bg-white shadow-lg rounded-lg p-6 mb-10">
-                <h2 className="text-xl font-semibold mb-4">Create Admin User</h2>
+
+            {/* Users Table */}
+            <div className="bg-white shadow-lg rounded-lg p-6">
+                <h2 className="text-xl font-semibold mb-4">Admin Users List</h2>
+                <div className="overflow-x-auto">
+                    <table className="table-auto w-full text-left">
+                        <thead>
+                        <tr className="bg-gray-100">
+                            <th className="px-4 py-2 text-gray-600">Name</th>
+                            <th className="px-4 py-2 text-gray-600">Email</th>
+                            <th className="px-4 py-2 text-gray-600">Phone</th>
+                            <th className="px-4 py-2 text-center text-gray-600">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {users.map((user) => (
+                            <tr key={user.admin_id} className="hover:bg-gray-50">
+                                <td className="px-4 py-2 border">{user.admin_name}</td>
+                                <td className="px-4 py-2 border">{user.admin_email}</td>
+                                <td className="px-4 py-2 border">{user.admin_phone_number}</td>
+                                <td className="px-4 py-2 text-center border">
+                                    <button
+                                        className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 mr-2"
+                                        onClick={() => openEditModal(user)}
+                                    >
+                                        Edit
+                                    </button>
+                                    <button
+                                        className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                                        onClick={() => handleDeleteUser(user.admin_id)}
+                                    >
+                                        Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {/* Create User Modal */}
+            <Modal
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                title="Create Admin User"
+            >
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid md:grid-cols-2 gap-4">
                         <div>
@@ -173,51 +233,13 @@ const UserManagement: React.FC = () => {
                             ))}
                         </select>
                     </div>
-                    <button type="submit" className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
-                        Create Admin User
-                    </button>
+                    <div className="flex justify-center" >
+                        <button type="submit" className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+                            Create Admin User
+                        </button>
+                    </div>
                 </form>
-            </div>
-
-            {/* Users Table */}
-            <div className="bg-white shadow-lg rounded-lg p-6">
-                <h2 className="text-xl font-semibold mb-4">Admin Users List</h2>
-                <div className="overflow-x-auto">
-                    <table className="table-auto w-full text-left">
-                        <thead>
-                        <tr className="bg-gray-100">
-                            <th className="px-4 py-2 text-gray-600">Name</th>
-                            <th className="px-4 py-2 text-gray-600">Email</th>
-                            <th className="px-4 py-2 text-gray-600">Phone</th>
-                            <th className="px-4 py-2 text-center text-gray-600">Actions</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {users.map((user) => (
-                            <tr key={user.admin_id} className="hover:bg-gray-50">
-                                <td className="px-4 py-2 border">{user.admin_name}</td>
-                                <td className="px-4 py-2 border">{user.admin_email}</td>
-                                <td className="px-4 py-2 border">{user.admin_phone_number}</td>
-                                <td className="px-4 py-2 text-center border">
-                                    <button
-                                        className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 mr-2"
-                                        onClick={() => openEditModal(user)}
-                                    >
-                                        Edit
-                                    </button>
-                                    <button
-                                        className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                                        onClick={() => handleDeleteUser(user.admin_id)}
-                                    >
-                                        Delete
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            </Modal>
 
             {/* Edit User Modal */}
             <Modal
@@ -263,12 +285,14 @@ const UserManagement: React.FC = () => {
                                 </option>
                             ))}
                         </select>
-                        <button
-                            onClick={handleEditSubmit}
-                            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                        >
-                            Save Changes
-                        </button>
+                        <div className="flex justify-center" >
+                            <button
+                                onClick={handleEditSubmit}
+                                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                            >
+                                Save Changes
+                            </button>
+                        </div>
                     </div>
                 )}
             </Modal>

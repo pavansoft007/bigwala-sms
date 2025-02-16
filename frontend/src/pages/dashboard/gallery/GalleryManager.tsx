@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
 import axiosInstance from "@/services/axiosInstance.ts";
+import Modal from "@/components/Modal.tsx";
+import { GrAdd } from "react-icons/gr";
+import { FaTrash } from "react-icons/fa";
 
 interface Photo {
     filename: string;
@@ -11,7 +14,10 @@ const GalleryManager: React.FC = () => {
     const [photos, setPhotos] = useState<Photos>({});
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [eventName, setEventName] = useState<string>('');
+    const [selectedEvent, setSelectedEvent] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
+    const [popUP, setPOPUP] = useState<boolean>(false);
+    const [previewImage, setPreviewImage] = useState<string | null>(null);
 
     useEffect(() => {
         fetchGalleryImages();
@@ -35,16 +41,16 @@ const GalleryManager: React.FC = () => {
     const handleUpload = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
-        if (selectedFiles.length === 0 || !eventName) {
-            alert('Please provide an event name and at least one file to upload.');
+        if (selectedFiles.length === 0 || (!eventName && !selectedEvent)) {
+            alert('Please select an existing event or create a new one.');
             return;
         }
 
         const formData = new FormData();
         selectedFiles.forEach((file) => {
-            formData.append('photos', file); // Use the same field name as in your backend
+            formData.append('photos', file);
         });
-        formData.append('event_name', eventName);
+        formData.append('event_name', selectedEvent || eventName);
 
         setLoading(true);
 
@@ -55,12 +61,24 @@ const GalleryManager: React.FC = () => {
             alert('Photos uploaded successfully!');
             setSelectedFiles([]);
             setEventName('');
-            await fetchGalleryImages();
+            setSelectedEvent('');
+            fetchGalleryImages();
         } catch (error) {
             console.error('Error uploading photos:', error);
-            alert('Failed to upload photos. Please try again.');
+            alert('Failed to upload photos.');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleDeletePhoto = async (filename: string) => {
+        try {
+            await axiosInstance.delete(`/mobileAPI/gallery/${filename}`);
+            alert('Photo deleted successfully!');
+            fetchGalleryImages();
+        } catch (error) {
+            console.error('Error deleting photo:', error);
+            alert('Failed to delete photo.');
         }
     };
 
@@ -68,17 +86,25 @@ const GalleryManager: React.FC = () => {
         return Object.entries(photos).map(([date, events]) => (
             <div key={date} className="mb-6">
                 <h3 className="text-xl font-bold text-gray-800 mb-4">{date}</h3>
-                {Object.entries(events).map(([eventName, images]) => (
-                    <div key={eventName} className="mb-4">
-                        <h4 className="text-lg font-semibold text-blue-600 mb-2">{eventName}</h4>
+                {Object.entries(events).map(([event, images]) => (
+                    <div key={event} className="mb-4">
+                        <h4 className="text-lg font-semibold text-blue-600 mb-2">{event}</h4>
                         <div className="flex flex-wrap gap-4">
                             {images.map((image, index) => (
-                                <img
-                                    key={index}
-                                    src={`${import.meta.env.VITE_API_URL}/staticFiles/gallery/${image.filename}`}
-                                    alt="Gallery"
-                                    className="w-36 h-36 object-cover rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300"
-                                />
+                                <div key={index} className="relative group">
+                                    <img
+                                        src={`${import.meta.env.VITE_API_URL}/staticFiles/photos/${image.filename}`}
+                                        alt="Gallery"
+                                        className="w-36 h-36 object-cover rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 cursor-pointer"
+                                        onClick={() => setPreviewImage(`${import.meta.env.VITE_API_URL}/staticFiles/photos/${image.filename}`)}
+                                    />
+                                    <button
+                                        className="absolute top-2 right-2 bg-red-600 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                                        onClick={() => handleDeletePhoto(image.filename)}
+                                    >
+                                        <FaTrash />
+                                    </button>
+                                </div>
                             ))}
                         </div>
                     </div>
@@ -89,45 +115,47 @@ const GalleryManager: React.FC = () => {
 
     return (
         <div className="p-6 min-h-screen">
-            <h1 className="text-3xl font-extrabold mb-6 text-center">Gallery Manager</h1>
+            <div className="flex justify-between mb-6">
+                <h1 className="text-3xl font-extrabold">Gallery Manager</h1>
+                <button onClick={() => setPOPUP(true)} className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+                    <GrAdd /> Upload Photos
+                </button>
+            </div>
 
-            <form
-                onSubmit={handleUpload}
-                className="bg-white rounded-lg p-6 shadow-lg mb-8 max-w-lg mx-auto"
-            >
-                <div className="mb-4">
-                    <label className="block text-gray-700 font-medium mb-2">Event Name:</label>
+            <Modal isOpen={popUP} onClose={() => setPOPUP(false)} title='Upload Photos'>
+                <form onSubmit={handleUpload} className="bg-white p-6 rounded-lg shadow-lg">
+                    <label className="block text-gray-700 font-medium mb-2">Choose Event:</label>
+                    <select
+                        className="w-full p-2 border rounded-lg mb-4"
+                        value={selectedEvent}
+                        onChange={(e) => setSelectedEvent(e.target.value)}
+                    >
+                        <option value="">Select an event...</option>
+                        {Object.keys(photos).map((date) =>
+                            Object.keys(photos[date]).map((event) => (
+                                <option key={event} value={event}>{event}</option>
+                            ))
+                        )}
+                    </select>
                     <input
                         type="text"
                         value={eventName}
                         onChange={(e) => setEventName(e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
-                        placeholder="Enter event name"
+                        placeholder="Or enter new event name"
+                        className="w-full p-2 border rounded-lg mb-4"
                     />
-                </div>
+                    <input type="file" multiple onChange={handleFileChange} className="mb-4" />
+                    <button type="submit" className="w-full bg-green-500 text-white p-2 rounded-lg hover:bg-green-600">
+                        {loading ? 'Uploading...' : 'Upload'}
+                    </button>
+                </form>
+            </Modal>
 
-                <div className="mb-4">
-                    <label className="block text-gray-700 font-medium mb-2">Upload Photos:</label>
-                    <input
-                        type="file"
-                        multiple
-                        onChange={handleFileChange}
-                        className="w-full text-gray-600"
-                    />
-                </div>
+            <Modal isOpen={!!previewImage} onClose={() => setPreviewImage(null)} title="" >
+                {previewImage && <img src={previewImage} alt="preview image" className="w-full h-auto" />}
+            </Modal>
 
-                <button
-                    type="submit"
-                    disabled={loading}
-                    className={`w-full py-2 px-4 rounded-lg text-white font-semibold ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600 transition-colors duration-300'}`}
-                >
-                    {loading ? 'Uploading...' : 'Upload Photos'}
-                </button>
-            </form>
-
-            <div className="bg-white rounded-lg p-6 shadow-lg">
-                {renderGallery()}
-            </div>
+            <div className="bg-white p-6 rounded-lg shadow-lg">{renderGallery()}</div>
         </div>
     );
 };

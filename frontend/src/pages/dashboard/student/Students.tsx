@@ -17,12 +17,6 @@ interface Student {
     section:string
 }
 
-// interface Classroom {
-//     classroom_id: nu;
-//     standard: string;
-//     section: string;
-// }
-
 const Students = () => {
     const [classrooms, setClassrooms] = useState<Classroom[]>([]);
     const [students, setStudents] = useState<Student[]>([]);

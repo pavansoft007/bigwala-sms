@@ -3,6 +3,7 @@ import School from './School.js';
 import sequelize from '../config/database.js';
 import classroom from "./Classroom.js";
 import Subject from "./Subject.js";
+import Role from "./Role.js";
 
 class Teacher extends Model {}
 
@@ -79,6 +80,14 @@ Teacher.init({
         references: {
             model: School,
             key: 'school_id'
+        }
+    },
+    role_id:{
+        type:DataTypes.INTEGER,
+        allowNull:false,
+        references:{
+            model:Role,
+            key:'role_id'
         }
     },
     teachers_qualification: {

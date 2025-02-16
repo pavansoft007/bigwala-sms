@@ -8,22 +8,17 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-
 import axiosInstance from "../../../services/axiosInstance.ts";
+import Classroom from "@/types/Classroom.ts";
 
-interface Classroom{
-    classroom_id:number,
-    standard:string,
-    section:string
-}
 
-interface FeeDetails{
+interface FeeDetails {
     category_id: number,
     category_name: string,
     total_fee: number
 }
 
-interface FeeCategory{
+interface FeeCategory {
     category_id: number,
     category_name: string,
     description: string
@@ -31,24 +26,26 @@ interface FeeCategory{
 
 interface FormDataWithFiles extends FormData {
     first_name: string,
-        last_name: string,
-        date_of_birth: string,
-        gender: string,
-        email: string,
-        phone_number: string,
-        address: string,
-        enrollment_date: string,
-        standard: string,
-        section: string,
-        tuition_fee:string,
-        classroom_id:string,
-        father_name:string,
-        mother_name:string,
-        mother_phone_number:string,
-        caste:string,
-        student_photo?: File | null;
+    last_name: string,
+    admission_id:string,
+    admission_id_auto_generate_check:boolean,
+    date_of_birth: string,
+    gender: string,
+    email: string,
+    phone_number: string,
+    address: string,
+    enrollment_date: string,
+    standard: string,
+    section: string,
+    tuition_fee: string,
+    classroom_id: string,
+    father_name: string,
+    mother_name: string,
+    mother_phone_number: string,
+    caste: string,
+    student_photo?: File | null;
     father_photo?: File | null;
-   
+
 }
 
 const AddStudent = () => {
@@ -70,21 +67,24 @@ const AddStudent = () => {
         initialFormData.mother_name = "";
         initialFormData.mother_phone_number = "";
         initialFormData.caste = "";
+        initialFormData.admission_id="";
+        initialFormData.admission_id_auto_generate_check=false;
         return initialFormData;
     });
-    const [classroomDetails,setClassroomDetails]=useState<Classroom[]>([]);
-    const [feeDetails,setFeeDetails]=useState<FeeDetails[]>([]);
-    const [feeCategory,setFeeCategory]=useState<FeeCategory[]>([]);
+    const [classroomDetails, setClassroomDetails] = useState<Classroom[]>([]);
+    const [feeDetails, setFeeDetails] = useState<FeeDetails[]>([]);
+    const [feeCategory, setFeeCategory] = useState<FeeCategory[]>([]);
     const [message, setMessage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [formCheck,setFormCheck]=useState<string>('no');
 
     // Fetch standards on component mount
     useEffect(() => {
         const fetchStandards = async () => {
             try {
-                const classroomRespoance=await axiosInstance.get('/mobileAPI/classroom');
+                const classroomRespoance = await axiosInstance.get('/mobileAPI/classroom');
                 setClassroomDetails(classroomRespoance.data);
-                const feeCatrgoriesRes=await axiosInstance.get('/api/fee_category');
+                const feeCatrgoriesRes = await axiosInstance.get('/api/fee_category');
                 setFeeCategory(feeCatrgoriesRes.data);
             } catch (e) {
                 console.error("Error fetching standards:", e);
@@ -117,36 +117,43 @@ const AddStudent = () => {
     };
 
 
-    const handlePriceChange=(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,index:number)=>{
-        const newArr=feeDetails;
-        if(newArr[index]){
-            newArr[index]['total_fee']=parseInt(e.target.value);
+    const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>, index: number) => {
+        const newArr = feeDetails;
+        if (newArr[index]) {
+            newArr[index]['total_fee'] = parseInt(e.target.value);
             setFeeDetails(newArr);
         }
     }
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        const { name, value, type } = e.target;
-        
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement >) => {
+        const {name, value, type} = e.target;
+
+
+
         if (type === 'file') {
             const fileInput = e.target as HTMLInputElement;
             const files = fileInput.files;
-            
+
             if (files && files.length > 0) {
                 setFormData(prevData => ({
                     ...prevData,
                     [name]: files[0]
                 }));
             }
+        }else if(type ==='checkbox'){
+                setFormData(prevData => ({
+                    ...prevData,
+                    [name]: e.target.checked
+                }));
+
         } else {
-            setFormData(prevData => ({
-                ...prevData,
-                [name]: value
-            }));
+                setFormData(prevData => ({
+                    ...prevData,
+                    [name]: value
+                }));
         }
     };
 
-    
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -154,14 +161,14 @@ const AddStudent = () => {
         setError(null);
         try {
             const backendFormData = new FormData();
-            
+
             // Append all non-file fields
             Object.entries(formData).forEach(([key, value]) => {
                 if (key !== 'student_photo' && key !== 'father_photo') {
                     backendFormData.append(key, value as string);
                 }
             });
-            
+
             // Append files if they exist
             if (formData.student_photo) {
                 backendFormData.append('student_photo', formData.student_photo);
@@ -169,14 +176,14 @@ const AddStudent = () => {
             if (formData.father_photo) {
                 backendFormData.append('father_photo', formData.father_photo);
             }
-            
+
             // Append fee details
             feeDetails.forEach((detail, i) => {
                 backendFormData.append(`feeDetails[${i}][total_fee]`, detail.total_fee.toString());
                 backendFormData.append(`feeDetails[${i}][category_id]`, detail.category_id.toString());
             });
 
-            
+
             await axiosInstance.post("/api/student", backendFormData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
@@ -210,7 +217,7 @@ const AddStudent = () => {
         }
     };
 
-    const blockCss:string='w-full mx-4';
+    const blockCss: string = 'w-full mx-4';
 
     return (
         <div className="max-w-full mx-auto bg-white p-8 rounded shadow-xl">
@@ -243,6 +250,30 @@ const AddStudent = () => {
                             required
                             className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg"
                         />
+                    </div>
+
+
+                    <div className="mt-2">
+                        <label className="block text-sm font-medium text-gray-700">Admission ID</label>
+                        <input
+                            type="text"
+                            name="admission_id"
+                            value={formData.admission_id}
+                            onChange={handleChange}
+                            disabled={formData.admission_id_auto_generate_check}
+                            className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg"
+                        />
+                        <input
+                          type="checkbox"
+                          className=" mx-2"
+                          name="admission_id_auto_generate_check"
+                          value='true'
+                          onChange={handleChange}
+
+                        />
+                        <label  htmlFor="admission_id_auto_generate_check" className="mt-4" >
+                          Auto generate Admission ID
+                        </label>
                     </div>
 
                     <div className="mt-2">
@@ -334,6 +365,9 @@ const AddStudent = () => {
                     </div>
 
 
+                </div>
+                <div className={blockCss}>
+
                     <div className="mt-2">
                         <label className="block text-sm font-medium text-gray-700">Address</label>
                         <input
@@ -345,9 +379,6 @@ const AddStudent = () => {
                             className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg"
                         />
                     </div>
-
-                </div>
-                <div className={blockCss}>
                     <div className="mt-2">
                         <label className="block text-sm font-medium text-gray-700">Class</label>
                         <select
@@ -379,26 +410,26 @@ const AddStudent = () => {
                     </div>
                     <div className="mb-4 flex flex-row mt-2">
                         <div>
-                        <label className="block text-gray-700 font-medium mb-2">Student photo:</label>
-                        <input
-                           type="file"
-                           name="student_photo"
-                           onChange={handleChange}
-                           className="w-full text-gray-600"
-                        />
+                            <label className="block text-gray-700 font-medium mb-2">Student photo:</label>
+                            <input
+                                type="file"
+                                name="student_photo"
+                                onChange={handleChange}
+                                className="w-full text-gray-600"
+                            />
                         </div>
                         <div>
-                           <label className="block text-gray-700 font-medium mb-2">father photo:</label>
-                           <input
-                              type="file"
-                              name="father_photo"
-                              onChange={handleChange}
-                              className="w-full text-gray-600"
+                            <label className="block text-gray-700 font-medium mb-2">father photo:</label>
+                            <input
+                                type="file"
+                                name="father_photo"
+                                onChange={handleChange}
+                                className="w-full text-gray-600"
                             />
                         </div>
                     </div>
                     {/* <div className="mb-4">
-                    
+
                     </div> */}
                     <div className="mt-2">
                         <label className="block text-sm font-medium text-gray-700">caste</label>
@@ -424,7 +455,7 @@ const AddStudent = () => {
                         <h3 className="text-center text-xl">Fee management</h3>
                     </div>
 
-                    <div className="h-64 overflow-scroll" >
+                    <div className="h-64 overflow-scroll">
                         <Table>
                             <TableHeader>
                                 <TableRow>
@@ -437,7 +468,7 @@ const AddStudent = () => {
                             <TableBody>
                                 {
                                     feeCategory.map((item: FeeCategory, index: number) => {
-                                        return <TableRow>
+                                        return <TableRow key={index} >
                                             <TableCell><input type="checkbox" name={item.category_name}
                                                               value={item.category_id}
                                                               onChange={(event) => handleFeeToggle(event, index)}/></TableCell>
@@ -457,12 +488,6 @@ const AddStudent = () => {
                     </div>
 
                     <div className=" flex justify-center mt-5 ">
-                        {/*<button*/}
-                        {/*    type="submit"*/}
-                        {/*    className="bg-blue-600 text-white py-2 px-4 w-1/2 rounded-lg hover:bg-blue-700"*/}
-                        {/*>*/}
-                        {/*    Add Student*/}
-                        {/*</button>*/}
                         <button
                             onClick={handleSubmit}
                             className="bg-blue-600 text-white py-2 px-4 w-1/2 rounded-lg hover:bg-blue-700"

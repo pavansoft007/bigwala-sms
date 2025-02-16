@@ -68,9 +68,8 @@ const DashboardSideBar = () => {
 
     return (
         <div className="flex flex-row min-h-screen bg-gray-100">
-            <div
-                className={`fixed md:relative bg-gray-800 text-white w-64 md:w-72 transition-all duration-300 ${isOpen ? "left-0" : "-left-64"} md:left-0 min-h-screen flex flex-col`}>
-                <div className="p-5 flex items-center justify-between md:justify-start">
+            <div className={`fixed md:relative bg-gray-800 text-white w-64 md:w-72 transition-all duration-300 ${isOpen ? "left-0" : "-left-64"} md:left-0 h-screen flex flex-col overflow-y-auto`}>
+            <div className="p-5 flex items-center justify-between md:justify-start">
                     <h1 className="text-2xl font-bold">{userInfo.school_name}</h1>
                     <button className="md:hidden text-white" onClick={() => setIsOpen(false)}>
                         <FaTimes size={24}/>
@@ -142,6 +141,13 @@ const DashboardSideBar = () => {
                             </Link>
                         </li>
                     )}
+                    {hasPermission("banner Images") && (
+                        <li>
+                            <Link to="bannerImages" className="flex items-center p-3 rounded-lg hover:bg-gray-700">
+                                <FaImages className="mr-3"/> App Banner Images
+                            </Link>
+                        </li>
+                    )}
                     <li>
                         <Link to="settings" className="flex items-center p-3 rounded-lg hover:bg-gray-700">
                             <FaCog className="mr-3"/> Settings
@@ -180,9 +186,10 @@ const DashboardSideBar = () => {
                 <FaBars size={24}/>
             </button>
 
-            <div className="flex-1 p-5 ml-2">
+            <div className="flex-1 p-5  ml-2 overflow-y-auto h-screen">
                 <Outlet />
             </div>
+
         </div>
     );
 };

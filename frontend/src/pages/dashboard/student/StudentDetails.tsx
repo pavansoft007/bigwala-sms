@@ -1,12 +1,36 @@
 import {useState, useEffect} from "react";
 import {useParams} from "react-router-dom";
 import axiosInstance from "@/services/axiosInstance.ts";
-import axios from "axios";
 import Classroom from "@/types/Classroom.ts";
+
+interface Student {
+    admission_ID: string;
+    student_id: string;
+    mother_phone_number: string;
+    mother_name: string;
+    father_name: string;
+    caste: string;
+    status: string;
+    student_photo: string;
+    father_photo: string;
+    classroom_id: string;
+    first_name: string;
+    last_name: string;
+    date_of_birth: string;
+    gender: string;
+    email: string;
+    phone_number: string;
+    address: string;
+    enrollment_date: string;
+    assginedClassroom: string;
+    standard: string;
+    section: string;
+}
+
 
 const StudentDetails = () => {
     const {id} = useParams();
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<Student>({
         admission_ID: '',
         student_id: "",
         mother_phone_number: "",
@@ -37,7 +61,7 @@ const StudentDetails = () => {
 
     const getStudentDetails = () => {
         axiosInstance
-            .get(`/mobileAPI/students/${id}`)
+            .get<Student>(`/mobileAPI/students/${id}`)
             .then((res) => {
                 setFormData(res.data);
             })
@@ -48,13 +72,15 @@ const StudentDetails = () => {
     };
 
     useEffect(() => {
+        console.log(message);
+        console.log(error);
         getStudentDetails();
     }, [id]);
 
 
     useEffect(() => {
         axiosInstance
-            .get("/mobileAPI/classroom")
+            .get<Classroom[]>("/mobileAPI/classroom")
             .then((res) => {
                 setClassrooms(res.data);
             })
@@ -65,7 +91,7 @@ const StudentDetails = () => {
 
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        const { name, type, value } = e.target;
+        const {name, type, value} = e.target;
 
         if (type === "file") {
             const fileInput = e.target as HTMLInputElement;
@@ -106,12 +132,8 @@ const StudentDetails = () => {
             getStudentDetails();
             setIsEditMode(false);
         } catch (err) {
-            if (axios.isAxiosError(err)) {
-                setError(err.response?.data?.message || "Failed to update student details.");
-            } else {
-                console.error("Unexpected error updating student:", err);
-                setError("An unexpected error occurred.");
-            }
+            setError("Failed to update student details.");
+            console.error("Unexpected error updating student:", err);
         }
     };
 

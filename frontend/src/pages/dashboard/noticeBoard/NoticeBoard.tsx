@@ -47,7 +47,7 @@ const AdminMessageBoard = () => {
         setError('');
 
         try {
-            const response = await axiosInstance.post('/mobileAPI/getMessages', {
+            const response = await axiosInstance.post<Message[]>('/mobileAPI/getMessages', {
                 ...filter,
                 type
             });

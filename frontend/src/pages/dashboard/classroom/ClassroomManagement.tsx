@@ -1,24 +1,24 @@
-import { useEffect, useState } from "react";
+import {useEffect, useState} from "react";
 import axiosInstance from "@/services/axiosInstance.ts";
 import ClipLoader from 'react-spinners/ClipLoader';
 import Classroom from "@/types/Classroom.ts";
 
 const ClassroomManagement = () => {
     const [classrooms, setClassrooms] = useState<Classroom[]>([]);
-    const [isLoading,setIsLoading]=useState<boolean>(true);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-    const [newClassroom, setNewClassroom] = useState({ standard: "", section: "" });
+    const [newClassroom, setNewClassroom] = useState({standard: "", section: ""});
     const [currentClassroom, setCurrentClassroom] = useState<Classroom | null>(null);
 
     // Fetch classrooms
     useEffect(() => {
-        setIsLoading(()=>true);
+        setIsLoading(() => true);
         axiosInstance
-            .get("/mobileAPI/classroom")
+            .get<Classroom[]>("/mobileAPI/classroom")
             .then((response) => {
-                    setIsLoading(false);
-                    setClassrooms(response.data);
+                setIsLoading(false);
+                setClassrooms(response.data);
             })
             .catch(() => {
                 setIsLoading(false);
@@ -29,9 +29,9 @@ const ClassroomManagement = () => {
     // Add new classroom
     const handleAddClassroom = () => {
         axiosInstance
-            .post("/mobileAPI/classroom", newClassroom)
+            .post<Classroom>("/mobileAPI/classroom", newClassroom)
             .then((response) => {
-                setClassrooms((prev) => [...prev, response.data]);
+                setClassrooms((prev) => [...prev, response.data]);  // ✅ response.data is now Classroom
                 setIsAddModalOpen(false);
                 setNewClassroom({ standard: "", section: "" });
             })
@@ -39,6 +39,7 @@ const ClassroomManagement = () => {
                 console.error("Error adding classroom");
             });
     };
+
 
     // Delete classroom
     const handleDeleteClassroom = () => {
@@ -61,8 +62,8 @@ const ClassroomManagement = () => {
     return (
         <div className="p-6 bg-gray-100 min-h-screen">
             <h1 className="text-3xl font-bold text-center mb-8">Classroom Management</h1>
-            <div className=" flex justify-center items-center  w-full" >
-                <ClipLoader  loading={isLoading} size={50}  />
+            <div className=" flex justify-center items-center  w-full">
+                <ClipLoader loading={isLoading} size={50}/>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {classrooms.map((classroom) => (
@@ -109,7 +110,7 @@ const ClassroomManagement = () => {
                                 className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                                 value={newClassroom.standard}
                                 onChange={(e) =>
-                                    setNewClassroom({ ...newClassroom, standard: e.target.value })
+                                    setNewClassroom({...newClassroom, standard: e.target.value})
                                 }
                             />
                         </div>
@@ -120,7 +121,7 @@ const ClassroomManagement = () => {
                                 className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                                 value={newClassroom.section}
                                 onChange={(e) =>
-                                    setNewClassroom({ ...newClassroom, section: e.target.value })
+                                    setNewClassroom({...newClassroom, section: e.target.value})
                                 }
                             />
                         </div>

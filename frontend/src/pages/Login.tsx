@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../services/axiosInstance.ts";
+interface LoginResponse {
+    token: string;
+}
 
 const AdminLogin = () => {
     const [email, setUsername] = useState("");
@@ -15,7 +18,8 @@ const AdminLogin = () => {
                 email,
                 password,
             });
-            const { token } = response.data;
+            const loginINFO=response.data as LoginResponse;
+            const { token } = loginINFO;
             localStorage.setItem("authToken", token);
             navigate("/dashboard");
             setError(null);

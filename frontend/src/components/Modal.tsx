@@ -6,7 +6,7 @@ interface ModalProps {
     onClose: () => void;
     title: string;
     children: ReactNode;
-    disableClose?: boolean;  // New prop to disable the close button
+    disableClose?: boolean;
 }
 
 const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, disableClose = false }) => {

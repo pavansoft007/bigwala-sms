@@ -1,5 +1,4 @@
 import {useEffect, useState} from "react";
-import {AxiosError} from 'axios';
 import {
     Table,
     TableBody,
@@ -10,19 +9,8 @@ import {
 } from "@/components/ui/table"
 import axiosInstance from "../../../services/axiosInstance.ts";
 import Classroom from "@/types/Classroom.ts";
-
-
-interface FeeDetails {
-    category_id: number,
-    category_name: string,
-    total_fee: number
-}
-
-interface FeeCategory {
-    category_id: number,
-    category_name: string,
-    description: string
-}
+import FeeCategory from "@/types/FeeCategory.ts";
+import FeeDetails from "@/types/FeeDetails.ts";
 
 interface FormDataWithFiles extends FormData {
     first_name: string,
@@ -76,15 +64,13 @@ const AddStudent = () => {
     const [feeCategory, setFeeCategory] = useState<FeeCategory[]>([]);
     const [message, setMessage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
-    const [formCheck,setFormCheck]=useState<string>('no');
 
-    // Fetch standards on component mount
     useEffect(() => {
         const fetchStandards = async () => {
             try {
-                const classroomRespoance = await axiosInstance.get('/mobileAPI/classroom');
+                const classroomRespoance = await axiosInstance.get<Classroom[]>('/mobileAPI/classroom');
                 setClassroomDetails(classroomRespoance.data);
-                const feeCatrgoriesRes = await axiosInstance.get('/api/fee_category');
+                const feeCatrgoriesRes = await axiosInstance.get<FeeDetails[]>('/api/fee_category');
                 setFeeCategory(feeCatrgoriesRes.data);
             } catch (e) {
                 console.error("Error fetching standards:", e);
@@ -143,8 +129,8 @@ const AddStudent = () => {
         }else if(type ==='checkbox'){
                 setFormData(prevData => ({
                     ...prevData,
-                    [name]: e.target.checked
-                }));
+                    [name]:  (e.target as HTMLInputElement).checked
+        }));
 
         } else {
                 setFormData(prevData => ({
@@ -209,11 +195,8 @@ const AddStudent = () => {
             newFormData.caste = "";
             setFormData(newFormData);
         } catch (err: unknown) {
-            if (err instanceof AxiosError) {
-                setError(err.response?.data?.message || "An error occurred while adding the student.");
-            } else {
-                setError("An unexpected error occurred while adding the student.");
-            }
+            console.log('error in while adding the user:')
+            setError("An error occurred while adding the student.");
         }
     };
 

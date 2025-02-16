@@ -1,5 +1,4 @@
 import axiosInstance from "@/services/axiosInstance";
-import axios from "axios";
 import {useEffect, useState} from "react";
 import {useParams} from "react-router-dom";
 import Classroom from "@/types/Classroom";
@@ -58,7 +57,7 @@ const TeacherDetails = () => {
 
     const getTeacherDetails = async () => {
         try {
-            const response = await axiosInstance.get("/api/teacher/" + id);
+            const response = await axiosInstance.get<TeacherData>("/api/teacher/" + id);
             setTeacherData(response.data);
             setFormData(response.data);
         } catch (e) {
@@ -96,7 +95,7 @@ const TeacherDetails = () => {
 
 
                 Object.keys(formData).forEach((key) => {
-                    const value = formData[key as keyof FormData];
+                    const value = formData[key as keyof typeof formData];
                     if (value !== null && value !== "") {
                         form.append(key, value as string);
                     }
@@ -131,17 +130,14 @@ const TeacherDetails = () => {
                 setIsLoading(false);
                 setTitle('successfully');
                 getTeacherDetails();
-            } catch (e) {
+            } catch (e: unknown) {
                 setTitle('error');
-                console.error("Error saving teacher details:", e);
-                if (axios.isAxiosError(e)) {
-                    setLoadingMessage(e.response?.data?.message || "An error occurred while saving.");
-                } else {
-                    setLoadingMessage("An unknown error occurred.");
-                }
+                console.error("Error saving teacher details:", e)
+                setLoadingMessage("An error occurred while saving.");
                 setIsLoading(false);
-
             }
+
+
         }
     };
 

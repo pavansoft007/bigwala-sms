@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import {useEffect, useState} from "react";
 import axiosInstance from "../../../services/axiosInstance.ts";
 import Subject from "@/types/Subject.ts";
 
@@ -8,13 +8,13 @@ const AddSubjects = () => {
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-    const [newSubject, setNewSubject] = useState({ subject_name: "", subject_code: "" });
+    const [newSubject, setNewSubject] = useState({subject_name: "", subject_code: ""});
     const [currentSubject, setCurrentSubject] = useState<Subject | null>(null);
 
     useEffect(() => {
         setLoading(true);
         axiosInstance
-            .get("/api/subject")
+            .get<Subject[]>("/api/subject")
             .then((res) => {
                 setSubjects(res.data);
                 setLoading(false);
@@ -29,9 +29,9 @@ const AddSubjects = () => {
         axiosInstance
             .post("/api/subject", newSubject)
             .then((res) => {
-                setSubjects((prev) => [...prev, res.data]);
+                setSubjects((prev) => [...prev, ...(res.data as Subject[])]);
                 setIsAddModalOpen(false);
-                setNewSubject({ subject_name: "", subject_code: "" });
+                setNewSubject({subject_name: "", subject_code: ""});
             })
             .catch(() => {
                 console.error("Error in adding the subject");
@@ -145,7 +145,7 @@ const AddSubjects = () => {
                                 className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                                 value={newSubject.subject_name}
                                 onChange={(e) =>
-                                    setNewSubject({ ...newSubject, subject_name: e.target.value })
+                                    setNewSubject({...newSubject, subject_name: e.target.value})
                                 }
                             />
                         </div>
@@ -158,7 +158,7 @@ const AddSubjects = () => {
                                 className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                                 value={newSubject.subject_code}
                                 onChange={(e) =>
-                                    setNewSubject({ ...newSubject, subject_code: e.target.value })
+                                    setNewSubject({...newSubject, subject_code: e.target.value})
                                 }
                             />
                         </div>
@@ -195,6 +195,7 @@ const AddSubjects = () => {
                                 value={currentSubject.subject_name}
                                 onChange={(e) =>
                                     setCurrentSubject({
+                                        subject_code: "", subject_id: 0,
                                         ...currentSubject,
                                         subject_name: e.target.value
                                     })
@@ -211,6 +212,7 @@ const AddSubjects = () => {
                                 value={currentSubject.subject_code}
                                 onChange={(e) =>
                                     setCurrentSubject({
+                                        subject_id: 0, subject_name: "",
                                         ...currentSubject,
                                         subject_code: e.target.value
                                     })

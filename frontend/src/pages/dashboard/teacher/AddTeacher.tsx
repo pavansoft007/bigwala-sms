@@ -1,11 +1,11 @@
 import {useEffect, useState} from "react";
-import {AxiosError} from "axios";
 import {useNavigate} from "react-router-dom";
 import axiosInstance from "@/services/axiosInstance.ts";
 import Classroom from "@/types/Classroom";
 import Role from "@/types/Role";
 import classroom from "@/types/Classroom";
 import SubjectDetails from "@/types/Subject.ts";
+import Subject from "@/types/Subject.ts";
 
 
 interface FormData {
@@ -37,7 +37,7 @@ const AddTeacher = () => {
         salary: "",
         adminAccess: false,
         role_id: "",
-        assignedClass:'',
+        assignedClass: '',
         teacher_photo: null as File | null,
         teacher_qualification_certificate: null as File | null,
     });
@@ -56,9 +56,11 @@ const AddTeacher = () => {
 
     const fetchRoles = async () => {
         try {
-            const res = await axiosInstance.get("/api/roles");
+            const res = await axiosInstance.get<{
+                data:Role[]
+            }>("/api/roles");
             setRole(res.data.data);
-            const classData = await axiosInstance.get("/mobileAPI/classroom");
+            const classData = await axiosInstance.get<Classroom[]>("/mobileAPI/classroom");
             setClassroom(classData.data);
         } catch (e) {
             console.error(e);
@@ -68,7 +70,7 @@ const AddTeacher = () => {
 
     const fetchSubjects = async () => {
         await axiosInstance
-            .get("/api/subject")
+            .get<Subject[]>("/api/subject")
             .then((res) => {
                 setSubjectDetails(res.data);
             })
@@ -121,7 +123,12 @@ const AddTeacher = () => {
 
 
         try {
-            const response = await axiosInstance.post("/api/teacher", formDataToSend, {
+            const response = await axiosInstance.post<{
+                message:string,
+                teacher:{
+                    teacher_id:string
+                }
+            }>("/api/teacher", formDataToSend, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 },
@@ -137,7 +144,7 @@ const AddTeacher = () => {
                 subject_id: "",
                 salary: "",
                 role_id: "",
-                assignedClass:'',
+                assignedClass: '',
                 adminAccess: false,
                 teacher_photo: null,
                 teacher_qualification_certificate: null,
@@ -145,11 +152,7 @@ const AddTeacher = () => {
             navigation('/dashboard/teacher/' + response.data.teacher.teacher_id);
         } catch (err: unknown) {
             console.error("Error in saving the teacher", err);
-            if (err instanceof AxiosError) {
-                setError(err.response?.data?.message);
-            } else {
-                setError("An unexpected error occurred.");
-            }
+            setError("Error in saving the teacher");
         }
     };
 
@@ -229,7 +232,7 @@ const AddTeacher = () => {
                                 className="border rounded-lg px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
                                 required
                             >
-                                <option> select the role </option>
+                                <option> select the role</option>
                                 {role.map((item: Role, index: number) => (
                                     <option key={index} value={item.role_id}>
                                         {item.role_name}
@@ -247,7 +250,7 @@ const AddTeacher = () => {
                                 className="border rounded-lg px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
                                 required
                             >
-                                <option> select the subject </option>
+                                <option> select the subject</option>
                                 {subjectDetails.map((item: SubjectDetails, index: number) => (
                                     <option key={index} value={item.subject_id}>
                                         {item.subject_name} - {item.subject_code}
@@ -297,8 +300,8 @@ const AddTeacher = () => {
                                 className="border rounded-lg px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
                                 required
                             >
-                                <option> select the classroom </option>
-                                {classroom.map((item: classroom , index: number) => (
+                                <option> select the classroom</option>
+                                {classroom.map((item: classroom, index: number) => (
                                     <option key={index} value={item.classroom_id}>
                                         {item.standard} - {item.section}
                                     </option>
@@ -315,7 +318,7 @@ const AddTeacher = () => {
                                 onChange={handleChange}
                                 className="border rounded-lg px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
                             >
-                                <option> select the Status </option>
+                                <option> select the Status</option>
                                 <option value="Active">Active</option>
                                 <option value="Inactive">Inactive</option>
                             </select>

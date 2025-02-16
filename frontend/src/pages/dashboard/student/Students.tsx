@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import {useEffect, useState} from "react";
 import {Link, useNavigate} from "react-router-dom";
 import axiosInstance from "../../../services/axiosInstance.ts";
 import FetchClassroomData from "@/services/FetchClassroomData.ts";
@@ -6,15 +6,15 @@ import Classroom from "@/types/Classroom.ts";
 import {Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table.tsx";
 
 interface Student {
-    admission_ID:string,
+    admission_ID: string,
     student_id: string;
     first_name: string;
     last_name: string;
     email: string;
     phone_number: string;
     school_id: string;
-    standard:string,
-    section:string
+    standard: string,
+    section: string
 }
 
 const Students = () => {
@@ -53,8 +53,8 @@ const Students = () => {
     }, []);
 
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
-        setSearchInfo((prev) => ({ ...prev, [name]: value }));
+        const {name, value} = e.target;
+        setSearchInfo((prev) => ({...prev, [name]: value}));
     };
 
     const handleSearch = () => {
@@ -64,7 +64,13 @@ const Students = () => {
     const fetchStudents = async (page: number = 1) => {
         setLoading(true);
         try {
-            const response = await axiosInstance.post("/api/search/student", {
+            const response = await axiosInstance.post<{
+                pagination: {
+                    totalPages: number,
+                    currentPage: number
+                },
+                students: Student[]
+            }>("/api/search/student", {
                 ...searchInfo,
                 page,
             });
@@ -92,7 +98,7 @@ const Students = () => {
 
     return (
         <div className="p-5">
-            <div className="flex justify-between mb-2 " >
+            <div className="flex justify-between mb-2 ">
                 <div>
                     <h2 className="text-3xl font-bold text-center mb-5">Manage Students</h2>
                 </div>
@@ -272,7 +278,8 @@ const Students = () => {
                                                 className="p-2 mx-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
                                                 Edit
                                             </button>
-                                            <button className="p-2 mx-1 bg-red-500 text-white rounded-lg hover:bg-red-600">
+                                            <button
+                                                className="p-2 mx-1 bg-red-500 text-white rounded-lg hover:bg-red-600">
                                                 Delete
                                             </button>
                                         </TableCell>

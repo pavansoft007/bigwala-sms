@@ -30,9 +30,13 @@ const UserManagement: React.FC = () => {
 
     const fetchUsers = async () => {
         try {
-            const res = await axiosInstance.get('/api/users');
+            const res = await axiosInstance.get<{
+                data:User[]
+            }>('/api/users');
             setUsers(res.data.data);
-            const rolesRes = await axiosInstance.get('/api/roles');
+            const rolesRes = await axiosInstance.get<{
+                data:Role[]
+            }>('/api/roles');
             setRoles(rolesRes.data.data);
         } catch (error) {
             console.error('Error fetching users:', error);

@@ -1,4 +1,4 @@
-import  { useEffect, useState } from "react";
+import {useEffect, useState} from "react";
 import Modal from "@/components/Modal.tsx";
 import {
     Table,
@@ -9,24 +9,19 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import AxiosInstance from "@/services/axiosInstance.ts";
-
-interface Categories{
-    category_id: number,
-    category_name: string,
-    description:string
-}
+import FeeCategory from "@/types/FeeCategory.ts";
 
 
 const FeeCategoryManager = () => {
-    const [feeCategories, setFeeCategories] = useState<Categories[]>([]);
+    const [feeCategories, setFeeCategories] = useState<FeeCategory[]>([]);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-    const [selectedCategory, setSelectedCategory] = useState<Categories | null>(null);
-    const [formData, setFormData] = useState({ category_name: "" });
+    const [selectedCategory, setSelectedCategory] = useState<FeeCategory | null>(null);
+    const [formData, setFormData] = useState({category_name: ""});
 
 
     const fetchCategories = async () => {
         try {
-            const response = await AxiosInstance.get("/api/fee_category");
+            const response = await AxiosInstance.get<FeeCategory[]>("/api/fee_category");
             setFeeCategories(response.data);
         } catch (error) {
             console.error("Error fetching categories:", error);
@@ -47,7 +42,7 @@ const FeeCategoryManager = () => {
             }
             fetchCategories();
             setIsModalOpen(false);
-            setFormData({ category_name: "" });
+            setFormData({category_name: ""});
             setSelectedCategory(null);
         } catch (error) {
             console.error("Error saving category:", error);
@@ -55,7 +50,7 @@ const FeeCategoryManager = () => {
     };
 
 
-    const handleDelete = async (id:number) => {
+    const handleDelete = async (id: number) => {
         try {
             await AxiosInstance.delete(`/api/fee_category/${id}`);
             fetchCategories();
@@ -71,7 +66,7 @@ const FeeCategoryManager = () => {
                 <button
                     className="px-4 py-1.5 text-white bg-green-500 hover:bg-green-600 rounded"
                     onClick={() => {
-                        setFormData({ category_name: "" });
+                        setFormData({category_name: ""});
                         setSelectedCategory(null);
                         setIsModalOpen(true);
                     }}
@@ -80,26 +75,26 @@ const FeeCategoryManager = () => {
                 </button>
             </div>
 
-            <div className="my-4" >
-                <Table className="text-sm bg-white rounded-lg shadow-md" >
-                    <TableHeader className="bg-gray-200" >
+            <div className="my-4">
+                <Table className="text-sm bg-white rounded-lg shadow-md">
+                    <TableHeader className="bg-gray-200">
                         <TableRow>
-                            <TableHead >Category ID</TableHead>
-                            <TableHead >Category Name</TableHead>
-                            <TableHead className="text-center" >Actions</TableHead>
+                            <TableHead>Category ID</TableHead>
+                            <TableHead>Category Name</TableHead>
+                            <TableHead className="text-center">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {feeCategories.map((category) => (
-                            <TableRow key={category.category_id} className="hover:bg-gray-100 transition-colors" >
-                                <TableCell >{category.category_id}</TableCell>
-                                <TableCell >{category.category_name}</TableCell>
-                                <TableCell className="text-center" >
+                            <TableRow key={category.category_id} className="hover:bg-gray-100 transition-colors">
+                                <TableCell>{category.category_id}</TableCell>
+                                <TableCell>{category.category_name}</TableCell>
+                                <TableCell className="text-center">
                                     <button
                                         className="px-2 py-1 text-white bg-blue-500 hover:bg-blue-600 rounded"
                                         onClick={() => {
                                             setSelectedCategory(category);
-                                            setFormData({ category_name: category.category_name });
+                                            setFormData({category_name: category.category_name});
                                             setIsModalOpen(true);
                                         }}
                                     >
@@ -118,7 +113,7 @@ const FeeCategoryManager = () => {
                 </Table>
             </div>
 
-            
+
             <Modal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
@@ -132,7 +127,7 @@ const FeeCategoryManager = () => {
                         type="text"
                         className="w-full px-3 py-2 mb-4 border rounded"
                         value={formData.category_name}
-                        onChange={(e) => setFormData({ category_name: e.target.value })}
+                        onChange={(e) => setFormData({category_name: e.target.value})}
                     />
                     <button
                         className="px-4 py-2 text-white bg-green-500 rounded"

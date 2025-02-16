@@ -24,7 +24,6 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import Role from "@/types/Role.ts";
 import getProfileImage from "@/services/getProfileImage.ts";
 
 interface UserData {
@@ -50,13 +49,14 @@ const DashboardSideBar = () => {
     }
 
     const fetchRoleDetails = async () => {
-        axiosInstance.get< {permission:Role[],role:string} >("/api/get-all-roles")
+        axiosInstance
+            .get<{ permission: string[]; role: string }>("/api/get-all-roles")
             .then((res) => {
                 setPermissionsData(res.data.permission);
                 setRole(res.data.role);
             })
             .catch((e) => console.error(e));
-    }
+    };
 
     useEffect(() => {
         fetchUserDetails();

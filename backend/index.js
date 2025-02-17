@@ -23,6 +23,7 @@ import ManageUserRights from "./routes/ManageUserRights.js";
 import ManageBannerImages from "./routes/ManageBannerImages.js";
 import ManagingFeeCategory from "./routes/ManagingFeeCategory.js";
 import ManagingStaticFiles from "./routes/ManagingStaticFiles.js";
+import ManagingFeePayment from "./routes/ManagingFeePayment.js";
 
 const app = express();
 app.use(express.json());
@@ -81,6 +82,7 @@ app.use(ManageUserRights);
 app.use(ManageBannerImages);
 app.use(ManagingFeeCategory);
 app.use(ManagingStaticFiles);
+app.use(ManagingFeePayment);
 
 
 dotenv.config();

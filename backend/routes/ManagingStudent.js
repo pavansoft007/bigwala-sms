@@ -221,7 +221,7 @@ ManagingStudent.get(
         try {
             const student_id = req.params.id;
             const [student] = await sequelize.query(
-                "SELECT * FROM `students` LEFT JOIN classrooms ON classrooms.classroom_id=students.assginedClassroom WHERE student_id=:student_id"
+                "SELECT * FROM `students` LEFT JOIN classrooms ON classrooms.classroom_id=students.assginedClassroom LEFT JOIN student_fees ON student_fees.student_id=students.student_id WHERE students.student_id=:student_id"
                 , {
                     replacements: {
                         student_id

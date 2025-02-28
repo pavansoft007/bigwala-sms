@@ -33,11 +33,11 @@ const RoleManagement: React.FC = () => {
 
     const fetchRoles = async () => {
         try {
-            const moduleData = await axiosInstance.get<{ moduleData: ModuleData[] }>(
+            const moduleData = await axiosInstance.get<{ modulesData: ModuleData[] }>(
                 "/api/get-all-module"
             );
             const dummyData: string[] = [];
-            moduleData.data.moduleData.forEach((item: { module_name: string }) => {
+            moduleData.data.modulesData.forEach((item: { module_name: string }) => {
                 dummyData.push(item.module_name);
             });
             setPermissions(dummyData);

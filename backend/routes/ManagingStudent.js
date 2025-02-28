@@ -235,6 +235,28 @@ ManagingStudent.get(
                 return res.status(404).json({message: "Student not found"});
             }
 
+            const [studentFeeDetails] = await sequelize.query("SELECT f.category_name,total_fee_paid,fee_remaining,fee_amount FROM `student_fees` inner JOIN fee_categories f on f.category_id=student_fees.category_id where student_id=:student_id;"
+                , {
+                    replacements: {
+                        student_id: student_id
+                    }
+                }
+            );
+
+            const [studentPaymentHistory] = await sequelize.query("SELECT f.category_name,amount,DATE_FORMAT(payment_date, '%d %b %Y, %h:%i %p') as payment_date FROM `students_payments` INNER JOIN fee_categories f on f.category_id=students_payments.category_id WHERE student_id=:student_id;"
+                , {
+                    replacements: {
+                        student_id: student_id
+                    }
+                }
+            );
+
+
+
+
+            student['studentFee'] = studentFeeDetails;
+            student['studentFeeHistory'] = studentPaymentHistory;
+
             res.status(200).json(student);
         } catch (error) {
             console.error("Error fetching student:", error);

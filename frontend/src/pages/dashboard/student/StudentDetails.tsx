@@ -2,6 +2,21 @@ import {useState, useEffect} from "react";
 import {useParams} from "react-router-dom";
 import axiosInstance from "@/services/axiosInstance.ts";
 import Classroom from "@/types/Classroom.ts";
+import {undefined} from "zod";
+
+
+interface StudentFee{
+    category_name: string,
+    total_fee_paid: number,
+    fee_remaining: number,
+    fee_amount: number
+}
+
+interface StudentFeeHistory{
+    "category_name": string,
+    "amount": number,
+    "payment_date": string
+}
 
 interface Student {
     admission_ID: string;
@@ -25,6 +40,8 @@ interface Student {
     assginedClassroom: string;
     standard: string;
     section: string;
+    studentFee:StudentFee[];
+    studentFeeHistory:StudentFeeHistory[];
 }
 
 
@@ -51,7 +68,9 @@ const StudentDetails = () => {
         enrollment_date: "",
         assginedClassroom: "",
         standard: '',
-        section: ''
+        section: '',
+        studentFee:[],
+        studentFeeHistory:[]
     });
 
     const [classrooms, setClassrooms] = useState<Classroom[]>([]);
@@ -302,6 +321,81 @@ const StudentDetails = () => {
                                     </a>
                                 )
                             )}
+                        </div>
+                        {/* Student Fee Details */}
+                        <div className="bg-white shadow-lg rounded-lg p-6 space-y-6">
+                            <h2 className="text-2xl font-semibold text-gray-800">Student Fee Details</h2>
+
+                            {/* Outstanding Fees */}
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full border border-gray-300 rounded-lg">
+                                    <thead className="bg-gray-200">
+                                    <tr>
+                                        <th className="py-2 px-4 border">Category</th>
+                                        <th className="py-2 px-4 border">Total Fee</th>
+                                        <th className="py-2 px-4 border">Paid</th>
+                                        <th className="py-2 px-4 border">Remaining</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {formData.studentFee.length > 0 ? (
+                                        formData.studentFee.map((fee, index) => (
+                                            <tr key={index} className="border-b">
+                                                <td className="py-2 px-4 border">{fee.category_name}</td>
+                                                <td className="py-2 px-4 border text-green-600 font-medium">
+                                                    ₹{fee.fee_amount}
+                                                </td>
+                                                <td className="py-2 px-4 border text-blue-600 font-medium">
+                                                    ₹{fee.total_fee_paid}
+                                                </td>
+                                                <td className="py-2 px-4 border text-red-600 font-medium">
+                                                    ₹{fee.fee_remaining}
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={4} className="py-2 px-4 text-center text-gray-500">
+                                                No fee details available.
+                                            </td>
+                                        </tr>
+                                    )}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* Payment History */}
+                            <h2 className="text-2xl font-semibold text-gray-800 mt-6">Fee Payment History</h2>
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full border border-gray-300 rounded-lg">
+                                    <thead className="bg-gray-200">
+                                    <tr>
+                                        <th className="py-2 px-4 border">Category</th>
+                                        <th className="py-2 px-4 border">Amount Paid</th>
+                                        <th className="py-2 px-4 border">Payment Date</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {formData.studentFeeHistory.length > 0 ? (
+                                        formData.studentFeeHistory.map((history, index) => (
+                                            <tr key={index} className="border-b">
+                                                <td className="py-2 px-4 border">{history.category_name}</td>
+                                                <td className="py-2 px-4 border text-green-600 font-medium">
+                                                    ₹{history.amount}
+                                                </td>
+                                                <td className="py-2 px-4 border">{history.payment_date}</td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={3} className="py-2 px-4 text-center text-gray-500">
+                                                No payment history available.
+                                            </td>
+                                        </tr>
+                                    )}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
 
                     </div>

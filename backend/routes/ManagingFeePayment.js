@@ -3,6 +3,7 @@ import AdminAuth from "../middleware/AdminAuth.js";
 import StudentPayment from "../models/StudentPayment.js";
 import StudentFee from "../models/StudentFee.js";
 import sequelize from "../config/database.js";
+import SchoolFinancials from "../models/SchoolFinancials.js";
 
 const ManagingFeePayment = express.Router();
 ManagingFeePayment.post('/api/fee-collect', AdminAuth('fee'), async (req, res) => {
@@ -49,6 +50,16 @@ ManagingFeePayment.post('/api/fee-collect', AdminAuth('fee'), async (req, res) =
                 {total_fee_paid: amount, fee_remaining: -amount},
                 {transaction}
             );
+
+            const school_fincanicals=await SchoolFinancials.findOne({
+                where:{
+                    school_id
+                }
+            });
+
+            await school_fincanicals.increment(
+            {current_balance:amount}
+            ,{transaction});
 
 
             await transaction.commit();

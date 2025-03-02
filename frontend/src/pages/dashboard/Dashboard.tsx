@@ -96,7 +96,7 @@ const DashboardSideBar = () => {
                     )}
                     {hasPermission("fee management") && (
                         <li>
-                            <Link to="fee/categories" className="flex items-center p-3 rounded-lg hover:bg-gray-700">
+                            <Link to="fee/" className="flex items-center p-3 rounded-lg hover:bg-gray-700">
                                 <FaMoneyBillWave className="mr-3"/> Fee Management
                             </Link>
                         </li>

@@ -1,10 +1,43 @@
 import {Link} from 'react-router-dom';
+import {useState} from "react";
+import axiosInstance from "@/services/axiosInstance.ts";
+
 function Home() {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [formData, setFormData] = useState({
+        school_name: '',
+        location: '',
+        admin_name: '',
+        phone_number: ''
+    });
+
+    // Handle input change
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    // Submit form data
+    const submitRegistration = async () => {
+        try {
+            const response=await axiosInstance.post('/api/interested_school',formData)
+
+            if (response.status === 200) {
+                alert('School registered successfully!');
+                setIsModalOpen(false);
+                setFormData({ school_name: '', location: '', admin_name: '', phone_number: '' });
+            } else {
+                alert('Failed to register school. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Something went wrong.');
+        }
+    };
     return (
         <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
             <header className="w-full bg-blue-500 text-white py-6 shadow-lg">
                 <div className="container mx-auto flex justify-between items-center px-4">
-                    <h1 className="text-2xl font-bold">School Admin Dashboard</h1>
+                    <h1 className="text-2xl font-bold">Bigwala school Management system</h1>
                     <nav>
                         <ul className="flex space-x-6">
                             <li>
@@ -33,10 +66,65 @@ function Home() {
                     Manage your school seamlessly with our all-in-one admin application.
                     Register your school, handle administration, and stay connected easily.
                 </p>
-                <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-all">
+                <button
+                    onClick={() => setIsModalOpen(true)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-all"
+                >
                     Register Your School
                 </button>
             </section>
+
+            {isModalOpen && (
+                <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
+                    <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+                        <h2 className="text-xl font-bold mb-4">Register Your School</h2>
+                        <input
+                            type="text"
+                            name="school_name"
+                            placeholder="School Name"
+                            value={formData.school_name}
+                            onChange={handleChange}
+                            className="w-full p-2 mb-3 border border-gray-300 rounded-lg"
+                        />
+                        <input
+                            type="text"
+                            name="location"
+                            placeholder="Location"
+                            value={formData.location}
+                            onChange={handleChange}
+                            className="w-full p-2 mb-3 border border-gray-300 rounded-lg"
+                        />
+                        <input
+                            type="text"
+                            name="admin_name"
+                            placeholder="Your Name"
+                            value={formData.admin_name}
+                            onChange={handleChange}
+                            className="w-full p-2 mb-3 border border-gray-300 rounded-lg"
+                        />
+                        <input
+                            type="tel"
+                            name="phone_number"
+                            placeholder="Phone Number"
+                            value={formData.phone_number}
+                            onChange={handleChange}
+                            className="w-full p-2 mb-3 border border-gray-300 rounded-lg"
+                        />
+                        <button
+                            onClick={submitRegistration}
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg transition-all"
+                        >
+                            Submit
+                        </button>
+                        <button
+                            onClick={() => setIsModalOpen(false)}
+                            className="w-full mt-2 bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded-lg shadow-lg transition-all"
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* Features Section */}
             <section id="features" className="bg-white py-16 w-full">
@@ -86,8 +174,11 @@ function Home() {
                                 We're here to help you register your school and get started. Reach out to us!
                             </p>
                             <ul className="text-gray-600">
-                                <li>Email: <a href="mailto:support@schooladmin.com" className="text-blue-600 hover:underline">support@schooladmin.com</a></li>
-                                <li>Phone: <a href="tel:+123456789" className="text-blue-600 hover:underline">+1 234 567 89</a></li>
+                                <li>Email: <a href="mailto:support@bigwalatechnology.com"
+                                              className="text-blue-600 hover:underline">support@bigwalatechnology.com</a>
+                                </li>
+                                <li>Phone: <a href="tel:+918931912345" className="text-blue-600 hover:underline">+91
+                                    8931912345</a></li>
                             </ul>
                         </div>
                         <form className="p-6 bg-white rounded-lg shadow">
@@ -121,7 +212,7 @@ function Home() {
             {/* Footer */}
             <footer className="w-full bg-blue-600 text-white py-4">
                 <div className="container mx-auto text-center">
-                    <p>&copy; 2024 School Admin App. All rights reserved.</p>
+                    <p>&copy; 2025 Bigwala school management system. All rights reserved.</p>
                 </div>
             </footer>
         </div>

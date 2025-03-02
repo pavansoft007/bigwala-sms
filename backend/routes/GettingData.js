@@ -7,6 +7,7 @@ import completeLogin from "../middleware/completeLogin.js";
 import adminAuth from "../middleware/AdminAuth.js";
 import sequelize from "../config/database.js";
 import {Sequelize} from "sequelize";
+import InterestedSchools from "../models/InterestedSchools.js";
 
 
 const GettingData = express.Router();
@@ -79,6 +80,26 @@ GettingData.get('/api/dashboard', adminAuth('all'), async (req, res) => {
 
 
         res.status(200).json(adminDetails[0]);
+    } catch (e) {
+        console.error('error in getting the dashboard data:' + e);
+        res.status(500).json({message: "internal server error"});
+    }
+});
+
+GettingData.post("/api/interested_school", async (req, res) => {
+    const {school_name, location, admin_name, phone_number} = req.body;
+    try {
+
+        await InterestedSchools.create({
+           school_name,
+           location,
+           admin_name,
+           phone_number,
+           status:'fresh',
+        });
+
+        res.status(200).send({message:"you have been added , you will be contacted by our team"})
+
     } catch (e) {
         console.error('error in getting the dashboard data:' + e);
         res.status(500).json({message: "internal server error"});

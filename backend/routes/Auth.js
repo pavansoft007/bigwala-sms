@@ -4,7 +4,6 @@ import Teacher from "../models/Teacher.js";
 import Classroom from "../models/Classroom.js";
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
-import Admin from "../models/Admin.js";
 import otpTokenVerification from "../middleware/otp-token-verification.js";
 import sequelize from "../config/database.js";
 import { Sequelize } from "sequelize";
@@ -73,8 +72,8 @@ Auth.post('/mobileAPI/otp-verify', otpTokenVerification, async (req, res) => {
         const oneData = [];
         for (const currentUser of users) {
             if (currentUser.role === 'student') {
-                Classroom.hasMany(Student, { foreignKey: 'assignedClassroom' });
-                Student.belongsTo(Classroom, { foreignKey: 'assignedClassroom' });
+                Classroom.hasMany(Student, { foreignKey: 'assginedClassroom' });
+                Student.belongsTo(Classroom, { foreignKey: 'assginedClassroom' });
 
                 const student = await Student.findOne({
                     where: { phone_number: currentUser.phone_number },

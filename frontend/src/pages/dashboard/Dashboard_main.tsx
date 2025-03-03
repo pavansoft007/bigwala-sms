@@ -1,4 +1,3 @@
-import React from "react";
 import { Users, BookOpen, CreditCard, Bell, Calendar, BarChart2, Settings, FileText, Clock, TrendingUp, Mail, Map, Award, Clipboard, Activity, FileX } from "lucide-react";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 

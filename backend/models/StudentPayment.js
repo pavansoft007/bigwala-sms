@@ -42,6 +42,10 @@ StudentPayment.init(
                 key: 'student_id',
             },
         },
+        payment_mode:{
+            type:DataTypes.ENUM('cash','online','upi'),
+            allowNull: false,
+        },
         collected_by :{
             type:DataTypes.INTEGER,
             allowNull:true,

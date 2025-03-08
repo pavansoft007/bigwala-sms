@@ -6,6 +6,7 @@ import TeacherAuth from "../middleware/teacherAuth.js";
 import AdminAuth from "../middleware/AdminAuth.js";
 import StudentAuth from "../middleware/StudentAuth.js";
 import StudentAttendance from "../models/studentAttendance.js";
+import sequelize from "../config/database.js";
 
 const ManageAttendance = express.Router();
 
@@ -137,7 +138,24 @@ ManageAttendance.get('/api/attendance/admin/pending',AdminAuth('attendance'),asy
         res.status(500).json({ message: 'Error fetching pending requests', error });
     }
 });
+ManageAttendance.get('/api/get-attendance-data', AdminAuth("attendance"), async (req, res)=>{
+    try{
+        const school_id =req['sessionData']['school_id'];
+        const [details]=await sequelize.query(`SELECT 
+    (SELECT COUNT(student_id) FROM students WHERE school_id = ${school_id} )AS all_students,
+    (SELECT COUNT(student_id) FROM studentAttendance WHERE school_id = ${school_id} AND attendDate = CURDATE()) AS attended_students,
+    (SELECT COUNT(teacher_id) FROM teachers  WHERE school_id = ${school_id}) AS all_teachers,
+    (SELECT COUNT(teacher_id) FROM teacherAttendance WHERE school_id = ${school_id} AND attendDate = CURDATE()) AS attended_teachers ; `,
+            {
 
+        });
+
+        res.status(200).json({details:details[0]});
+    }catch (err){
+        console.log(error);
+        res.status(500).json({ message: 'Error fetching pending requests', error });
+    }
+})
 ManageAttendance.get('/mobileAPI/attendance/student',StudentAuth,async (req, res)=>{
     try {
         const student_id=req['sessionData']['student_id'];

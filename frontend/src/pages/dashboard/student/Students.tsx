@@ -30,7 +30,7 @@ const Students = () => {
         phone_number: "",
         name: "",
         admission_ID: "",
-        assginedClassroom: "",
+        assignedClassroom: "",
         status: "",
         limit: 10,
         page: 1,
@@ -162,9 +162,9 @@ const Students = () => {
                         <option value="20">20</option>
                     </select>
                     <select
-                        name="assginedClassroom"
+                        name="assignedClassroom"
                         className="border p-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 w-full md:w-auto bg-white"
-                        value={searchInfo.assginedClassroom}
+                        value={searchInfo.assignedClassroom}
                         onChange={handleSearchChange}
                     >
                         <option value="">Select Classroom</option>

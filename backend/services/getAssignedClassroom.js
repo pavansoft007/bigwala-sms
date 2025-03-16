@@ -10,9 +10,9 @@ const GetAssignedClassroom=async (id,role)=>{
             return teacherDetails.assignedClass;
         }else {
             const teacherDetails=await Student.findByPk(id,{
-                attributes:['assginedClassroom']
+                attributes:['assignedClassroom']
             })
-            return teacherDetails.assginedClassroom;
+            return teacherDetails.assignedClassroom;
         }
     }catch (e) {
        console.error('error in getting the assigned classroom details'+e);

@@ -221,7 +221,7 @@ ManagingStudent.get(
         try {
             const student_id = req.params.id;
             const [student] = await sequelize.query(
-                "SELECT * FROM `students` LEFT JOIN classrooms ON classrooms.classroom_id=students.assginedClassroom LEFT JOIN student_fees ON student_fees.student_id=students.student_id WHERE students.student_id=:student_id"
+                "SELECT * FROM `students` LEFT JOIN classrooms ON classrooms.classroom_id=students.assignedClassroom LEFT JOIN student_fees ON student_fees.student_id=students.student_id WHERE students.student_id=:student_id"
                 , {
                     replacements: {
                         student_id
@@ -293,8 +293,8 @@ ManagingStudent.post(
         if (body.status) {
             where.push(`students.status = '${body.status}'`);
         }
-        if (body.assginedClassroom) {
-            where.push(`students.assginedClassroom = '${body.assginedClassroom}'`);
+        if (body.assignedClassroom) {
+            where.push(`students.assignedClassroom = '${body.assignedClassroom}'`);
         } else if (body.standard) {
             where.push(`classrooms.standard = '${body.standard}'`);
             if (body.section) {
@@ -312,12 +312,12 @@ ManagingStudent.post(
         let baseQuery = `
             SELECT students.*, classrooms.standard, classrooms.section
             FROM students
-                     LEFT JOIN classrooms ON classrooms.classroom_id = students.assginedClassroom`;
+                     LEFT JOIN classrooms ON classrooms.classroom_id = students.assignedClassroom`;
 
         let countQuery = `
             SELECT COUNT(*) as totalCount
             FROM students
-                     LEFT JOIN classrooms ON classrooms.classroom_id = students.assginedClassroom`;
+                     LEFT JOIN classrooms ON classrooms.classroom_id = students.assignedClassroom`;
 
         if (where.length > 0) {
             const condition = `WHERE ${where.join(" AND ")}`;
@@ -376,7 +376,7 @@ ManagingStudent.put(
                 phone_number,
                 address,
                 enrollment_date,
-                assginedClassroom,
+                assignedClassroom,
                 status,
             } = req.body;
 
@@ -397,7 +397,7 @@ ManagingStudent.put(
                 phone_number,
                 address,
                 enrollment_date,
-                assginedClassroom,
+                assignedClassroom,
                 student_photo,
                 father_photo,
                 status: status || "Active",

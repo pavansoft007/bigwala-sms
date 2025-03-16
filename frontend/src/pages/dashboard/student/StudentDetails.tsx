@@ -37,7 +37,7 @@ interface Student {
     phone_number: string;
     address: string;
     enrollment_date: string;
-    assginedClassroom: string;
+    assignedClassroom: string;
     standard: string;
     section: string;
     studentFee:StudentFee[];
@@ -66,7 +66,7 @@ const StudentDetails = () => {
         phone_number: "",
         address: "",
         enrollment_date: "",
-        assginedClassroom: "",
+        assignedClassroom: "",
         standard: '',
         section: '',
         studentFee:[],
@@ -224,8 +224,8 @@ const StudentDetails = () => {
                             <span className="font-semibold">Assigned Class:</span>{" "}
                             {isEditMode ? (
                                 <select
-                                    name="assginedClassroom"
-                                    value={formData?.assginedClassroom || ""}
+                                    name="assignedClassroom"
+                                    value={formData?.assignedClassroom || ""}
                                     onChange={handleChange}
                                     className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg"
                                 >

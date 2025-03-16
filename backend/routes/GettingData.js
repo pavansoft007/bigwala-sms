@@ -53,7 +53,7 @@ GettingData.get('/mobileAPI/getStudent', verifyToken, async (req, res) => {
     const assignedClass = req['sessionData']['assignedClass'];
     const completeDetails = await Student.findAll({
         where: {
-            assginedClassroom: assignedClass
+            assignedClassroom: assignedClass
         }
     });
     res.status(200).json(completeDetails);

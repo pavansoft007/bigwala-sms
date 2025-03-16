@@ -112,7 +112,7 @@ ManagingClassrooms.get('/mobileAPI/getStudent/:classroomID',teacherAuth('classro
     try{
         const studentINFO=await Student.findAll({
             where:{
-                assginedClassroom:classroomID
+                assignedClassroom:classroomID
             }
         });
         res.status(200).json(studentINFO)
@@ -136,7 +136,7 @@ ManagingClassrooms.post('/mobileAPI/student-assign-classroom',semiAdminAuth('cla
         })
         if(classDetails){
             const updateStudent=await Student.update(
-                {assginedClassroom:classDetails.classroom_id},
+                {assignedClassroom:classDetails.classroom_id},
                 {
                     where:{
                         student_id: studentID
@@ -204,7 +204,7 @@ ManagingClassrooms.delete('/mobileAPI/classroom/:classroomID', adminAuth('classr
 
     try {
         const studentsInClassroom = await Student.findAll({
-            where: { assginedClassroom: classroomID }
+            where: { assignedClassroom: classroomID }
         });
 
         if (studentsInClassroom.length > 0) {

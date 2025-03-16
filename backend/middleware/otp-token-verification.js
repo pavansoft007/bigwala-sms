@@ -6,12 +6,8 @@ const otpTokenVerification = async (req, res, next) => {
 
     try {
         const bearerToken = token.split(' ')[1];
-        console.log('Bearer Token:', bearerToken); // For debugging
         if (!bearerToken) return res.status(403).json({ message: 'No token provided' });
-
         const tokenDetails = await jwt.verify(bearerToken, process.env.JWTKEY);
-        console.log('Decoded Token Details:', tokenDetails); // For debugging
-
         if (tokenDetails) {
             req['tokenDetails'] = tokenDetails; 
             next();

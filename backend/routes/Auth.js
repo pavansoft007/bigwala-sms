@@ -4,7 +4,6 @@ import Teacher from "../models/Teacher.js";
 import Classroom from "../models/Classroom.js";
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
-import Admin from "../models/Admin.js";
 import otpTokenVerification from "../middleware/otp-token-verification.js";
 import sequelize from "../config/database.js";
 import { Sequelize } from "sequelize";
@@ -66,7 +65,7 @@ Auth.post('/mobileAPI/otp-verify', otpTokenVerification, async (req, res) => {
 
         const users = await User.findAll({ where: { phone_number: normalizedPhone } });
         if (!users || users.length === 0) {
-            console.log("No users found with the phone number:", normalizedPhone); // Debugging log
+            console.log("No users found with the phone number:", normalizedPhone);
             return res.status(404).json({ message: 'User not found' });
         }
 

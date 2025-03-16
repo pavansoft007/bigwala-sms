@@ -84,7 +84,7 @@ Student.init({
         type:DataTypes.STRING(225),
         allowNull:false
     },
-    assginedClassroom:{
+    assignedClassroom:{
         type:DataTypes.INTEGER,
         allowNull: true,
         references:{

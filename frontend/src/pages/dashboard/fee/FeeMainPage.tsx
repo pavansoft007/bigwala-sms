@@ -1,12 +1,38 @@
-import  { useState } from "react";
+import {useEffect, useState} from "react";
 import DashboardButton from "@/components/DashboardButton.tsx";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { Calendar, CreditCard, FileText, BarChart2, Users, AlertTriangle, Download } from "lucide-react";
+import axiosInstance from "@/services/axiosInstance.ts";
 
 const AdminFeeDashboard = () => {
+    const [dashboardData, setDashboardData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<String>(null);
     const [selectedTimeframe, setSelectedTimeframe] = useState("weekly");
+    const [feeCategories,setFeeCategories]=useState<string[]>([]);
 
-    // Mock data for charts
+    useEffect(() => {
+        axiosInstance.get('/api/fee/dashboard_data')
+            .then(response => {
+                setDashboardData(response.data.tab_data);
+                setFeeCategories(response.data.fee_categories_list);
+                setLoading(false);
+            })
+            .catch(err => {
+                setError("Failed to load dashboard data.");
+                setLoading(false);
+            });
+    }, []);
+
+    if (loading) {
+        return <p className="text-center text-gray-500">Loading dashboard data...</p>;
+    }
+
+
+    if (error) {
+        return <p className="text-center text-red-500">{error}</p>;
+    }
+
     const revenueData = [
         { name: "Jan", amount: 120000 },
         { name: "Feb", amount: 135000 },
@@ -16,14 +42,7 @@ const AdminFeeDashboard = () => {
         { name: "Jun", amount: 105000 },
     ];
 
-    const feeDistributionData = [
-        { name: "Tuition Fee", value: 65 },
-        { name: "Development Fee", value: 15 },
-        { name: "Transportation", value: 10 },
-        { name: "Miscellaneous", value: 10 },
-    ];
-
-    const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
+    //const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
 
     const recentTransactions = [
         { id: 1, date: "2025-03-03", student: "John Doe", amount: "₹10,000", status: "Paid", class: "Class X" },
@@ -34,26 +53,47 @@ const AdminFeeDashboard = () => {
     ];
 
     const stats = [
-        { title: "Total Collection", value: "₹4,82,500", change: "+12.5%", icon: <CreditCard className="text-blue-500" size={24} /> },
-        { title: "Pending Payments", value: "₹76,200", change: "-3.2%", icon: <AlertTriangle className="text-yellow-500" size={24} /> },
-        { title: "Students Paid", value: "234/250", change: "+8.5%", icon: <Users className="text-green-500" size={24} /> },
-        { title: "Fee Categories", value: "15", change: "0%", icon: <FileText className="text-purple-500" size={24} /> },
+        {
+            title: "Total Collection",
+            value: `₹${dashboardData.total_collection.toLocaleString()}`,
+            change: "+12.5%",
+            icon: <CreditCard className="text-blue-500" size={24} />
+        },
+        {
+            title: "Pending Payments",
+            value: `₹${dashboardData.pending_payment.toLocaleString()}`,
+            change: "-3.2%",
+            icon: <AlertTriangle className="text-yellow-500" size={24} />
+        },
+        {
+            title: "Students Paid",
+            value: `${dashboardData.fully_paid_students}/${dashboardData.total_students}`,
+            change: "+8.5%",
+            icon: <Users className="text-green-500" size={24} />
+        },
+        {
+            title: "Fee Categories",
+            value: dashboardData.category_count,
+            change: "0%",
+            icon: <FileText className="text-purple-500" size={24} />
+        },
     ];
+
 
     return (
         <div className="m-4 border bg-white rounded-lg p-6 shadow-lg">
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-3xl font-bold">Admin Fee Dashboard</h1>
-                <div className="flex gap-2">
-                    <button className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">
-                        <Calendar size={16} className="inline mr-2" />
-                        2024-2025
-                    </button>
-                    <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center">
-                        <Download size={16} className="mr-2" />
-                        Export Report
-                    </button>
-                </div>
+                {/*<div className="flex gap-2">*/}
+                {/*    <button className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">*/}
+                {/*        <Calendar size={16} className="inline mr-2" />*/}
+                {/*        2024-2025*/}
+                {/*    </button>*/}
+                {/*    <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center">*/}
+                {/*        <Download size={16} className="mr-2" />*/}
+                {/*        Export Report*/}
+                {/*    </button>*/}
+                {/*</div>*/}
             </div>
 
             {/* Stats Cards */}
@@ -82,10 +122,6 @@ const AdminFeeDashboard = () => {
                 <DashboardButton link="/dashboard/fee/collect" text="Collect Payment" color="bg-green-500" />
                 <DashboardButton link="/dashboard/fee/transactions" text="View Transactions" color="bg-yellow-500" />
                 <DashboardButton link="/dashboard/fee/students" text="Student Fee Records" color="bg-indigo-500" />
-                <DashboardButton link="/dashboard/fee/defaulters" text="Fee Defaulters" color="bg-red-500" />
-                <DashboardButton link="/dashboard/fee/discounts" text="Manage Discounts" color="bg-purple-500" />
-                <DashboardButton link="/dashboard/fee/reports" text="Generate Reports" color="bg-teal-500" />
-                <DashboardButton link="/dashboard/fee/settings" text="Fee Settings" color="bg-gray-500" />
             </div>
 
             {/* Charts Section */}
@@ -107,12 +143,6 @@ const AdminFeeDashboard = () => {
                             >
                                 Monthly
                             </button>
-                            <button
-                                className={`px-3 py-1 rounded-md ${selectedTimeframe === 'yearly' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-                                onClick={() => setSelectedTimeframe('yearly')}
-                            >
-                                Yearly
-                            </button>
                         </div>
                     </div>
                     <ResponsiveContainer width="100%" height={250}>
@@ -126,31 +156,29 @@ const AdminFeeDashboard = () => {
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
-
-                {/* Fee Distribution Chart */}
+                {/* Fee Categories List */}
                 <div className="bg-white p-4 rounded-lg shadow border">
-                    <h2 className="text-xl font-semibold mb-4">Fee Distribution by Category</h2>
-                    <ResponsiveContainer width="100%" height={250}>
-                        <PieChart>
-                            <Pie
-                                data={feeDistributionData}
-                                cx="50%"
-                                cy="50%"
-                                labelLine={false}
-                                label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                                outerRadius={80}
-                                fill="#8884d8"
-                                dataKey="value"
+                    <h2 className="text-xl font-semibold mb-4">Fee Categories</h2>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                        {feeCategories.map((category, index) => (
+                            <div
+                                key={index}
+                                className={`p-3 rounded-md text-sm font-medium text-center shadow-md ${
+                                    index % 4 === 0
+                                        ? "bg-blue-100 text-blue-700"
+                                        : index % 4 === 1
+                                            ? "bg-green-100 text-green-700"
+                                            : index % 4 === 2
+                                                ? "bg-yellow-100 text-yellow-700"
+                                                : "bg-purple-100 text-purple-700"
+                                }`}
                             >
-                                {feeDistributionData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                ))}
-                            </Pie>
-                            <Tooltip formatter={(value) => [`${value}%`, 'Percentage']} />
-                            <Legend />
-                        </PieChart>
-                    </ResponsiveContainer>
+                                {category}
+                            </div>
+                        ))}
+                    </div>
                 </div>
+
             </div>
 
             {/* Quick Actions & Fee Status */}

@@ -1,6 +1,7 @@
 import express from "express";
 import AdminAuth from "../middleware/AdminAuth.js";
 import FeeCategory from "../models/FeeCategory.js";
+import sequelize from "../config/database.js";
 
 const ManagingFeeCategory = express.Router();
 
@@ -81,5 +82,72 @@ ManagingFeeCategory.delete('/api/fee_category/:category_id', AdminAuth('fee'), a
         res.status(500).json({ message: 'An error occurred while deleting the fee category.' });
     }
 });
+
+ManagingFeeCategory.get('/api/fee/dashboard_data', AdminAuth('fee'), async (req, res) => {
+    try {
+        const school_id = req.sessionData.school_id;
+        const [
+            [totalCollection],
+            [pendingPayment],
+            [fullyPaidStudents],
+            [totalStudents],
+            [categoryCount],
+            [fee_categories_list]
+        ] = await Promise.all([
+            sequelize.query(
+                "SELECT COALESCE(SUM(amount), 0) AS total_collection FROM students_payments WHERE school_id = :school_id",
+                { replacements: { school_id }, type: sequelize.QueryTypes.SELECT }
+            ),
+
+            sequelize.query(
+                `SELECT COALESCE(SUM(sf.fee_remaining), 0) AS pending_payment
+                 FROM student_fees sf
+                 JOIN fee_categories fc ON fc.category_id = sf.category_id
+                 WHERE sf.school_id = :school_id AND fc.category_name = 'tuition fee'`,
+                { replacements: { school_id }, type: sequelize.QueryTypes.SELECT }
+            ),
+
+            sequelize.query(
+                "SELECT COUNT(*) AS fully_paid_students FROM student_fees WHERE school_id = :school_id AND fee_remaining = 0",
+                { replacements: { school_id }, type: sequelize.QueryTypes.SELECT }
+            ),
+
+            sequelize.query(
+                `SELECT COUNT(DISTINCT sf.student_id) AS total_students
+                 FROM student_fees sf
+                 JOIN fee_categories fc ON fc.category_id = sf.category_id
+                 WHERE sf.school_id = :school_id AND fc.category_name = 'tuition fee'`,
+                { replacements: { school_id }, type: sequelize.QueryTypes.SELECT }
+            ),
+
+            sequelize.query(
+                "SELECT COUNT(DISTINCT category_id) AS category_count FROM fee_categories WHERE school_id = :school_id",
+                { replacements: { school_id }, type: sequelize.QueryTypes.SELECT }
+            ),
+
+            sequelize.query("select * from fee_categories where school_id=:school_id",
+                { replacements: { school_id } }
+            )
+        ]);
+
+        const feeCategoriesArray = fee_categories_list.map(category => category.category_name);
+
+        res.json({
+            tab_data:{
+                total_collection: totalCollection.total_collection,
+                pending_payment: pendingPayment.pending_payment,
+                fully_paid_students: fullyPaidStudents.fully_paid_students,
+                total_students: totalStudents.total_students,
+                category_count: categoryCount.category_count,
+            },
+            fee_categories_list:feeCategoriesArray,
+        });
+
+    } catch (e) {
+        console.error('Error fetching dashboard data:', e);
+        res.status(500).json({ message: 'An error occurred while fetching the dashboard data.' });
+    }
+});
+
 
 export default ManagingFeeCategory;

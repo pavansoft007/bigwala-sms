@@ -167,7 +167,7 @@ ManagingFeePayment.put('/api/fee/update-online-fee/:id', adminAuth('fee'), async
         await transaction.commit();
 
         res.status(200).json({
-            message:"payment was done"
+            message: "payment was done"
         })
 
     } catch (error) {
@@ -177,25 +177,70 @@ ManagingFeePayment.put('/api/fee/update-online-fee/:id', adminAuth('fee'), async
     }
 });
 
-ManagingFeePayment.put("/api/fee/reject-online-fee/:id",adminAuth('fee'),async (req,res)=>{
-   const payment_id=req.params.id;
-    try{
-       const pendingOnlinePaymentDetails = await StudentPaymentPending.findByPk(payment_id);
-       if (!pendingOnlinePaymentDetails) {
-           res.status(404).json({message: "online payment details not found"});
-       }
+ManagingFeePayment.put("/api/fee/reject-online-fee/:id", adminAuth('fee'), async (req, res) => {
+    const payment_id = req.params.id;
+    try {
+        const pendingOnlinePaymentDetails = await StudentPaymentPending.findByPk(payment_id);
+        if (!pendingOnlinePaymentDetails) {
+            res.status(404).json({message: "online payment details not found"});
+        }
 
-       await pendingOnlinePaymentDetails.update({
-           status: 'rejected'
-       });
+        await pendingOnlinePaymentDetails.update({
+            status: 'rejected'
+        });
 
-       res.status(200);
+        res.status(200);
 
-   } catch (error) {
-       console.error("Unexpected updating in fetching  online fee payment:", error);
-       return res.status(500).json({message: "Unexpected error occurred"});
-   }
+    } catch (error) {
+        console.error("Unexpected updating in fetching  online fee payment:", error);
+        return res.status(500).json({message: "Unexpected error occurred"});
+    }
 });
 
+ManagingFeePayment.get("/api/fee/class", adminAuth('fee'), async (req, res) => {
+    try {
+        const school_id = req.sessionData.school_id;
+        let [class_details] = await sequelize.query("select classrooms.standard from classrooms where school_id=:school_id group by standard",
+            {
+                replacements: {
+                    school_id
+                }
+            }
+        );
+        class_details=class_details.map(item=>item.standard);
+        res.status(200).json(class_details);
+    } catch (error) {
+        console.error("Error at getting the class details:", error);
+        return res.status(500).json({message: "internal server error"});
+    }
+});
+
+
+ManagingFeePayment.get("/api/fee/student_data/:standard",adminAuth('fee'),async (req,res)=>{
+    const standard=req.params.standard;
+    const school_id=req.sessionData.school_id;
+    try{
+        const [student_data]=await sequelize.query(`select students.admission_ID,
+                                                           student_id,
+                                                           first_name,
+                                                           last_name,
+                                                           c.standard,
+                                                           c.section
+                                                    from students
+                                                             left join bigwaladev.classrooms c on c.classroom_id = students.assignedClassroom
+                                                    where c.standard = :standard
+                                                      and c.school_id = :school_id`,
+            {
+                replacements:{
+                    standard,
+                    school_id
+                }
+            });
+        res.status(200).json(student_data);
+    }catch (error) {
+        console.error("Error at getting the student details:", error);
+        return res.status(500).json({message: "internal server error"});
+    }
+});
 
 export default ManagingFeePayment;

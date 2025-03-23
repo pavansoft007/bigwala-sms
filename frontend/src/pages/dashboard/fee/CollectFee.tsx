@@ -34,7 +34,7 @@ const CollectFee = () => {
     const [message, setMessage] = useState<MessageState>();
     const [students,setStudents]=useState<Student[]>([]);
     const [student,setStudent]=useState<Student>();
-    const [loading,setLoading]=useState<Boolean>();
+    const [loading, setLoading] = useState<boolean>(false);
     const [newFee,setNewFee]=useState<New_fee>({
         standard:0,
         category_id:0,
@@ -78,7 +78,7 @@ const CollectFee = () => {
     const fetchStudentsByClass = async (standard: string): Promise<void> => {
         if (!standard) return;
         try {
-            const res = await axiosInstance.get(`/api/fee/student_data/${standard}`);
+            const res = await axiosInstance.get<Student[]>(`/api/fee/student_data/${standard}`);
             setStudents(res.data);
         } catch (err) {
             console.error("Error fetching students", err);
@@ -88,7 +88,7 @@ const CollectFee = () => {
     const fetchStudentDetails=async (student_id:string):Promise<void> =>{
         if(!student_id)return ;
         try {
-            const res = await axiosInstance.get(`/mobileAPI/students/${student_id}`);
+            const res = await axiosInstance.get<Student>(`/mobileAPI/students/${student_id}`);
             setStudent(res.data);
         } catch (err) {
             console.error("Error fetching students", err);
@@ -99,7 +99,7 @@ const CollectFee = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const response = await axiosInstance.post("/api/fee/fee-collect",{
+            const response = await axiosInstance.post<{message:string}>("/api/fee/fee-collect",{
                 ...newFee,
                 payment_mode:'cash'
             });
@@ -117,7 +117,7 @@ const CollectFee = () => {
     }
 
     const getSelectedStudentName = (): string => {
-        const selectedStudent = students.find(s => s.student_id == newFee.student_id);
+        const selectedStudent = students.find(s => s.student_id === String(newFee.student_id));
         return selectedStudent ? `${selectedStudent.first_name} ${selectedStudent.last_name} (${selectedStudent.admission_ID})` : '';
     };
 

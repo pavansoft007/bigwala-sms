@@ -1,9 +1,18 @@
 import {useEffect, useState} from "react";
 import {CheckCircleIcon} from "lucide-react";
 import axiosInstance from "@/services/axiosInstance.ts";
+import Transactions from "@/types/Transactions.ts";
+
+interface Response{
+    page: number,
+    limit: number,
+    totalPages: number,
+    totalRecords: number,
+    transactions: Transactions[]
+}
 
 const RecentTransactions = () => {
-    const [transactions, setTransactions] = useState([]);
+    const [transactions, setTransactions] = useState<Transactions[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [page, setPage] = useState(1);
@@ -17,7 +26,7 @@ const RecentTransactions = () => {
     const fetchTransactions = (currentPage: number) => {
         setLoading(true);
         axiosInstance
-            .get(`/api/fee/recent-transactions?page=${currentPage}&limit=${limit}`)
+            .get<Response>(`/api/fee/recent-transactions?page=${currentPage}&limit=${limit}`)
             .then((response) => {
                 setTransactions(response.data.transactions);
                 setTotalPages(response.data.totalPages);

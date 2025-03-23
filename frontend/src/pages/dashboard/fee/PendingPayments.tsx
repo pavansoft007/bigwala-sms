@@ -3,8 +3,22 @@ import axiosInstance from "@/services/axiosInstance";
 import { CheckCircle, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+interface PendingPayment{
+    admission_ID:string,
+    first_name:string,
+    last_name:string,
+    pending_payment_id:number,
+    amount:number,
+    student_id:number,
+    payment_photo:string,
+    category_id:number,
+    status:string,
+    created_at:string,
+    updated_at:string
+}
+
 const PendingOnlinePayments = () => {
-    const [pendingPayments, setPendingPayments] = useState([]);
+    const [pendingPayments, setPendingPayments] = useState<PendingPayment[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
@@ -15,7 +29,7 @@ const PendingOnlinePayments = () => {
     const fetchPendingPayments = async () => {
         try {
             setLoading(true);
-            const response = await axiosInstance.get("/api/fee/pending-online-fee");
+            const response = await axiosInstance.get<PendingPayment[]>("/api/fee/pending-online-fee");
             setPendingPayments(response.data);
         } catch (err) {
             setError("Failed to load pending payments.");
@@ -24,7 +38,7 @@ const PendingOnlinePayments = () => {
         }
     };
 
-    const handleApprove = async (paymentId) => {
+    const handleApprove = async (paymentId:string | number) => {
         try {
             await axiosInstance.put(`/api/fee/update-online-fee/${paymentId}`, { remarks: "Approved" });
             fetchPendingPayments(); // Refresh list
@@ -33,10 +47,10 @@ const PendingOnlinePayments = () => {
         }
     };
 
-    const handleReject = async (paymentId) => {
+    const handleReject = async (paymentId:string | number) => {
         try {
             await axiosInstance.put(`/api/fee/reject-online-fee/${paymentId}`);
-            fetchPendingPayments(); // Refresh list
+            fetchPendingPayments();
         } catch (err) {
             alert("Failed to reject payment.");
         }
@@ -61,7 +75,7 @@ const PendingOnlinePayments = () => {
                     </thead>
                     <tbody>
                     {pendingPayments.map((payment) => (
-                        <tr key={payment.payment_id} className="text-center hover:bg-gray-50">
+                        <tr key={payment.pending_payment_id} className="text-center hover:bg-gray-50">
                             <td className="p-3 border">{payment.admission_ID}</td>
                             <td className="p-3 border">{payment.first_name} {payment.last_name}</td>
                             <td className="p-3 border">₹{payment.amount.toLocaleString()}</td>
@@ -71,13 +85,13 @@ const PendingOnlinePayments = () => {
                             <td className="p-3 border flex justify-center space-x-2">
                                 <Button
                                     className="bg-green-500 text-white flex items-center px-3 py-1"
-                                    onClick={() => handleApprove(payment.payment_id)}
+                                    onClick={() => handleApprove(payment.pending_payment_id)}
                                 >
                                     <CheckCircle className="w-4 h-4 mr-1" /> Approve
                                 </Button>
                                 <Button
                                     className="bg-red-500 text-white flex items-center px-3 py-1"
-                                    onClick={() => handleReject(payment.payment_id)}
+                                    onClick={() => handleReject(payment.pending_payment_id)}
                                 >
                                     <XCircle className="w-4 h-4 mr-1" /> Reject
                                 </Button>

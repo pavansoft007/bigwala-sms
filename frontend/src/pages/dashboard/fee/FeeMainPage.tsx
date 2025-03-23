@@ -1,22 +1,44 @@
 import {useEffect, useState} from "react";
 import {Link} from "react-router-dom";
-import {
-    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
-} from "recharts";
-import {
-    CreditCard, FileText, Users, AlertTriangle, History, CirclePlus ,Hourglass
-} from "lucide-react";
+import {BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer} from "recharts";
+import {CreditCard, FileText, Users, AlertTriangle, History, CirclePlus, Hourglass} from "lucide-react";
 import axiosInstance from "@/services/axiosInstance.ts";
+import Transactions from "@/types/Transactions.ts";
+
+interface Tab_data{
+    total_collection: number;
+    pending_payment: number;
+    fully_paid_students: number;
+    total_students: number;
+    category_count: number;
+}
+
+interface Monthly_fee_data{
+    name: string;
+    amount: number;
+}
+
+interface Response{
+    tab_data: Tab_data;
+    monthly_fee_data: Monthly_fee_data[];
+    recent_transactions:Transactions[]
+}
 
 const AdminFeeDashboard = () => {
-    const [dashboardData, setDashboardData] = useState(null);
+    const [dashboardData, setDashboardData] = useState<Tab_data>({
+        total_collection: 0,
+        pending_payment: 0,
+        fully_paid_students: 0,
+        total_students: 0,
+        category_count: 0
+    });
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<String>(null);
-    const [revenueData, setRevenueData] = useState([]);
-    const [recentTransactions,setRecentTransactions]=useState([]);
+    const [error, setError] = useState<String | null>(null);
+    const [revenueData, setRevenueData] = useState<Monthly_fee_data[]>([]);
+    const [recentTransactions, setRecentTransactions] = useState<Transactions[]>([]);
 
     useEffect(() => {
-        axiosInstance.get('/api/fee/dashboard_data')
+        axiosInstance.get<Response>('/api/fee/dashboard_data')
             .then(response => {
                 setDashboardData(response.data.tab_data);
                 setRevenueData(response.data.monthly_fee_data);
@@ -68,8 +90,8 @@ const AdminFeeDashboard = () => {
     const quickActions = [
         {text: "Add New Fee Category", icon: <CirclePlus size={20}/>, link: "/dashboard/fee/categories"},
         {text: "Collect Fee", icon: <CreditCard size={20}/>, link: "/dashboard/fee/collect"},
-        {text: "Recent Transactions", icon: <History size={20} />, link: "/dashboard/fee/history"},
-        {text: "Transactions pending", icon: <Hourglass size={20} />, link: "/dashboard/fee/approval"},
+        {text: "Recent Transactions", icon: <History size={20}/>, link: "/dashboard/fee/history"},
+        {text: "Transactions pending", icon: <Hourglass size={20}/>, link: "/dashboard/fee/approval"},
         //{text: "View Reports", icon: <ClipboardList size={20}/>, link: "/dashboard/fee/reports"},
     ];
 

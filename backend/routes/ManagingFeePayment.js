@@ -241,4 +241,57 @@ ManagingFeePayment.get("/api/fee/student_data/:standard",adminAuth('fee'),async 
     }
 });
 
+ManagingFeePayment.get("/api/fee/recent-transactions",adminAuth('fee'),async (req,res)=>{
+   try {
+       let { page, limit} = req.query;
+       const school_id=req.sessionData['school_id'];
+
+       page = parseInt(page) || 1;
+       limit = parseInt(limit) || 10;
+       const offset = (page - 1) * limit;
+
+
+       const [transactions] = await sequelize.query(
+           `SELECT 
+                sp.payment_id, 
+                sp.amount, 
+                sp.payment_date, 
+                sp.payment_mode, 
+                s.first_name, 
+                s.last_name, 
+                c.standard AS class, 
+                a.admin_name AS collected_by, 
+                fc.category_name 
+            FROM students_payments sp
+            LEFT JOIN students s ON sp.student_id = s.student_id
+            LEFT JOIN classrooms c ON c.classroom_id=s.assignedClassroom
+            LEFT JOIN admins a ON sp.collected_by = a.admin_id
+            LEFT JOIN fee_categories fc ON sp.category_id = fc.category_id
+            where sp.school_id=:school_id
+            ORDER BY sp.payment_date DESC
+            LIMIT :limit OFFSET :offset;`,
+           {
+               replacements: { limit, offset ,school_id}
+           }
+       );
+
+
+       const [[{ total_count }]] = await sequelize.query(
+           `SELECT COUNT(*) AS total_count FROM students_payments;`
+       );
+
+       res.json({
+           success: true,
+           page,
+           limit,
+           totalPages: Math.ceil(total_count / limit),
+           totalRecords: total_count,
+           transactions,
+       });
+   } catch (error) {
+       console.error("Error at getting the recent transactions:", error);
+       return res.status(500).json({message: "internal server error"});
+   }
+})
+
 export default ManagingFeePayment;

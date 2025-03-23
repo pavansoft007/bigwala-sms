@@ -25,6 +25,8 @@ import NoticeBoard from "@/pages/dashboard/noticeBoard/NoticeBoard.tsx";
 import TeacherDetails from "./pages/dashboard/teacher/TeacherDetails";
 import FeeMainPage from "@/pages/dashboard/fee/FeeMainPage.tsx";
 import CollectFee from "@/pages/dashboard/fee/CollectFee.tsx";
+import RecentPayment from "@/pages/dashboard/fee/RecentPayment.tsx";
+import PendingPayments from "@/pages/dashboard/fee/PendingPayments.tsx";
 
 function App() {
     return (
@@ -50,6 +52,8 @@ function App() {
                         </Route>
                         <Route path="fee">
                             <Route path="" element={<FeeMainPage/>}/>
+                            <Route path="history" element={<RecentPayment />} />
+                            <Route path="approval" element={<PendingPayments />} />
                             <Route path="categories" element={<ManageCategories/>}/>
                             <Route path="collect" element={<CollectFee />}/>
                         </Route>

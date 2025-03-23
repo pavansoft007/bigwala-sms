@@ -12,12 +12,9 @@ import studentAuth from "../middleware/StudentAuth.js";
 const ManagingFeePayment = express.Router();
 ManagingFeePayment.post('/api/fee/fee-collect', AdminAuth('fee'), async (req, res) => {
     try {
-        const {amount, student_id, category_id, remarks} = req.body;
+        const {amount, student_id, category_id, remarks,payment_mode} = req.body;
 
 
-        if (!req.sessionData || !req.sessionData.school_id) {
-            return res.status(403).json({message: "Unauthorized access"});
-        }
         if (!amount || amount <= 0 || !student_id || !category_id) {
             return res.status(400).json({message: "Invalid input data"});
         }
@@ -34,6 +31,7 @@ ManagingFeePayment.post('/api/fee/fee-collect', AdminAuth('fee'), async (req, re
                 student_id,
                 category_id,
                 remarks,
+                payment_mode,
                 school_id,
                 collected_by
             }, {transaction});

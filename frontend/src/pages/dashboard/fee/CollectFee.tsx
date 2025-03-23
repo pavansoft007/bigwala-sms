@@ -99,9 +99,12 @@ const CollectFee = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const response = await axiosInstance.post("/api/fee/fee-collect",newFee);
+            const response = await axiosInstance.post("/api/fee/fee-collect",{
+                ...newFee,
+                payment_mode:'cash'
+            });
+            await fetchStudentDetails(newFee.student_id.toString());
             setMessage({ type: "success", text: response.data.message });
-            console.log(e);
         } catch (err: any) {
             setMessage({
                 type: "error",
@@ -190,10 +193,10 @@ const CollectFee = () => {
                                     name="category_id"
                                     onChange={handleFormChange}
                                 >
-                                    <option value="">Select Student</option>
+                                    <option value="">Select Categories</option>
                                     {
-                                        students.map((item)=>{
-                                            return <option value={item.student_id} >{item.admission_ID}- {item.first_name} {item.last_name}</option>
+                                        student && student.studentFee.map((item)=>{
+                                            return <option value={item.category_id} >{item.category_name}</option>
                                         })
                                     }
                                 </select>

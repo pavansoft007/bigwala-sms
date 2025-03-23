@@ -216,7 +216,7 @@ ManagingStudent.post(
 );
 ManagingStudent.get(
     "/mobileAPI/students/:id",
-    AdminAuth("student management"),
+    AdminAuth("all"),
     async (req, res) => {
         try {
             const student_id = req.params.id;
@@ -235,7 +235,7 @@ ManagingStudent.get(
                 return res.status(404).json({message: "Student not found"});
             }
 
-            const [studentFeeDetails] = await sequelize.query("SELECT f.category_name,total_fee_paid,fee_remaining,fee_amount FROM `student_fees` inner JOIN fee_categories f on f.category_id=student_fees.category_id where student_id=:student_id;"
+            const [studentFeeDetails] = await sequelize.query("SELECT f.category_id,f.category_name,total_fee_paid,fee_remaining,fee_amount FROM `student_fees` inner JOIN fee_categories f on f.category_id=student_fees.category_id where student_id=:student_id;"
                 , {
                     replacements: {
                         student_id: student_id
@@ -250,9 +250,6 @@ ManagingStudent.get(
                     }
                 }
             );
-
-
-
 
             student['studentFee'] = studentFeeDetails;
             student['studentFeeHistory'] = studentPaymentHistory;

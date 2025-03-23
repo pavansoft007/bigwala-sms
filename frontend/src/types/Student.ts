@@ -1,4 +1,5 @@
 interface StudentFee{
+    category_id:number,
     category_name: string,
     total_fee_paid: number,
     fee_remaining: number,

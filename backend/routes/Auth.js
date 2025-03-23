@@ -72,8 +72,8 @@ Auth.post('/mobileAPI/otp-verify', otpTokenVerification, async (req, res) => {
         const oneData = [];
         for (const currentUser of users) {
             if (currentUser.role === 'student') {
-                Classroom.hasMany(Student, { foreignKey: 'assignedClassroom' });
-                Student.belongsTo(Classroom, { foreignKey: 'assignedClassroom' });
+                Classroom.hasMany(Student, { foreignKey: 'assginedClassroom' });
+                Student.belongsTo(Classroom, { foreignKey: 'assginedClassroom' });
 
                 const student = await Student.findOne({
                     where: { phone_number: currentUser.phone_number },

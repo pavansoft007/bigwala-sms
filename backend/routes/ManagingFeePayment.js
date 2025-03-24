@@ -80,13 +80,13 @@ ManagingFeePayment.post('/api/fee/fee-collect', AdminAuth('fee'), async (req, re
 
 ManagingFeePayment.post("/api/fee/online-fee-payment", studentAuth, multerService.single('payment_photo'), async (req, res) => {
     const {student_id, school_id} = req.sessionData;
-    const {amount} = req.body;
+    const {amount,category_id} = req.body;
     try {
-        console.log(req.file);
         const newOnlinePayment = await StudentPaymentPending.create({
             student_id,
             school_id,
             amount,
+            category_id,
             payment_photo: req.file.path,
             status: 'pending',
         });

@@ -4,18 +4,7 @@ import axiosInstance from "../../../services/axiosInstance.ts";
 import FetchClassroomData from "@/services/FetchClassroomData.ts";
 import Classroom from "@/types/Classroom.ts";
 import {Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table.tsx";
-
-interface Student {
-    admission_ID: string,
-    student_id: string;
-    first_name: string;
-    last_name: string;
-    email: string;
-    phone_number: string;
-    school_id: string;
-    standard: string,
-    section: string
-}
+import Student from "@/types/Student.ts";
 
 const Students = () => {
     const [classrooms, setClassrooms] = useState<Classroom[]>([]);
@@ -276,11 +265,7 @@ const Students = () => {
                                             <button
                                                 onClick={() => handleEdit(student.student_id)}
                                                 className="p-2 mx-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
-                                                Edit
-                                            </button>
-                                            <button
-                                                className="p-2 mx-1 bg-red-500 text-white rounded-lg hover:bg-red-600">
-                                                Delete
+                                                View Details
                                             </button>
                                         </TableCell>
                                     </TableRow>

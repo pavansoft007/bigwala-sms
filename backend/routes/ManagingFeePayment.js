@@ -125,18 +125,18 @@ ManagingFeePayment.get("/api/fee/pending-online-fee", adminAuth('fee'), async (r
 });
 
 ManagingFeePayment.put('/api/fee/update-online-fee/:id', adminAuth('fee'), async (req, res) => {
-    const {remarks} = req.body;
+    const { remarks } = req.body;
     const payment_id = req.params.id;
     const transaction = await sequelize.transaction();
     try {
         const pendingOnlinePaymentDetails = await StudentPaymentPending.findByPk(payment_id);
         if (!pendingOnlinePaymentDetails) {
-            res.status(404).json({message: "online payment details not found"});
+            return res.status(404).json({ message: "Online payment details not found" });
         }
 
         await pendingOnlinePaymentDetails.update({
             status: 'approved'
-        }, {transaction});
+        }, { transaction });
 
         await StudentPayment.create({
             amount: pendingOnlinePaymentDetails.amount,
@@ -145,35 +145,49 @@ ManagingFeePayment.put('/api/fee/update-online-fee/:id', adminAuth('fee'), async
             school_id: req.sessionData.school_id,
             collected_by: req.sessionData.id,
             payment_mode: 'upi',
-            remarks: "online UPI payments : " + (remarks ?? ''),
+            remarks: "Online UPI payments: " + (remarks ?? ''),
             payment_date: pendingOnlinePaymentDetails.created_at,
             created_at: pendingOnlinePaymentDetails.created_at
-        }, {transaction});
+        }, { transaction });
 
-
-        const school_fincanicals = await SchoolFinancials.findOne({
-            where: {
-                school_id: req.sessionData['school_id']
-            }
+        const school_financials = await SchoolFinancials.findOne({
+            where: { school_id: req.sessionData.school_id }
         });
 
-        await school_fincanicals.increment(
-            {current_balance: pendingOnlinePaymentDetails.amount}
-            , {transaction});
+        await school_financials.increment(
+            { current_balance: pendingOnlinePaymentDetails.amount },
+            { transaction }
+        );
 
+        const studentFee = await StudentFee.findOne({
+            where: {
+                student_id: pendingOnlinePaymentDetails.student_id,
+                category_id: pendingOnlinePaymentDetails.category_id,
+                school_id: req.sessionData.school_id
+            },
+            transaction
+        });
+
+        if (studentFee) {
+            await studentFee.increment(
+                { total_fee_paid: pendingOnlinePaymentDetails.amount, fee_remaining: -pendingOnlinePaymentDetails.amount },
+                { transaction }
+            );
+        } else {
+            await transaction.rollback();
+            return res.status(404).json({ message: "Student fee details not found" });
+        }
 
         await transaction.commit();
 
-        res.status(200).json({
-            message: "payment was done"
-        })
-
+        res.status(200).json({ message: "Payment approved and fee updated successfully" });
     } catch (error) {
         await transaction.rollback();
-        console.error("Unexpected updating in fetching  online fee payment:", error);
-        return res.status(500).json({message: "Unexpected error occurred"});
+        console.error("Error updating online fee payment:", error);
+        return res.status(500).json({ message: "Unexpected error occurred" });
     }
 });
+
 
 ManagingFeePayment.put("/api/fee/reject-online-fee/:id", adminAuth('fee'), async (req, res) => {
     const payment_id = req.params.id;

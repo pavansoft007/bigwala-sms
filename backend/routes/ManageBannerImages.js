@@ -1,5 +1,4 @@
 import express from "express";
-import multer from "multer";
 import path from "path";
 import AdminAuth from "../middleware/AdminAuth.js";
 import BannerImages from "../models/BannerImages.js";
@@ -50,7 +49,7 @@ ManageBannerImages.get('/mobileAPI/bannerImages', completeLogin, async (req, res
         });
 
         const StaticFileData = completeData.map((item) => {
-            return Encrypt(`${item.filename}:${req['ip'] || '0.0.0.0'}`);
+            return Encrypt(`${item.filename}:${req['realIp']}`);
         });
 
         res.json(StaticFileData);
@@ -81,15 +80,15 @@ ManageBannerImages.get('/staticFiles/bannerImages/:id',ImageCors,async (req,res)
         const decText = Decrypt(id).split(':');
         const ip=decText[decText.length-1];
         const realIp=req['ip'].split(':');
+        const __filename = fileURLToPath(import.meta.url);
+        const __dirname = path.dirname(__filename);
+        const completePath=path.parse(__dirname)['dir'];
         if(ip === realIp[realIp.length-1]){
             const fileDetails=await BannerImages.findOne({
                 where:{
                     banner_id:decText[0]
                 }
             });
-            const __filename = fileURLToPath(import.meta.url);
-            const __dirname = path.dirname(__filename);
-            const completePath=path.parse(__dirname)['dir'];
             console.log(fileDetails['filename']);
             if(fileDetails['filename']){
                 res.sendFile(path.join(completePath,fileDetails['filename']));
@@ -97,7 +96,7 @@ ManageBannerImages.get('/staticFiles/bannerImages/:id',ImageCors,async (req,res)
                 res.send('file location not found');
             }
         }else{
-            res.send('no access');
+            res.sendFile(path.join(completePath, '/public/no_access_image.jpg'));
         }
     }catch (error) {
         console.error('Error saving message:', error);

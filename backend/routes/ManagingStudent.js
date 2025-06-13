@@ -11,36 +11,37 @@ import StudentPayment from "../models/StudentPayment.js";
 import sequelize from "../config/database.js";
 import multer from "multer";
 import path from "path";
+import upload from "../services/multerService.js";
 import Encrypt from "../services/Encrypt.js";
 
 const ManagingStudent = express.Router();
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, "uploads/");
-    },
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-        cb(null, uniqueSuffix + path.extname(file.originalname));
-    },
-});
-
-const upload = multer({
-    storage: storage,
-    limits: {fileSize: 10 * 1024 * 1024},
-    fileFilter: (req, file, cb) => {
-        const filetypes = /mp3|wav|jpeg|png|jpg/;
-        const mimetype = filetypes.test(file.mimetype);
-        const extname = filetypes.test(
-            path.extname(file.originalname).toLowerCase()
-        );
-
-        if (mimetype && extname) {
-            return cb(null, true);
-        }
-        cb("Error: Only phone files are allowed (mp3, wav, ogg,mpeg).");
-    },
-});
+// const storage = multer.diskStorage({
+//     destination: (req, file, cb) => {
+//         cb(null, "uploads/");
+//     },
+//     filename: (req, file, cb) => {
+//         const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+//         cb(null, uniqueSuffix + path.extname(file.originalname));
+//     },
+// });
+//
+// const upload = multer({
+//     storage: storage,
+//     limits: {fileSize: 10 * 1024 * 1024},
+//     fileFilter: (req, file, cb) => {
+//         const filetypes = /mp3|wav|jpeg|png|jpg/;
+//         const mimetype = filetypes.test(file.mimetype);
+//         const extname = filetypes.test(
+//             path.extname(file.originalname).toLowerCase()
+//         );
+//
+//         if (mimetype && extname) {
+//             return cb(null, true);
+//         }
+//         cb("Error: Only phone files are allowed (mp3, wav, ogg,mpeg).");
+//     },
+// });
 
 ManagingStudent.post(
     "/api/student",
@@ -229,8 +230,13 @@ ManagingStudent.get(
                     type: Sequelize.QueryTypes.SELECT
                 }
             );
-            student['student_photo'] = Encrypt(student['student_photo'] + ':' + req.ip);
-            student['father_photo'] = Encrypt(student['father_photo'] + ':' + req.ip);
+            if(student['student_photo']){
+                student['student_photo'] = Encrypt(student['student_photo'] + ':' + req.realIp);
+            }
+
+            if(student['father_photo']){
+                student['father_photo'] = Encrypt(student['father_photo'] + ':' + req.realIp);
+            }
             if (!student) {
                 return res.status(404).json({message: "Student not found"});
             }

@@ -2,12 +2,13 @@ import express from "express";
 import sequelize from "./config/database.js";
 import Auth from "./routes/Auth.js";
 import dotenv from 'dotenv';
+
 dotenv.config();
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import helmet from "helmet";
 import path from 'path';
-import { fileURLToPath } from 'url';
+import {fileURLToPath} from 'url';
 import GettingData from "./routes/GettingData.js";
 import ManagingClassrooms from "./routes/ManagingClassrooms.js";
 import TestingRoute from "./routes/TestingRoute.js";
@@ -25,10 +26,17 @@ import ManageBannerImages from "./routes/ManageBannerImages.js";
 import ManagingFeeCategory from "./routes/ManagingFeeCategory.js";
 import ManagingStaticFiles from "./routes/ManagingStaticFiles.js";
 import ManagingFeePayment from "./routes/ManagingFeePayment.js";
+import {realIpMiddleware} from "./middleware/realIpMiddleware.js";
 
 const app = express();
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({extended: true}));
+if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'prod' ) {
+    app.set('trust proxy', 'loopback');
+} else {
+    app.set('trust proxy', false); // Don't trust proxies in dev environment
+}
+app.use(realIpMiddleware);
 app.use(
     helmet({
         contentSecurityPolicy: {
@@ -39,7 +47,6 @@ app.use(
         },
     })
 );
-app.set('trust proxy', true);
 app.use(cors({
     origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -58,7 +65,7 @@ sequelize.sync()
     })
     .catch((error) => {
         console.error('Error syncing the database:', error);
-});
+    });
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -87,15 +94,15 @@ app.use(ManagingStaticFiles);
 app.use(ManagingFeePayment);
 
 
-app.all('/mobileAPI/*',(req, res)=>{
+app.all('/mobileAPI/*', (req, res) => {
     res.status(404).json({});
 });
 
-app.all('/api/*',(req, res)=>{
+app.all('/api/*', (req, res) => {
     res.status(404).json({});
 });
 
-app.get('*',(req,res)=>{
+app.get('*', (req, res) => {
     res.sendFile(path.resolve(__dirname, '../frontend/dist/index.html'));
 });
 

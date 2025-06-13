@@ -10,18 +10,10 @@ ManagingStaticFiles.get('/staticFiles/photos/:id', ImageCors, (req, res) => {
     const id = req.params.id;
     const decText = Decrypt(id).split(':');
     const ip = decText[decText.length - 1];
-    let realIp='';
-    if(process.env.NODE_ENV === 'development'){
-        realIp = req['ip'].split(':');
-    }else {
-        console.log("the Header IP's are:"+req.headers['X-Real-IP']);
-        realIp = req.headers['x-real-ip'] || req.connection.remoteAddress;
-    }
+    const realIp = req['realIp'].split(':');
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
     const completePath = path.parse(__dirname)['dir'];
-    console.log(decText);
-    console.log(ip, realIp[realIp.length - 1]);
     if (ip === realIp[realIp.length - 1]) {
         res.sendFile(path.join(completePath, decText[0]));
     } else {

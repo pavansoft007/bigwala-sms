@@ -39,6 +39,7 @@ app.use(
         },
     })
 );
+app.set('trust proxy', true);
 app.use(cors({
     origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],

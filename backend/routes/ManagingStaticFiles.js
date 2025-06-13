@@ -14,6 +14,7 @@ ManagingStaticFiles.get('/staticFiles/photos/:id', ImageCors, (req, res) => {
     if(process.env.NODE_ENV === 'development'){
         realIp = req['ip'].split(':');
     }else {
+        console.log("the Header IP's are:"+req.headers['X-Real-IP']);
         realIp = req.headers['X-Real-IP'] || req.connection.remoteAddress;
     }
     const __filename = fileURLToPath(import.meta.url);

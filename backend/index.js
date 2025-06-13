@@ -2,6 +2,7 @@ import express from "express";
 import sequelize from "./config/database.js";
 import Auth from "./routes/Auth.js";
 import dotenv from 'dotenv';
+dotenv.config();
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import helmet from "helmet";
@@ -85,7 +86,6 @@ app.use(ManagingStaticFiles);
 app.use(ManagingFeePayment);
 
 
-dotenv.config();
 app.all('/mobileAPI/*',(req, res)=>{
     res.status(404).json({});
 });

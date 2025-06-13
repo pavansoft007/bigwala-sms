@@ -10,7 +10,12 @@ ManagingStaticFiles.get('/staticFiles/photos/:id', ImageCors, (req, res) => {
     const id = req.params.id;
     const decText = Decrypt(id).split(':');
     const ip = decText[decText.length - 1];
-    const realIp = req['ip'].split(':');
+    let realIp='';
+    if(process.env.NODE_ENV === 'development'){
+        realIp = req['ip'].split(':');
+    }else {
+        realIp = req.headers['X-Real-IP'] || req.connection.remoteAddress;
+    }
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
     const completePath = path.parse(__dirname)['dir'];

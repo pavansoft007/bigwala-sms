@@ -230,11 +230,11 @@ ManagingStudent.get(
                     type: Sequelize.QueryTypes.SELECT
                 }
             );
-            if(student['student_photo']){
+            if (student['student_photo']) {
                 student['student_photo'] = Encrypt(student['student_photo'] + ':' + req.realIp);
             }
 
-            if(student['father_photo']){
+            if (student['father_photo']) {
                 student['father_photo'] = Encrypt(student['father_photo'] + ':' + req.realIp);
             }
             if (!student) {
@@ -354,22 +354,84 @@ ManagingStudent.post(
     }
 );
 
+// ManagingStudent.put(
+//     "/api/student/:id",
+//     AdminAuth("student management"),
+//     upload.fields([
+//         {
+//             name: "student_photo",
+//             maxCount: 1,
+//         },
+//         {
+//             name: "father_photo",
+//             maxCount: 1,
+//         },
+//     ]),
+//     async (req, res) => {
+//         try {
+//             const studentId = req.params.id;
+//             const {
+//                 first_name,
+//                 last_name,
+//                 date_of_birth,
+//                 gender,
+//                 email,
+//                 phone_number,
+//                 address,
+//                 enrollment_date,
+//                 assignedClassroom,
+//                 status,
+//             } = req.body;
+//
+//             const student = await Student.findByPk(studentId);
+//             if (!student) {
+//                 return res.status(404).json({message: "Student not found"});
+//             }
+//
+//             const student_photo = req.files?.student_photo ? req.files.student_photo[0].filename : student.student_photo;
+//             const father_photo = req.files?.father_photo ? req.files.father_photo[0].filename : student.father_photo;
+//
+//             await student.update({
+//                 first_name,
+//                 last_name,
+//                 date_of_birth,
+//                 gender,
+//                 email,
+//                 phone_number,
+//                 address,
+//                 enrollment_date,
+//                 assignedClassroom,
+//                 student_photo,
+//                 father_photo,
+//                 status: status || "Active",
+//             });
+//
+//             res.status(200).json({
+//                 message: "Student updated successfully",
+//                 student,
+//             });
+//         } catch (error) {
+//             console.error("Error updating student:", error);
+//             res.status(500).json({
+//                 message: "An error occurred while updating the student",
+//                 error: error.message,
+//             });
+//         }
+//     }
+// );
+
 ManagingStudent.put(
     "/api/student/:id",
     AdminAuth("student management"),
     upload.fields([
-        {
-            name: "student_photo",
-            maxCount: 1,
-        },
-        {
-            name: "father_photo",
-            maxCount: 1,
-        },
-    ]),
-    async (req, res) => {
+        {name: "student_photo", maxCount: 1},
+        {name: "father_photo", maxCount: 1},
+    ]), async (req, res) => {
         try {
             const studentId = req.params.id;
+            const sFile = req.files?.student_photo?.[0];
+            const fFile = req.files?.father_photo?.[0];
+
             const {
                 first_name,
                 last_name,
@@ -387,11 +449,25 @@ ManagingStudent.put(
             if (!student) {
                 return res.status(404).json({message: "Student not found"});
             }
+            if (email || phone_number) {
+                const dupe = await Student.findOne({
+                    where: {
+                        student_id: {[Op.ne]: studentId},
+                        [Op.or]: [
+                            email ? {email} : null,
+                            phone_number ? {phone_number} : null,
+                        ].filter(Boolean),
+                    },
+                });
 
-            const student_photo = req.files?.student_photo ? req.files.student_photo[0].filename : student.student_photo;
-            const father_photo = req.files?.father_photo ? req.files.father_photo[0].filename : student.father_photo;
-
-            await student.update({
+                if (dupe) {
+                    return res
+                        .status(409)
+                        .json({message: "Email or phone number already in use"});
+                }
+            }
+            console.log(sFile.path);
+            const payload = {
                 first_name,
                 last_name,
                 date_of_birth,
@@ -400,19 +476,21 @@ ManagingStudent.put(
                 phone_number,
                 address,
                 enrollment_date,
-                assignedClassroom,
-                student_photo,
-                father_photo,
+                assignedClassroom: assignedClassroom || null,
+                student_photo: sFile ? sFile.path : student.student_photo,
+                father_photo: fFile ? fFile.path : student.father_photo,
                 status: status || "Active",
-            });
+            };
 
-            res.status(200).json({
+            await student.update(payload);
+
+            return res.status(200).json({
                 message: "Student updated successfully",
                 student,
             });
         } catch (error) {
             console.error("Error updating student:", error);
-            res.status(500).json({
+            return res.status(500).json({
                 message: "An error occurred while updating the student",
                 error: error.message,
             });

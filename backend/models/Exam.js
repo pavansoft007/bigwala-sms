@@ -40,8 +40,16 @@ Exam.init({
         type:DataTypes.DATE,
         allowNull:false
     },
+    timetable_photo:{
+        type:DataTypes.STRING(200),
+        allowNull:false
+    },
     end_date:{
         type:DataTypes.DATE,
+        allowNull:false
+    },
+    status:{
+        type:DataTypes.ENUM('scheduled','ongoing','completed','postponed'),
         allowNull:false
     }
 }, {

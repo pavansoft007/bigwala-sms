@@ -14,7 +14,13 @@ const ClassroomManagement = () => {
     // Fetch classrooms
     useEffect(() => {
         setIsLoading(() => true);
-        axiosInstance
+        fetchClassrooms().then(()=>{
+            console.log("fetched the classroom from API");
+        });
+    }, []);
+
+    const fetchClassrooms = async () => {
+        await axiosInstance
             .get<Classroom[]>("/mobileAPI/classroom")
             .then((response) => {
                 setIsLoading(false);
@@ -24,14 +30,15 @@ const ClassroomManagement = () => {
                 setIsLoading(false);
                 console.error("Error fetching classrooms");
             });
-    }, []);
+    }
 
     // Add new classroom
     const handleAddClassroom = () => {
         axiosInstance
             .post<Classroom>("/mobileAPI/classroom", newClassroom)
-            .then((response) => {
-                setClassrooms((prev) => [...prev, response.data]);  // ✅ response.data is now Classroom
+            .then(() => {
+                // setClassrooms((prev) => [...prev, response.data]);
+                fetchClassrooms().then(() => {console.log("Re-fetched the classroom from API");});
                 setIsAddModalOpen(false);
                 setNewClassroom({ standard: "", section: "" });
             })

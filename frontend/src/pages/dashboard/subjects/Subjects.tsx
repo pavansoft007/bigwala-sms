@@ -13,7 +13,21 @@ const AddSubjects = () => {
 
     useEffect(() => {
         setLoading(true);
-        axiosInstance
+        // axiosInstance
+        //     .get<Subject[]>("/api/subject")
+        //     .then((res) => {
+        //         setSubjects(res.data);
+        //         setLoading(false);
+        //     })
+        //     .catch(() => {
+        //         console.error("Error in getting the subjects");
+        //         setLoading(false);
+        //     });
+        fetchSubjects();
+    }, []);
+
+    const fetchSubjects = async () => {
+        await axiosInstance
             .get<Subject[]>("/api/subject")
             .then((res) => {
                 setSubjects(res.data);
@@ -23,13 +37,15 @@ const AddSubjects = () => {
                 console.error("Error in getting the subjects");
                 setLoading(false);
             });
-    }, []);
+    }
 
     const handleAddSubject = () => {
         axiosInstance
             .post("/api/subject", newSubject)
             .then((res) => {
-                setSubjects((prev) => [...prev, ...(res.data as Subject[])]);
+                // setSubjects((prev) => [...prev, ...(res.data as Subject[])]);
+                console.log("Add subject response:", res.data);
+                fetchSubjects();
                 setIsAddModalOpen(false);
                 setNewSubject({subject_name: "", subject_code: ""});
             })

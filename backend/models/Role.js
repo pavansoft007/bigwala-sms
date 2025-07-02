@@ -22,7 +22,7 @@ const Role = sequelize.define('Role', {
     },
     permissions: {
         type: DataTypes.JSON,
-        allowNull: false,
+        allowNull: true,
     },
 }, {
     sequelize,

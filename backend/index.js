@@ -27,6 +27,7 @@ import ManagingFeeCategory from "./routes/ManagingFeeCategory.js";
 import ManagingStaticFiles from "./routes/ManagingStaticFiles.js";
 import ManagingFeePayment from "./routes/ManagingFeePayment.js";
 import {realIpMiddleware} from "./middleware/realIpMiddleware.js";
+import ManagingSchool from "./routes/ManagingSchool.js";
 
 const app = express();
 app.use(express.json());
@@ -74,6 +75,7 @@ const frontendPath = path.resolve(__dirname, '../frontend/dist');
 app.use(express.static(frontendPath));
 
 app.use('/uploads', express.static('uploads'));
+app.use(ManagingSchool);
 app.use(Auth);
 app.use(GettingData);
 app.use(ManagingClassrooms);

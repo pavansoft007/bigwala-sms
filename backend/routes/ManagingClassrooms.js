@@ -30,7 +30,7 @@ ManagingClassrooms.post('/mobileAPI/classroom',adminAuth('classroom'),async (req
             school_id:req['sessionData']['school_id']
         });
         res.status(201).json({
-            message: 'Teacher and user created successfully',
+            message: 'classroom created successfully',
             classroomInfo:newClassroom
         });
     }catch (error) {

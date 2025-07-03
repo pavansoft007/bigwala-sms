@@ -153,7 +153,7 @@ const Teacher = () => {
                     <button
                         className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 mb-6"
                     >
-                        <Link to='/dashboard/teachers/add'>
+                        <Link to='/dashboard/teacher/add'>
                             Add new Teacher
                         </Link>
                     </button>

@@ -28,8 +28,27 @@ import CollectFee from "@/pages/dashboard/fee/CollectFee.tsx";
 import RecentPayment from "@/pages/dashboard/fee/RecentPayment.tsx";
 import PendingPayments from "@/pages/dashboard/fee/PendingPayments.tsx";
 import Attendance from "@/pages/dashboard/attendence/Attendance.tsx";
+import ExamDashboard from "@/pages/dashboard/exam/ExamDashboard.tsx";
+import {useEffect} from "react";
+import axiosInstance from "@/services/axiosInstance.ts";
+import Classroom from "@/types/Classroom.ts";
+import {putClassrooms} from "@/stores/ClassroomStore.ts";
+import {useDispatch} from "react-redux";
 
 function App() {
+    const dispatch = useDispatch();
+
+    useEffect(() => {
+        const FetchClassrooms = async () => {
+            axiosInstance.get<Classroom[]>("/mobileAPI/classroom").then((res)=>{
+                dispatch(putClassrooms(res.data));
+            }).catch(error => {
+                console.log(error);
+            })
+        }
+        FetchClassrooms().then(() => console.log("saved the classrooms in the store"));
+    }, []);
+
     return (
         <div>
             <Routes>
@@ -47,6 +66,7 @@ function App() {
                         </Route>
                         <Route path="teachers" element={<Teachers/>}/>
                         <Route path={"attendance"} element={<Attendance />}/>
+                        <Route path={"exams"} element={<ExamDashboard />}/>
                         <Route path="teacher">
                             <Route path="add" element={<AddTeacher/>}/>
                             <Route path="manage-teacher" element={<Teachers/>}/>
@@ -59,6 +79,7 @@ function App() {
                             <Route path="categories" element={<ManageCategories/>}/>
                             <Route path="collect" element={<CollectFee />}/>
                         </Route>
+
                         <Route path="notice-board" element={<NoticeBoard/>}/>
                         <Route path="subjects" element={<Subject/>}/>
                         <Route path="roles" element={<RolePanel/>}/>

@@ -4,6 +4,10 @@ import upload from "../services/multerService.js";
 import Exam from "../models/Exam.js";
 import completeLogin from "../middleware/completeLogin.js";
 import ExamMarks from "../models/ExamMarks.js";
+import {Op} from "sequelize";
+import Encrypt from "../services/Encrypt.js";
+import FormatDate from "../services/FormatDate.js";
+import sequelize from "../config/database.js";
 
 const ManagingExam = express.Router();
 
@@ -18,7 +22,8 @@ ManagingExam.post(
     ]),
     async (req, res) => {
         try {
-            const { exam_name, class_id, school_id, start_date, end_date , status } = req.body;
+            const school_id = req.sessionData.school_id;
+            const { exam_name, class_id, start_date, end_date , status } = req.body;
             if (!exam_name || !class_id || !school_id || !start_date || !end_date) {
                 return res.status(400).json({ error: "Missing required fields" });
             }
@@ -46,11 +51,11 @@ ManagingExam.post(
                     ]
                 }
             });
-            if(!examSearch) {
+            if(examSearch) {
                 return res.status(400).json({ error: "A exam is already scheduled on that date "+start_date });
             }
 
-            const timetable_photo = timetablePhotoFile.filename;
+            const timetable_photo = timetablePhotoFile.path;
             const exam = await Exam.create({
                 exam_name,
                 class_id,
@@ -70,20 +75,43 @@ ManagingExam.post(
 );
 
 ManagingExam.get("/api/exam", completeLogin , async (req, res) => {
-    try{
-        const school_id = req.sessionData.student_id;
-        const exam = await Exam.findOne({
-            where: {
-                school_id: school_id
+    try {
+        const school_id = req.sessionData.school_id;
+
+        let [exams]= await sequelize.query(`
+            select e.exam_id,
+                   e.exam_name,
+                   c.classroom_id,
+                   c.standard,
+                   c.section,
+                   e.timetable_photo,
+                   e.status,
+                   e.start_date,
+                   e.end_date
+            from exams e
+                     inner join bigwaladev.classrooms c on e.class_id = c.classroom_id
+            where e.school_id = :school_id;
+        `,{
+            replacements:{
+                school_id
             }
-        })
-        return res.status(200).json(exam);
+        });
+
+        exams = exams.map((exam) => {
+            exam['start_date'] = FormatDate(exam['start_date']);
+            exam['end_date'] = FormatDate(exam['end_date']);
+            exam['timetable_photo'] = Encrypt(exam['timetable_photo'] + ':' + req.realIp);
+            return exam;
+        });
+
+        return res.status(200).json(exams);
 
     } catch (err) {
-        console.error("Error creating exam:", err);
+        console.error("Error fetching exams:", err);
         return res.status(500).json({ error: "Internal server error" });
     }
 });
+
 
 ManagingExam.put(
     '/api/exam/:exam_id',
@@ -97,7 +125,8 @@ ManagingExam.put(
     async (req, res) => {
         try {
             const exam_id = req.params.exam_id;
-            const { exam_name, class_id, school_id, start_date, end_date, status } = req.body;
+            const school_id=req.sessionData.school_id;
+            const { exam_name, classroom_id, start_date, end_date, status } = req.body;
 
             const examInfo = await Exam.findOne({
                 where: {
@@ -112,7 +141,7 @@ ManagingExam.put(
                 });
             }
 
-            if (!exam_name || !class_id || !school_id || !start_date || !end_date) {
+            if (!exam_name || !classroom_id || !school_id || !start_date || !end_date) {
                 return res.status(400).json({ error: "Missing required fields" });
             }
 
@@ -125,7 +154,7 @@ ManagingExam.put(
 
             await examInfo.update({
                 exam_name,
-                class_id,
+                class_id:classroom_id,
                 school_id,
                 start_date,
                 end_date,

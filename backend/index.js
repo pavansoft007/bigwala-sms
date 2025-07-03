@@ -20,7 +20,7 @@ import ManagingVideo from "./routes/ManagingVideo.js";
 import ManagingSubjects from "./routes/ManagingSubjects.js";
 import ManagingTeacher from "./routes/ManagingTeacher.js";
 import ManagingStudent from "./routes/ManagingStudent.js";
-import ArcManagingExam from "./routes/ArcManagingExam.js";
+import ManagingExam from "./routes/ManagingExam.js";
 import ManageUserRights from "./routes/ManageUserRights.js";
 import ManageBannerImages from "./routes/ManageBannerImages.js";
 import ManagingFeeCategory from "./routes/ManagingFeeCategory.js";
@@ -54,11 +54,11 @@ app.use(cors({
     credentials: true
 }));
 
-/*const limiter = rateLimit({
+const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 100,
 });
-app.use(limiter);*/
+app.use(limiter);
 
 sequelize.sync()
     .then(() => {
@@ -88,7 +88,7 @@ app.use(ManagingVideo);
 app.use(ManagingSubjects);
 app.use(ManagingTeacher);
 app.use(ManagingStudent);
-app.use(ArcManagingExam);
+app.use(ManagingExam);
 app.use(ManageUserRights);
 app.use(ManageBannerImages);
 app.use(ManagingFeeCategory);

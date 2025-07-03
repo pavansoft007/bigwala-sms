@@ -1,4 +1,5 @@
-import {DataTypes, Model} from "sequelize";
+import { DataTypes, Model } from "sequelize";
+import sequelize from "../config/database.js";
 import Subject from "./Subject.js";
 import Classroom from "./Classroom.js";
 import Student from "./Student.js";
@@ -40,14 +41,19 @@ ExamMarks.init({
         type:DataTypes.INTEGER,
         allowNull:false,
         references:{
-          model:Exam,
-          key:'exam_id'
+            model:Exam,
+            key:'exam_id'
         }
     },
     marks:{
         type: DataTypes.INTEGER,
         allowNull:false,
     }
+}, {
+    sequelize, // ✅ This is required
+    modelName: 'ExamMarks',
+    tableName: 'exam_marks', // optional, to match DB table naming
+    timestamps: false // optional, if you don't have createdAt/updatedAt
 });
 
 export default ExamMarks;

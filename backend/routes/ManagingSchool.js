@@ -3,6 +3,9 @@ import School from "../models/School.js";
 import Role from "../models/Role.js";
 import Admin from "../models/Admin.js";
 import sequelize from "../config/database.js";
+import {Model as school_fincanicals} from "sequelize";
+import SchoolFinancials from "../models/SchoolFinancials.js";
+import FeeCategory from "../models/FeeCategory.js";
 
 const ManagingSchool = express.Router();
 
@@ -44,6 +47,19 @@ ManagingSchool.post("/super-admin/schools", async (req, res) => {
             admin_password: admin_password,
             role_id: role.role_id,
             school_id: school.school_id,
+        }, {
+            transaction: t
+        });
+
+        await FeeCategory.create({
+            school_id: school.school_id,
+            category_name:"tuition fee",
+            description:"Default tuition Fee for the school",
+        });
+
+        await SchoolFinancials.create({
+            school_id: school.school_id,
+            current_balance: 0
         }, {
             transaction: t
         });

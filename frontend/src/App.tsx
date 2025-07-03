@@ -27,6 +27,7 @@ import FeeMainPage from "@/pages/dashboard/fee/FeeMainPage.tsx";
 import CollectFee from "@/pages/dashboard/fee/CollectFee.tsx";
 import RecentPayment from "@/pages/dashboard/fee/RecentPayment.tsx";
 import PendingPayments from "@/pages/dashboard/fee/PendingPayments.tsx";
+import Attendance from "@/pages/dashboard/attendence/Attendance.tsx";
 
 function App() {
     return (
@@ -45,6 +46,7 @@ function App() {
                             <Route path=":id" element={<StudentDetails/>}/>
                         </Route>
                         <Route path="teachers" element={<Teachers/>}/>
+                        <Route path={"attendance"} element={<Attendance />}/>
                         <Route path="teacher">
                             <Route path="add" element={<AddTeacher/>}/>
                             <Route path="manage-teacher" element={<Teachers/>}/>

@@ -108,6 +108,13 @@ const DashboardSideBar = () => {
                             </Link>
                         </li>
                     )}
+                    {hasPermission("attendance management") && (
+                        <li>
+                            <Link to="attendance" className="flex items-center p-3 rounded-lg hover:bg-gray-700">
+                                <FaUsersCog className="mr-3"/> Attendance Management
+                            </Link>
+                        </li>
+                    )}
                     {hasPermission("notice board") && (
                         <li>
                             <Link to="notice-board" className="flex items-center p-3 rounded-lg hover:bg-gray-700">

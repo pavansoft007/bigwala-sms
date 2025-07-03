@@ -8,6 +8,7 @@ import {Op} from "sequelize";
 import Encrypt from "../services/Encrypt.js";
 import FormatDate from "../services/FormatDate.js";
 import sequelize from "../config/database.js";
+import Subject from "../models/Subject.js";
 
 const ManagingExam = express.Router();
 
@@ -23,14 +24,14 @@ ManagingExam.post(
     async (req, res) => {
         try {
             const school_id = req.sessionData.school_id;
-            const { exam_name, class_id, start_date, end_date , status } = req.body;
+            const {exam_name, class_id, start_date, end_date, status} = req.body;
             if (!exam_name || !class_id || !school_id || !start_date || !end_date) {
-                return res.status(400).json({ error: "Missing required fields" });
+                return res.status(400).json({error: "Missing required fields"});
             }
 
             const timetablePhotoFile = req.files?.timetable_photo?.[0];
             if (!timetablePhotoFile) {
-                return res.status(400).json({ error: "Timetable photo is required" });
+                return res.status(400).json({error: "Timetable photo is required"});
             }
 
             const examSearch = await Exam.findOne({
@@ -51,8 +52,8 @@ ManagingExam.post(
                     ]
                 }
             });
-            if(examSearch) {
-                return res.status(400).json({ error: "A exam is already scheduled on that date "+start_date });
+            if (examSearch) {
+                return res.status(400).json({error: "A exam is already scheduled on that date " + start_date});
             }
 
             const timetable_photo = timetablePhotoFile.path;
@@ -66,19 +67,19 @@ ManagingExam.post(
                 timetable_photo,
             });
 
-            return res.status(201).json({ message: "Exam created successfully", exam });
+            return res.status(201).json({message: "Exam created successfully", exam});
         } catch (err) {
             console.error("Error creating exam:", err);
-            return res.status(500).json({ error: "Internal server error" });
+            return res.status(500).json({error: "Internal server error"});
         }
     }
 );
 
-ManagingExam.get("/api/exam", completeLogin , async (req, res) => {
+ManagingExam.get("/api/exam", completeLogin, async (req, res) => {
     try {
         const school_id = req.sessionData.school_id;
 
-        let [exams]= await sequelize.query(`
+        let [exams] = await sequelize.query(`
             select e.exam_id,
                    e.exam_name,
                    c.classroom_id,
@@ -91,8 +92,8 @@ ManagingExam.get("/api/exam", completeLogin , async (req, res) => {
             from exams e
                      inner join bigwaladev.classrooms c on e.class_id = c.classroom_id
             where e.school_id = :school_id;
-        `,{
-            replacements:{
+        `, {
+            replacements: {
                 school_id
             }
         });
@@ -108,7 +109,7 @@ ManagingExam.get("/api/exam", completeLogin , async (req, res) => {
 
     } catch (err) {
         console.error("Error fetching exams:", err);
-        return res.status(500).json({ error: "Internal server error" });
+        return res.status(500).json({error: "Internal server error"});
     }
 });
 
@@ -125,8 +126,8 @@ ManagingExam.put(
     async (req, res) => {
         try {
             const exam_id = req.params.exam_id;
-            const school_id=req.sessionData.school_id;
-            const { exam_name, classroom_id, start_date, end_date, status } = req.body;
+            const school_id = req.sessionData.school_id;
+            const {exam_name, classroom_id, start_date, end_date, status} = req.body;
 
             const examInfo = await Exam.findOne({
                 where: {
@@ -142,7 +143,7 @@ ManagingExam.put(
             }
 
             if (!exam_name || !classroom_id || !school_id || !start_date || !end_date) {
-                return res.status(400).json({ error: "Missing required fields" });
+                return res.status(400).json({error: "Missing required fields"});
             }
 
             const timetablePhotoFile = req.files?.timetable_photo?.[0];
@@ -154,7 +155,7 @@ ManagingExam.put(
 
             await examInfo.update({
                 exam_name,
-                class_id:classroom_id,
+                class_id: classroom_id,
                 school_id,
                 start_date,
                 end_date,
@@ -162,31 +163,84 @@ ManagingExam.put(
                 timetable_photo
             });
 
-            return res.status(200).json({ message: "Exam updated successfully", exam: examInfo });
+            return res.status(200).json({message: "Exam updated successfully", exam: examInfo});
         } catch (err) {
             console.error("Error updating exam:", err);
-            return res.status(500).json({ error: "Internal server error" });
+            return res.status(500).json({error: "Internal server error"});
         }
     }
 );
 
 
-ManagingExam.post('/api/studentMarks',AdminAuth('exam'),async (req, res) => {
-    try{
+ManagingExam.post('/api/studentMarks', AdminAuth('exam'), async (req, res) => {
+    try {
+        const school_id = req.sessionData.school_id;
+        const marksObj = req.body.marks;
+        const student_id = req.body.student_id;
+        const exam_id = req.body.exam_id;
+        const class_id = req.body.classroom_id;
 
-    }catch (e) {
-        console.error("Error adding student exam:", err);
-        return res.status(500).json({ error: "Internal server error" });
+        const examCheck = await Exam.findOne({
+            where: {
+                school_id: school_id,
+                exam_id: exam_id,
+                class_id: class_id,
+                status: "completed"
+            }
+        });
+
+        if (!examCheck) {
+            return res.status(400).json({error: "invalid exam or ID not found"});
+        }
+
+        const checkExamMarks = await ExamMarks.findAll({
+            where: {
+                school_id: school_id,
+                exam_id: exam_id,
+                student_id: student_id,
+            }
+        });
+
+        if(checkExamMarks.length > 0) {
+           return res.status(400).json({
+               error: "Exam marks already exists for this student",
+           });
+        }
+
+        const subjects = await Subject.findAll({
+           where:{
+               school_id: school_id
+           }
+        });
+
+        const marksArray=[];
+
+        for (let subject of subjects) {
+            const newMark={};
+            newMark['exam_id'] = exam_id;
+            newMark['subject_id'] = subject.subject_id;
+            newMark['marks']=marksObj[subject.subject_id]?.marks ?? 0;
+            newMark['student_id'] = student_id;
+            newMark['class_id'] = class_id;
+            newMark['school_id'] = school_id;
+            marksArray.push(newMark);
+        }
+        await ExamMarks.bulkCreate(marksArray);
+        return res.status(200).json({ success: "marks added successfully" });
+
+    } catch (e) {
+        console.error("Error adding student exam:", e);
+        return res.status(500).json({error: "Internal server error"});
     }
 });
 
 
 ManagingExam.post('/api/exam-marks', AdminAuth('exam'), async (req, res) => {
     try {
-        const { subject_id, class_id, student_id, exam_id, marks } = req.body;
+        const {subject_id, class_id, student_id, exam_id, marks} = req.body;
 
         if (!subject_id || !class_id || !student_id || !exam_id || marks === undefined) {
-            return res.status(400).json({ error: 'All fields are required' });
+            return res.status(400).json({error: 'All fields are required'});
         }
 
         const newMark = await ExamMarks.create({
@@ -197,35 +251,35 @@ ManagingExam.post('/api/exam-marks', AdminAuth('exam'), async (req, res) => {
             marks,
         });
 
-        return res.status(201).json({ message: 'Exam mark added successfully', data: newMark });
+        return res.status(201).json({message: 'Exam mark added successfully', data: newMark});
     } catch (error) {
         console.error('Error creating exam mark:', error);
-        return res.status(500).json({ error: 'Internal server error' });
+        return res.status(500).json({error: 'Internal server error'});
     }
 });
 
 ManagingExam.get('/api/exam-marks', AdminAuth('exam'), async (req, res) => {
     try {
-        const { exam_id, class_id, student_id } = req.query;
+        const {exam_id, class_id, student_id} = req.query;
 
         const where = {};
         if (exam_id) where.exam_id = exam_id;
         if (class_id) where.class_id = class_id;
         if (student_id) where.student_id = student_id;
 
-        const marks = await ExamMarks.findAll({ where });
+        const marks = await ExamMarks.findAll({where});
 
-        return res.status(200).json({ data: marks });
+        return res.status(200).json({data: marks});
     } catch (error) {
         console.error('Error fetching exam marks:', error);
-        return res.status(500).json({ error: 'Internal server error' });
+        return res.status(500).json({error: 'Internal server error'});
     }
 });
 
 
 ManagingExam.get('/api/exam-marks/:student_id/:exam_id', AdminAuth('exam'), async (req, res) => {
     try {
-        const { student_id, exam_id } = req.params;
+        const {student_id, exam_id} = req.params;
 
         const studentMarks = await ExamMarks.findAll({
             where: {
@@ -235,57 +289,38 @@ ManagingExam.get('/api/exam-marks/:student_id/:exam_id', AdminAuth('exam'), asyn
         });
 
         if (!studentMarks.length) {
-            return res.status(404).json({ error: 'Marks not found for this student in the given exam' });
+            return res.status(404).json({error: 'Marks not found for this student in the given exam'});
         }
 
-        return res.status(200).json({ data: studentMarks });
+        return res.status(200).json({data: studentMarks});
     } catch (error) {
         console.error('Error fetching student marks:', error);
-        return res.status(500).json({ error: 'Internal server error' });
+        return res.status(500).json({error: 'Internal server error'});
     }
 });
 
 
 ManagingExam.put('/api/exam-marks/:id', AdminAuth('exam'), async (req, res) => {
     try {
-        const { id } = req.params;
-        const { marks } = req.body;
+        const {id} = req.params;
+        const {marks} = req.body;
 
         if (marks === undefined) {
-            return res.status(400).json({ error: 'Marks are required to update' });
+            return res.status(400).json({error: 'Marks are required to update'});
         }
 
         const mark = await ExamMarks.findByPk(id);
 
         if (!mark) {
-            return res.status(404).json({ error: 'Mark not found' });
+            return res.status(404).json({error: 'Mark not found'});
         }
 
-        await mark.update({ marks });
+        await mark.update({marks});
 
-        return res.status(200).json({ message: 'Marks updated successfully', data: mark });
+        return res.status(200).json({message: 'Marks updated successfully', data: mark});
     } catch (error) {
         console.error('Error updating exam mark:', error);
-        return res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
-ManagingExam.delete('/api/exam-marks/:id', AdminAuth('exam'), async (req, res) => {
-    try {
-        const { id } = req.params;
-
-        const mark = await ExamMarks.findByPk(id);
-
-        if (!mark) {
-            return res.status(404).json({ error: 'Mark not found' });
-        }
-
-        await mark.destroy();
-
-        return res.status(200).json({ message: 'Mark deleted successfully' });
-    } catch (error) {
-        console.error('Error deleting exam mark:', error);
-        return res.status(500).json({ error: 'Internal server error' });
+        return res.status(500).json({error: 'Internal server error'});
     }
 });
 

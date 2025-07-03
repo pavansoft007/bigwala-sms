@@ -9,8 +9,6 @@ import AdminAuth from "../middleware/AdminAuth.js";
 import StudentFee from "../models/StudentFee.js";
 import StudentPayment from "../models/StudentPayment.js";
 import sequelize from "../config/database.js";
-import multer from "multer";
-import path from "path";
 import upload from "../services/multerService.js";
 import Encrypt from "../services/Encrypt.js";
 
@@ -256,6 +254,57 @@ ManagingStudent.get(
                     }
                 }
             );
+
+            const [studentExamInfo] = await sequelize.query(`
+                SELECT e.exam_id, e.exam_name, SUM(m.marks) AS total
+                FROM exams e
+                         INNER JOIN exam_marks m ON m.exam_id = e.exam_id
+                WHERE e.status = :status
+                  AND m.student_id = :student_id
+                  AND e.school_id = :school_id
+                GROUP BY e.exam_id
+            `, {
+                replacements: {
+                    status: 'completed',
+                    student_id: student_id,
+                    school_id: req.sessionData.school_id,
+                },
+                // type: sequelize.QueryTypes.SELECT,
+                logging: console.log,
+            });
+            console.log("marksSubjectWise = ", studentExamInfo);
+
+            const [marksSubjectWise] = await sequelize.query(`
+                SELECT s.subject_name, m.marks, e.exam_id
+                FROM exams e
+                         INNER JOIN exam_marks m ON m.exam_id = e.exam_id
+                         INNER JOIN subjects s ON s.subject_id = m.subject_id
+                WHERE e.status = :status
+                  AND m.student_id = :student_id
+                  AND e.school_id = :school_id
+            `, {
+                replacements: {
+                    status: 'completed',
+                    student_id: student_id,
+                    school_id: req.sessionData.school_id,
+                },
+                // type: sequelize.QueryTypes.SELECT
+            });
+
+            student['examInfo'] = studentExamInfo.map(exam => {
+                const subject_wise_marks = marksSubjectWise
+                    .filter(mark => mark.exam_id === exam.exam_id)
+                    .map(mark => ({
+                        subject_name: mark.subject_name,
+                        marks: mark.marks
+                    }));
+
+                return {
+                    exam_name: exam.exam_name,
+                    total: exam.total,
+                    subject_wise_marks
+                };
+            });
 
             student['studentFee'] = studentFeeDetails;
             student['studentFeeHistory'] = studentPaymentHistory;

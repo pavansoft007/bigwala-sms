@@ -4,6 +4,7 @@ import Subject from "./Subject.js";
 import Classroom from "./Classroom.js";
 import Student from "./Student.js";
 import Exam from "./Exam.js";
+import School from "./School.js";
 
 class ExamMarks extends Model {}
 
@@ -12,6 +13,14 @@ ExamMarks.init({
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true
+    },
+    school_id:{
+        type:DataTypes.INTEGER,
+        allowNull:false,
+        references:{
+            model:School,
+            key:'school_id'
+        }
     },
     subject_id:{
         type:DataTypes.INTEGER,

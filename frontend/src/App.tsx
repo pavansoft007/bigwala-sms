@@ -13,7 +13,7 @@ import NotFound from "@/pages/NotFound.tsx";
 import AddStudent from "@/pages/dashboard/student/AddStudent.tsx";
 import StudentDetails from "@/pages/dashboard/student/StudentDetails.tsx";
 import AddTeacher from "@/pages/dashboard/teacher/AddTeacher.tsx";
-import Subject from "@/pages/dashboard/subjects/Subjects.tsx"
+import SubjectPage from "@/pages/dashboard/subjects/Subjects.tsx"
 import ClassroomManagement from "@/pages/dashboard/classroom/ClassroomManagement.tsx";
 import Logout from "@/pages/Logout.tsx";
 import RolePanel from "@/pages/dashboard/roles/RolePanel.tsx";
@@ -29,25 +29,8 @@ import RecentPayment from "@/pages/dashboard/fee/RecentPayment.tsx";
 import PendingPayments from "@/pages/dashboard/fee/PendingPayments.tsx";
 import Attendance from "@/pages/dashboard/attendence/Attendance.tsx";
 import ExamDashboard from "@/pages/dashboard/exam/ExamDashboard.tsx";
-import {useEffect} from "react";
-import axiosInstance from "@/services/axiosInstance.ts";
-import Classroom from "@/types/Classroom.ts";
-import {putClassrooms} from "@/stores/ClassroomStore.ts";
-import {useDispatch} from "react-redux";
 
 function App() {
-    const dispatch = useDispatch();
-
-    useEffect(() => {
-        const FetchClassrooms = async () => {
-            axiosInstance.get<Classroom[]>("/mobileAPI/classroom").then((res)=>{
-                dispatch(putClassrooms(res.data));
-            }).catch(error => {
-                console.log(error);
-            })
-        }
-        FetchClassrooms().then(() => console.log("saved the classrooms in the store"));
-    }, []);
 
     return (
         <div>
@@ -81,7 +64,7 @@ function App() {
                         </Route>
 
                         <Route path="notice-board" element={<NoticeBoard/>}/>
-                        <Route path="subjects" element={<Subject/>}/>
+                        <Route path="subjects" element={<SubjectPage />}/>
                         <Route path="roles" element={<RolePanel/>}/>
                         <Route path="users" element={<UserPanel/>}/>
                         <Route path="classroom" element={<ClassroomManagement/>}/>

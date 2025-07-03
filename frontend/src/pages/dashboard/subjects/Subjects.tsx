@@ -13,16 +13,6 @@ const AddSubjects = () => {
 
     useEffect(() => {
         setLoading(true);
-        // axiosInstance
-        //     .get<Subject[]>("/api/subject")
-        //     .then((res) => {
-        //         setSubjects(res.data);
-        //         setLoading(false);
-        //     })
-        //     .catch(() => {
-        //         console.error("Error in getting the subjects");
-        //         setLoading(false);
-        //     });
         fetchSubjects();
     }, []);
 

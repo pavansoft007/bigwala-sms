@@ -2,8 +2,11 @@ import {useEffect, useState} from "react";
 import axiosInstance from "@/services/axiosInstance.ts";
 import ClipLoader from 'react-spinners/ClipLoader';
 import Classroom from "@/types/Classroom.ts";
+import {useDispatch} from "react-redux";
+import {putClassrooms} from "@/stores/ClassroomStore.ts";
 
 const ClassroomManagement = () => {
+    const dispatch = useDispatch();
     const [classrooms, setClassrooms] = useState<Classroom[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -23,6 +26,7 @@ const ClassroomManagement = () => {
         await axiosInstance
             .get<Classroom[]>("/mobileAPI/classroom")
             .then((response) => {
+                dispatch(putClassrooms(response.data));
                 setIsLoading(false);
                 setClassrooms(response.data);
             })

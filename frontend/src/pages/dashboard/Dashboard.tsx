@@ -25,6 +25,11 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import getProfileImage from "@/services/getProfileImage.ts";
+import {useDispatch} from "react-redux";
+import Classroom from "@/types/Classroom.ts";
+import {putClassrooms} from "@/stores/ClassroomStore.ts";
+import Subject from "@/types/Subject.ts";
+import {putSubject} from "@/stores/SubjectStore.ts";
 
 interface UserData {
     admin_name: string,
@@ -41,6 +46,8 @@ const DashboardSideBar = () => {
         role_name: ''
     });
     const [permissionsData, setPermissionsData] = useState<string[]>([]);
+
+    const dispatch = useDispatch();
 
     const fetchUserDetails = async () => {
         await axiosInstance.get<UserData>('/api/dashboard').then((res) => {
@@ -59,6 +66,23 @@ const DashboardSideBar = () => {
     };
 
     useEffect(() => {
+
+        const FetchClassrooms = async () => {
+            await axiosInstance.get<Classroom[]>("/mobileAPI/classroom").then((res)=>{
+                dispatch(putClassrooms(res.data));
+            }).catch(error => {
+                console.log(error);
+            })
+        }
+        const FetchSubjects=async ()=>{
+            await axiosInstance.get<Subject[]>("/api/subject").then((res)=>{
+                dispatch(putSubject(res.data));
+            }).catch(error => {
+                console.log(error);
+            })
+        }
+        FetchClassrooms().then(() => console.log("saved the classrooms in the store"));
+        FetchSubjects().then(() => console.log("saved the Subjects in the store"));
         fetchUserDetails();
         fetchRoleDetails();
     }, []);

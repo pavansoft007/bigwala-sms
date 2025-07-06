@@ -4,7 +4,7 @@ import axiosInstance from "../../../services/axiosInstance.ts";
 import FetchClassroomData from "@/services/FetchClassroomData.ts";
 import Classroom from "@/types/Classroom.ts";
 import {Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table.tsx";
-import Student from "@/types/Student.ts";
+import {Student} from "@/types/Student.ts";
 
 const Students = () => {
     const [classrooms, setClassrooms] = useState<Classroom[]>([]);
@@ -73,7 +73,7 @@ const Students = () => {
         }
     };
 
-    const handleEdit = (id: string) => {
+    const handleEdit = (id: number) => {
         navigate(`/dashboard/students/${id}`);
     };
 

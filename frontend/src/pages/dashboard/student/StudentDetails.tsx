@@ -2,54 +2,31 @@ import {useState, useEffect} from "react";
 import {useParams} from "react-router-dom";
 import axiosInstance from "@/services/axiosInstance.ts";
 import Classroom from "@/types/Classroom.ts";
-import {undefined} from "zod";
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from "@/components/ui/accordion"
 
-
-interface StudentFee{
-    category_name: string,
-    total_fee_paid: number,
-    fee_remaining: number,
-    fee_amount: number
-}
-
-interface StudentFeeHistory{
-    "category_name": string,
-    "amount": number,
-    "payment_date": string
-}
-
-interface Student {
-    admission_ID: string;
-    student_id: string;
-    mother_phone_number: string;
-    mother_name: string;
-    father_name: string;
-    caste: string;
-    status: string;
-    student_photo: string;
-    father_photo: string;
-    classroom_id: string;
-    first_name: string;
-    last_name: string;
-    date_of_birth: string;
-    gender: string;
-    email: string;
-    phone_number: string;
-    address: string;
-    enrollment_date: string;
-    assignedClassroom: string;
-    standard: string;
-    section: string;
-    studentFee:StudentFee[];
-    studentFeeHistory:StudentFeeHistory[];
-}
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import {Student} from "@/types/Student.ts";
+import AddExam from "@/components/AddExam.tsx";
 
 
 const StudentDetails = () => {
     const {id} = useParams();
     const [formData, setFormData] = useState<Student>({
-        admission_ID: '',
-        student_id: "",
+        admission_ID: "",
+        student_id: 0,
         mother_phone_number: "",
         mother_name: "",
         father_name: "",
@@ -66,11 +43,12 @@ const StudentDetails = () => {
         phone_number: "",
         address: "",
         enrollment_date: "",
-        assignedClassroom: "",
+        assignedClassroom:0,
         standard: '',
         section: '',
         studentFee:[],
-        studentFeeHistory:[]
+        studentFeeHistory:[],
+        examInfo:[],
     });
 
     const [classrooms, setClassrooms] = useState<Classroom[]>([]);
@@ -134,7 +112,7 @@ const StudentDetails = () => {
 
         const formDataToSend = new FormData();
         Object.keys(formData).forEach((key) => {
-            const value = (formData as any)[key];
+            const value = (formData as never)[key];
             if (value !== null && value !== undefined) {
                 formDataToSend.append(key, value);
             }
@@ -282,10 +260,6 @@ const StudentDetails = () => {
                                 formData.date_of_birth
                             )}
                         </div>
-                    </div>
-
-                    {/* Advanced Information */}
-                    <div className="space-y-4">
                         {
                             isEditMode && <div className="text-lg font-medium">
                                 <span className="font-semibold">Teacher Photo:</span>{" "}
@@ -320,6 +294,60 @@ const StudentDetails = () => {
                                         View father photo
                                     </a>
                                 )
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Advanced Information */}
+                    <div className="space-y-4">
+                        <div className="flex justify-between" >
+                            <h2 className="text-2xl font-semibold text-gray-800 mt-6">Exam Details</h2>
+                            <Dialog>
+                                <DialogTrigger asChild >
+                                    <Button variant="outline">Open Dialog</Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                    <DialogHeader>
+                                        <DialogTitle>Add exam</DialogTitle>
+                                        <DialogDescription>
+                                            <AddExam classroomId={formData.assignedClassroom} studentId={formData.student_id} />
+                                        </DialogDescription>
+                                    </DialogHeader>
+                                </DialogContent>
+                            </Dialog>
+                        </div>
+
+                        <div className="space-y-6">
+                            {formData.examInfo?.length > 0 ? (
+                                formData.examInfo.map((exam, examIndex) => (
+                                    <Accordion type="single" collapsible key={examIndex}  className="mb-3" >
+                                        <AccordionItem value="item-1">
+                                            <AccordionTrigger>{exam.exam_name} (Total: {exam.total})</AccordionTrigger>
+                                            <AccordionContent>
+                                                <div className="overflow-x-auto">
+                                                             <table className="min-w-full border border-gray-300">
+                                                                 <thead className="bg-gray-100">
+                                                             <tr>
+                                                                     <th className="py-2 px-4 border">Subject</th>
+                                                                     <th className="py-2 px-4 border">Marks</th>
+                                                                 </tr>
+                                                            </thead>
+                                                                 <tbody>
+                                                             {exam.subject_wise_marks.map((subject, subIndex) => (
+                                                                    <tr key={subIndex} className="border-b">
+                                                                        <td className="py-2 px-4 border">{subject.subject_name}</td>
+                                                                         <td className="py-2 px-4 border">{subject.marks}</td>
+                                                                     </tr>
+                                                                 ))}
+                                                                 </tbody>
+                                                             </table>
+                                                         </div>
+                                            </AccordionContent>
+                                        </AccordionItem>
+                                    </Accordion>
+                                ))
+                            ) : (
+                                <p className="text-gray-500 text-center">No exam information available.</p>
                             )}
                         </div>
                         {/* Student Fee Details */}
@@ -397,6 +425,7 @@ const StudentDetails = () => {
                                 </table>
                             </div>
                         </div>
+                        {/* Exam Details */}
 
                     </div>
                 </div>

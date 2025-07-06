@@ -12,7 +12,7 @@ import {
 import {useState} from "react";
 import {CardHeader, CardTitle,CardContent,Card} from "@/components/ui/card.tsx";
 import axiosInstance from "@/services/axiosInstance.ts";
-import Student from "@/types/Student.ts";
+import {Student} from "@/types/Student.ts";
 import {Input} from "@/components/ui/input.tsx";
 import {Button} from "@/components/ui/button.tsx";
 
@@ -117,7 +117,7 @@ const CollectFee = () => {
     }
 
     const getSelectedStudentName = (): string => {
-        const selectedStudent = students.find(s => s.student_id === String(newFee.student_id));
+        const selectedStudent = students.find(s => s.student_id === newFee.student_id);
         return selectedStudent ? `${selectedStudent.first_name} ${selectedStudent.last_name} (${selectedStudent.admission_ID})` : '';
     };
 

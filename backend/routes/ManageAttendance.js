@@ -12,9 +12,9 @@ const ManageAttendance = express.Router();
 
 ManageAttendance.post('/mobileAPI/student/attendance', TeacherAuth('attendance'), async (req, res) => {
     try {
-        const { studentsIDs } = req.body;
+        const {studentsIDs} = req.body;
         if (!Array.isArray(studentsIDs) || studentsIDs.length === 0) {
-            return res.status(400).json({ message: 'Invalid or missing student IDs' });
+            return res.status(400).json({message: 'Invalid or missing student IDs'});
         }
 
         const school_id = req['sessionData']['school_id'];
@@ -54,135 +54,137 @@ ManageAttendance.post('/mobileAPI/student/attendance', TeacherAuth('attendance')
         });
     } catch (error) {
         console.error('Error adding attendance:', error);
-        res.status(500).json({ message: 'Error adding attendance', error: error.message });
+        res.status(500).json({message: 'Error adding attendance', error: error.message});
     }
 });
 
 
-
-ManageAttendance.post('/mobileAPI/teacher/attendance/request',TeacherAuth('attendance'),async (req, res)=>{
+ManageAttendance.post('/mobileAPI/teacher/attendance/request', TeacherAuth('attendance'), async (req, res) => {
     try {
-        const teacher_id=req['sessionData']['teacher_id'];
-        const school_id=req['sessionData']['school_id'];
-        const newRequest=await teacherAttendance.create({
-            teacher_id:teacher_id,
-            school_id:school_id,
-            status:'pending'
+        const teacher_id = req['sessionData']['teacher_id'];
+        const school_id = req['sessionData']['school_id'];
+        const newRequest = await teacherAttendance.create({
+            teacher_id: teacher_id,
+            school_id: school_id,
+            status: 'pending'
         });
-        if (newRequest){
-            res.json({message:'request was sent'});
+        if (newRequest) {
+            res.json({message: 'request was sent'});
         }
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Error adding attendance' });
+        res.status(500).json({message: 'Error adding attendance'});
     }
 });
 
-ManageAttendance.post('/api/attendance/admin/reject/:id',AdminAuth('attendance'),async (req, res)=>{
+ManageAttendance.post('/api/attendance/admin/reject/:id', AdminAuth('attendance'), async (req, res) => {
     try {
         const attendance_id = req.body;
 
         const attendanceRequest = await teacherAttendance.findByPk(attendance_id);
         if (!attendanceRequest) {
-            return res.status(404).json({ message: 'Attendance request not found' });
+            return res.status(404).json({message: 'Attendance request not found'});
         }
 
         attendanceRequest.status = 'rejected';
         await attendanceRequest.save();
 
-        res.status(200).json({ message: 'Attendance request rejected', attendanceRequest });
+        res.status(200).json({message: 'Attendance request rejected', attendanceRequest});
     } catch (error) {
-        res.status(500).json({ message: 'Error rejecting request', error });
+        res.status(500).json({message: 'Error rejecting request', error});
     }
 });
 
-ManageAttendance.post('/api/attendance/admin/approve/:id',AdminAuth('attendance'),async (req,res)=>{
+ManageAttendance.post('/api/attendance/admin/approve/:id', AdminAuth('attendance'), async (req, res) => {
     try {
         const attendance_id = req.params.id;
 
         const attendanceRequest = await teacherAttendance.findByPk(attendance_id);
         if (!attendanceRequest) {
-            return res.status(404).json({ message: 'Attendance request not found' });
+            return res.status(404).json({message: 'Attendance request not found'});
         }
 
         attendanceRequest.status = 'approved';
         await attendanceRequest.save();
 
-        res.status(200).json({ message: 'Attendance approved', attendanceRequest });
+        res.status(200).json({message: 'Attendance approved', attendanceRequest});
     } catch (error) {
-        res.status(500).json({ message: 'Error approving request', error });
+        res.status(500).json({message: 'Error approving request', error});
     }
 });
 
-ManageAttendance.get('/api/attendance/admin/pending',AdminAuth('attendance'),async (req, res)=>{
+ManageAttendance.get('/api/attendance/admin/pending', AdminAuth('attendance'), async (req, res) => {
     try {
-        const  school_id  =req['sessionData']['school_id'];
-        teacherAttendance.belongsTo(Teacher, { foreignKey: 'teacher_id' });
+        const school_id = req['sessionData']['school_id'];
+        teacherAttendance.belongsTo(Teacher, {foreignKey: 'teacher_id'});
         const pendingRequests = await teacherAttendance.findAll({
             where: {
                 school_id: school_id,
                 status: 'pending'
-            },include: [{
+            }, include: [{
                 model: Teacher,
                 attributes: ['teacher_id', 'first_name', 'last_name', 'email', 'phone_number'],
             }]
         });
 
         if (pendingRequests.length === 0) {
-            return res.status(404).json({ message: 'No pending attendance requests found' });
+            return res.status(404).json({message: 'No pending attendance requests found'});
         }
 
         res.status(200).json(pendingRequests);
     } catch (error) {
         console.log(error);
-        res.status(500).json({ message: 'Error fetching pending requests', error });
+        res.status(500).json({message: 'Error fetching pending requests', error});
     }
 });
-ManageAttendance.get('/api/get-attendance-data', AdminAuth("attendance"), async (req, res)=>{
-    try{
-        const school_id =req['sessionData']['school_id'];
-        const [details]=await sequelize.query(`SELECT 
-    (SELECT COUNT(student_id) FROM students WHERE school_id = ${school_id} )AS all_students,
-    (SELECT COUNT(student_id) FROM studentAttendance WHERE school_id = ${school_id} AND attendDate = CURDATE()) AS attended_students,
-    (SELECT COUNT(teacher_id) FROM teachers  WHERE school_id = ${school_id}) AS all_teachers,
-    (SELECT COUNT(teacher_id) FROM teacherAttendance WHERE school_id = ${school_id} AND attendDate = CURDATE()) AS attended_teachers ; `,
-            {
+ManageAttendance.get('/api/get-attendance-data', AdminAuth("attendance"), async (req, res) => {
+    try {
+        const school_id = req['sessionData']['school_id'];
+        const [details] = await sequelize.query(`SELECT (SELECT COUNT(student_id) FROM students WHERE school_id = ${school_id}) AS all_students,
+                                                        (SELECT COUNT(student_id)
+                                                         FROM studentAttendance
+                                                         WHERE school_id = ${school_id}
+                                                           AND attendDate = CURDATE())                                          AS attended_students,
+                                                        (SELECT COUNT(teacher_id) FROM teachers WHERE school_id = ${school_id}) AS all_teachers,
+                                                        (SELECT COUNT(teacher_id)
+                                                         FROM teacherAttendance
+                                                         WHERE school_id = ${school_id}
+                                                           AND attendDate = CURDATE())                                          AS attended_teachers; `,
+            {});
 
-        });
-
-        res.status(200).json({details:details[0]});
-    }catch (err){
+        res.status(200).json({details: details[0]});
+    } catch (err) {
         console.log(error);
-        res.status(500).json({ message: 'Error fetching pending requests', error });
+        res.status(500).json({message: 'Error fetching pending requests', error});
     }
 })
-ManageAttendance.get('/mobileAPI/attendance/student',StudentAuth,async (req, res)=>{
+ManageAttendance.get('/mobileAPI/attendance/student', StudentAuth, async (req, res) => {
     try {
-        const student_id=req['sessionData']['student_id'];
-        const studentDetails=await StudentAttendance.findAll({
-            "where":{
-                student_id:student_id
+        const student_id = req['sessionData']['student_id'];
+        const studentDetails = await StudentAttendance.findAll({
+            "where": {
+                student_id: student_id
             }
         })
         res.json(studentDetails);
     } catch (error) {
         console.log(error);
-        res.status(500).json({ message: 'Error fetching pending requests', error });
+        res.status(500).json({message: 'Error fetching pending requests', error});
     }
 });
 
-ManageAttendance.get('/mobileAPI/attendance/teachers',TeacherAuth('attendance'),async (req, res)=>{
+ManageAttendance.get('/mobileAPI/attendance/teachers', TeacherAuth('attendance'), async (req, res) => {
     try {
-        const teacher_id=req['sessionData']['teacher_id'];
-        const studentDetails=await teacherAttendance.findAll({
-            "where":{
-                teacher_id:teacher_id
+        const teacher_id = req['sessionData']['teacher_id'];
+        const studentDetails = await teacherAttendance.findAll({
+            "where": {
+                teacher_id: teacher_id
             }
         })
         res.json(studentDetails);
     } catch (error) {
         console.log(error);
-        res.status(500).json({ message: 'Error fetching pending requests', error });
+        res.status(500).json({message: 'Error fetching pending requests', error});
     }
 });
 

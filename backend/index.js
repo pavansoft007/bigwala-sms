@@ -1,9 +1,7 @@
+import 'dotenv/config';
 import express from "express";
 import sequelize from "./config/database.js";
 import Auth from "./routes/Auth.js";
-import dotenv from 'dotenv';
-
-dotenv.config();
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import helmet from "helmet";

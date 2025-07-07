@@ -20,11 +20,22 @@ ManagingFeePayment.post('/api/fee/fee-collect', AdminAuth('fee'), async (req, re
         }
 
         const {school_id, id: collected_by} = req.sessionData;
-
-
         const transaction = await sequelize.transaction();
 
         try {
+            const studentFeeDetails = await StudentFee.findOne({
+                where: {student_id, category_id, school_id},
+                transaction
+            });
+
+            if (!studentFeeDetails) {
+                return res.status(404).json({message: "Student fee details not found"});
+            }
+
+            const remaining_fee=studentFeeDetails.fee_remaining-amount;
+            if(remaining_fee < 0){
+                return res.status(400).json({message: "this is more than required fee"});
+            }
 
             const newPayment = await StudentPayment.create({
                 amount,
@@ -35,17 +46,6 @@ ManagingFeePayment.post('/api/fee/fee-collect', AdminAuth('fee'), async (req, re
                 school_id,
                 collected_by
             }, {transaction});
-
-
-            const studentFeeDetails = await StudentFee.findOne({
-                where: {student_id, category_id, school_id},
-                transaction
-            });
-
-            if (!studentFeeDetails) {
-                await transaction.rollback();
-                return res.status(404).json({message: "Student fee details not found"});
-            }
 
 
             await studentFeeDetails.increment(

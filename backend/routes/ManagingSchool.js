@@ -3,13 +3,13 @@ import School from "../models/School.js";
 import Role from "../models/Role.js";
 import Admin from "../models/Admin.js";
 import sequelize from "../config/database.js";
-import {Model as school_fincanicals} from "sequelize";
 import SchoolFinancials from "../models/SchoolFinancials.js";
 import FeeCategory from "../models/FeeCategory.js";
+import MasterAdminAuth from "../middleware/MasterAdminAuth.js";
 
 const ManagingSchool = express.Router();
 
-ManagingSchool.post("/super-admin/schools", async (req, res) => {
+ManagingSchool.post("/super-admin/schools", MasterAdminAuth,async (req, res) => {
     try {
         const t = await sequelize.transaction();
         const {
@@ -55,9 +55,12 @@ ManagingSchool.post("/super-admin/schools", async (req, res) => {
             school_id: school.school_id,
             category_name:"tuition fee",
             description:"Default tuition Fee for the school",
+        },{
+            transaction: t
         });
 
         await SchoolFinancials.create({
+            year:new Date().getFullYear(),
             school_id: school.school_id,
             current_balance: 0
         }, {

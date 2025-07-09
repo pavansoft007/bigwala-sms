@@ -103,6 +103,13 @@ const CollectFee = () => {
                 ...newFee,
                 payment_mode:'cash'
             });
+            setNewFee({
+                standard:0,
+                category_id:0,
+                student_id:0,
+                amount:0,
+                remarks:''
+            });
             await fetchStudentDetails(newFee.student_id.toString());
             setMessage({ type: "success", text: response.data.message });
         } catch (err: any) {

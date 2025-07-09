@@ -58,6 +58,39 @@ ManageAttendance.post('/mobileAPI/student/attendance', TeacherAuth('attendance')
     }
 });
 
+ManageAttendance.get('/api/attendance/admin/attended-today', AdminAuth('attendance'), async (req, res) => {
+    try {
+        const school_id = req['sessionData']['school_id'];
+        const {date} = req.query;
+
+        const attendDate = date || new Date().toISOString().split('T')[0];
+
+        teacherAttendance.belongsTo(Teacher, {foreignKey: 'teacher_id'});
+
+        const attendedToday = await teacherAttendance.findAll({
+            where: {
+                school_id: school_id,
+                attendDate: attendDate,
+                status: 'approved'
+            },
+            include: [{
+                model: Teacher,
+                attributes: ['teacher_id', 'first_name', 'last_name', 'email', 'phone_number'],
+            }],
+            order: [['attendTime', 'ASC']]
+        });
+
+        if (attendedToday.length === 0) {
+            return res.status(404).json({message: 'No teachers attended today'});
+        }
+
+        res.status(200).json(attendedToday);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({message: 'Error fetching attended teachers', error});
+    }
+});
+
 
 ManageAttendance.post('/mobileAPI/teacher/attendance/request', TeacherAuth('attendance'), async (req, res) => {
     try {
@@ -77,7 +110,7 @@ ManageAttendance.post('/mobileAPI/teacher/attendance/request', TeacherAuth('atte
     }
 });
 
-ManageAttendance.post('/api/attendance/admin/reject/:id', AdminAuth('attendance'), async (req, res) => {
+ManageAttendance.put('/api/attendance/admin/reject/:id', AdminAuth('attendance'), async (req, res) => {
     try {
         const attendance_id = req.body;
 
@@ -95,7 +128,7 @@ ManageAttendance.post('/api/attendance/admin/reject/:id', AdminAuth('attendance'
     }
 });
 
-ManageAttendance.post('/api/attendance/admin/approve/:id', AdminAuth('attendance'), async (req, res) => {
+ManageAttendance.put('/api/attendance/admin/approve/:id', AdminAuth('attendance'), async (req, res) => {
     try {
         const attendance_id = req.params.id;
 

@@ -1,4 +1,4 @@
-import {Users, BookOpen, CreditCard, Bell, Settings, FileText, Clock, Clipboard} from "lucide-react";
+import {Users, CreditCard, Bell, Settings,  Clock} from "lucide-react";
 import {
     BarChart,
     Bar,
@@ -326,47 +326,47 @@ const AdminDashboard = () => {
             {/*</div>*/}
 
             {/* Quick Access */}
-            <div className="bg-white p-4 rounded-lg shadow-md mb-6">
-                <h2 className="text-xl font-semibold text-gray-800 mb-4">Quick Access</h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                    <div className="bg-blue-50 p-4 rounded-lg text-center hover:bg-blue-100 cursor-pointer">
-                        <div className="bg-blue-100 text-blue-500 p-3 rounded-full inline-flex mb-2">
-                            <Users size={24}/>
-                        </div>
-                        <p className="font-medium">Students</p>
-                    </div>
-                    <div className="bg-green-50 p-4 rounded-lg text-center hover:bg-green-100 cursor-pointer">
-                        <div className="bg-green-100 text-green-500 p-3 rounded-full inline-flex mb-2">
-                            <Users size={24}/>
-                        </div>
-                        <p className="font-medium">Teachers</p>
-                    </div>
-                    <div className="bg-purple-50 p-4 rounded-lg text-center hover:bg-purple-100 cursor-pointer">
-                        <div className="bg-purple-100 text-purple-500 p-3 rounded-full inline-flex mb-2">
-                            <BookOpen size={24}/>
-                        </div>
-                        <p className="font-medium">Classes</p>
-                    </div>
-                    <div className="bg-yellow-50 p-4 rounded-lg text-center hover:bg-yellow-100 cursor-pointer">
-                        <div className="bg-yellow-100 text-yellow-500 p-3 rounded-full inline-flex mb-2">
-                            <CreditCard size={24}/>
-                        </div>
-                        <p className="font-medium">Fee</p>
-                    </div>
-                    <div className="bg-red-50 p-4 rounded-lg text-center hover:bg-red-100 cursor-pointer">
-                        <div className="bg-red-100 text-red-500 p-3 rounded-full inline-flex mb-2">
-                            <Clipboard size={24}/>
-                        </div>
-                        <p className="font-medium">Exams</p>
-                    </div>
-                    <div className="bg-indigo-50 p-4 rounded-lg text-center hover:bg-indigo-100 cursor-pointer">
-                        <div className="bg-indigo-100 text-indigo-500 p-3 rounded-full inline-flex mb-2">
-                            <FileText size={24}/>
-                        </div>
-                        <p className="font-medium">Reports</p>
-                    </div>
-                </div>
-            </div>
+            {/*<div className="bg-white p-4 rounded-lg shadow-md mb-6">*/}
+            {/*    <h2 className="text-xl font-semibold text-gray-800 mb-4">Quick Access</h2>*/}
+            {/*    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">*/}
+            {/*        <div className="bg-blue-50 p-4 rounded-lg text-center hover:bg-blue-100 cursor-pointer">*/}
+            {/*            <div className="bg-blue-100 text-blue-500 p-3 rounded-full inline-flex mb-2">*/}
+            {/*                <Users size={24}/>*/}
+            {/*            </div>*/}
+            {/*            <p className="font-medium">Students</p>*/}
+            {/*        </div>*/}
+            {/*        <div className="bg-green-50 p-4 rounded-lg text-center hover:bg-green-100 cursor-pointer">*/}
+            {/*            <div className="bg-green-100 text-green-500 p-3 rounded-full inline-flex mb-2">*/}
+            {/*                <Users size={24}/>*/}
+            {/*            </div>*/}
+            {/*            <p className="font-medium">Teachers</p>*/}
+            {/*        </div>*/}
+            {/*        <div className="bg-purple-50 p-4 rounded-lg text-center hover:bg-purple-100 cursor-pointer">*/}
+            {/*            <div className="bg-purple-100 text-purple-500 p-3 rounded-full inline-flex mb-2">*/}
+            {/*                <BookOpen size={24}/>*/}
+            {/*            </div>*/}
+            {/*            <p className="font-medium">Classes</p>*/}
+            {/*        </div>*/}
+            {/*        <div className="bg-yellow-50 p-4 rounded-lg text-center hover:bg-yellow-100 cursor-pointer">*/}
+            {/*            <div className="bg-yellow-100 text-yellow-500 p-3 rounded-full inline-flex mb-2">*/}
+            {/*                <CreditCard size={24}/>*/}
+            {/*            </div>*/}
+            {/*            <p className="font-medium">Fee</p>*/}
+            {/*        </div>*/}
+            {/*        <div className="bg-red-50 p-4 rounded-lg text-center hover:bg-red-100 cursor-pointer">*/}
+            {/*            <div className="bg-red-100 text-red-500 p-3 rounded-full inline-flex mb-2">*/}
+            {/*                <Clipboard size={24}/>*/}
+            {/*            </div>*/}
+            {/*            <p className="font-medium">Exams</p>*/}
+            {/*        </div>*/}
+            {/*        <div className="bg-indigo-50 p-4 rounded-lg text-center hover:bg-indigo-100 cursor-pointer">*/}
+            {/*            <div className="bg-indigo-100 text-indigo-500 p-3 rounded-full inline-flex mb-2">*/}
+            {/*                <FileText size={24}/>*/}
+            {/*            </div>*/}
+            {/*            <p className="font-medium">Reports</p>*/}
+            {/*        </div>*/}
+            {/*    </div>*/}
+            {/*</div>*/}
 
             {/* To-Do & Reminders */}
             {/*<div className="grid grid-cols-1 md:grid-cols-2 gap-6">*/}

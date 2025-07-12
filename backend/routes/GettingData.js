@@ -93,7 +93,7 @@ GettingData.get('/api/dashboard', adminAuth('all'), async (req, res) => {
 GettingData.get("/api/main-dashboard", adminAuth('all'), async (req, res) => {
     try {
         const school_id = req['sessionData']['school_id'];
-        const [teacherInfo] = await sequelize.query("select count(*) as total_teachers from students where school_id=:school_id group by school_id", {
+        const [teacherInfo] = await sequelize.query("select count(*) as total_teachers from teachers where school_id=:school_id group by school_id", {
             replacements: {
                 school_id
             },
@@ -142,49 +142,53 @@ GettingData.get("/api/main-dashboard", adminAuth('all'), async (req, res) => {
             })
 
 
-        const [attendanceData]=await sequelize.query(`WITH RECURSIVE
-                                                        week_days
-                                                            AS (SELECT DATE_SUB(CURDATE(), INTERVAL WEEKDAY(CURDATE()) DAY) as date_val,
-                                                                       0                                                    as day_offset
-                                                                UNION ALL
-                                                                SELECT DATE_ADD(DATE_SUB(CURDATE(), INTERVAL WEEKDAY(CURDATE()) DAY), INTERVAL day_offset + 1 DAY),
-                                                                       day_offset + 1
-                                                                FROM week_days
-                                                                WHERE day_offset < 6),
-                                                        student_totals AS (SELECT COUNT(*) as total_students
-                                                                           FROM students
-                                                                           WHERE school_id = :school_id),
-                                                        teacher_totals AS (SELECT COUNT(*) as total_teachers
-                                                                           FROM teachers
-                                                                           WHERE school_id = :school_id)
-                                                    SELECT CASE WEEKDAY(wd.date_val)
-                                                               WHEN 0 THEN 'Mon'
-                                                               WHEN 1 THEN 'Tue'
-                                                               WHEN 2 THEN 'Wed'
-                                                               WHEN 3 THEN 'Thu'
-                                                               WHEN 4 THEN 'Fri'
-                                                               WHEN 5 THEN 'Sat'
-                                                               WHEN 6 THEN 'Sun'
-                                                               END    as name,
-                                                           CAST(COALESCE(ROUND((sa.students_attended * 100.0 / st.total_students), 0), 0) AS UNSIGNED) as students,
-                                                           CAST(COALESCE(ROUND((ta.teachers_attended * 100.0 / tt.total_teachers), 0), 0) AS UNSIGNED) as teachers
-                                                    FROM week_days wd
-                                                             CROSS JOIN student_totals st
-                                                             CROSS JOIN teacher_totals tt
-                                                             LEFT JOIN (SELECT attendDate, COUNT(*) as students_attended
-                                                                        FROM studentAttendance
-                                                                        WHERE school_id = :school_id
-                                                                        GROUP BY attendDate) sa
-                                                                       ON wd.date_val = sa.attendDate
-                                                             LEFT JOIN (SELECT attendDate, COUNT(*) as teachers_attended
-                                                                        FROM teacherAttendance
-                                                                        WHERE school_id = :school_id
-                                                                        GROUP BY attendDate) ta
-                                                                       ON wd.date_val = ta.attendDate
-                                                    WHERE WEEKDAY(wd.date_val) < 6 -- Only Monday to Friday
-                                                    ORDER BY wd.date_val
+        const [attendanceData] = await sequelize.query(`WITH RECURSIVE
+                                                            week_days
+                                                                AS (SELECT DATE_SUB(CURDATE(), INTERVAL WEEKDAY(CURDATE()) DAY) as date_val,
+                                                                           0                                                    as day_offset
+                                                                    UNION ALL
+                                                                    SELECT DATE_ADD(DATE_SUB(CURDATE(), INTERVAL WEEKDAY(CURDATE()) DAY), INTERVAL day_offset + 1 DAY),
+                                                                           day_offset + 1
+                                                                    FROM week_days
+                                                                    WHERE day_offset < 6),
+                                                            student_totals AS (SELECT COUNT(*) as total_students
+                                                                               FROM students
+                                                                               WHERE school_id = :school_id),
+                                                            teacher_totals AS (SELECT COUNT(*) as total_teachers
+                                                                               FROM teachers
+                                                                               WHERE school_id = :school_id)
+                                                        SELECT CASE WEEKDAY(wd.date_val)
+                                                                   WHEN 0 THEN 'Mon'
+                                                                   WHEN 1 THEN 'Tue'
+                                                                   WHEN 2 THEN 'Wed'
+                                                                   WHEN 3 THEN 'Thu'
+                                                                   WHEN 4 THEN 'Fri'
+                                                                   WHEN 5 THEN 'Sat'
+                                                                   WHEN 6 THEN 'Sun'
+                                                                   END                 as name,
+                                                               CAST(COALESCE(
+                                                                       ROUND((sa.students_attended * 100.0 / st.total_students), 0),
+                                                                       0) AS UNSIGNED) as students,
+                                                               CAST(COALESCE(
+                                                                       ROUND((ta.teachers_attended * 100.0 / tt.total_teachers), 0),
+                                                                       0) AS UNSIGNED) as teachers
+                                                        FROM week_days wd
+                                                                 CROSS JOIN student_totals st
+                                                                 CROSS JOIN teacher_totals tt
+                                                                 LEFT JOIN (SELECT attendDate, COUNT(*) as students_attended
+                                                                            FROM studentAttendance
+                                                                            WHERE school_id = :school_id
+                                                                            GROUP BY attendDate) sa
+                                                                           ON wd.date_val = sa.attendDate
+                                                                 LEFT JOIN (SELECT attendDate, COUNT(*) as teachers_attended
+                                                                            FROM teacherAttendance
+                                                                            WHERE school_id = :school_id
+                                                                            GROUP BY attendDate) ta
+                                                                           ON wd.date_val = ta.attendDate
+                                                        WHERE WEEKDAY(wd.date_val) < 6 -- Only Monday to Friday
+                                                        ORDER BY wd.date_val
 
-        `,{
+        `, {
             replacements: {
                 school_id
             }

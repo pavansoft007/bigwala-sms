@@ -14,8 +14,12 @@ import {
     Pie,
     Cell
 } from "recharts";
+import {useSelector} from "react-redux";
+import {RootState} from "@/stores/store.ts";
+import getProfileImage from "@/services/getProfileImage.ts";
 
 const AdminDashboard = () => {
+    const userInfo=useSelector((state: RootState) => state.userInfo);
 
     const attendanceData = [
         {name: "Mon", students: 95, teachers: 98},
@@ -81,7 +85,7 @@ const AdminDashboard = () => {
                 <div className="flex justify-between items-center">
                     <div>
                         <h1 className="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
-                        <p className="text-gray-600">Welcome back, Administrator</p>
+                        <p className="text-gray-600">Welcome back, {userInfo.admin_name}</p>
                     </div>
                     <div className="flex items-center space-x-4">
                         <button className="p-2 rounded-full bg-gray-100 relative">
@@ -93,13 +97,15 @@ const AdminDashboard = () => {
                             <Settings size={20}/>
                         </button>
                         <div className="flex items-center space-x-2">
-                            <div
-                                className="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">
-                                A
-                            </div>
+                            {/*<div*/}
+                            {/*    className="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">*/}
+                            {/*    A*/}
+                            {/*</div>*/}
+                            <img src={getProfileImage(userInfo.admin_name)} alt={userInfo.admin_name}
+                                 className="w-10 h-10 rounded-full mr-3"/>
                             <div>
-                                <p className="font-medium">Admin User</p>
-                                <p className="text-sm text-gray-500">Super Admin</p>
+                                <p className="font-medium">{userInfo.school_name}</p>
+                                <p className="text-sm text-gray-500">{userInfo.role_name}</p>
                             </div>
                         </div>
                     </div>
@@ -167,7 +173,7 @@ const AdminDashboard = () => {
                 <div className="bg-white p-4 rounded-lg shadow-md">
                     <div className="flex justify-between items-center mb-4">
                         <h2 className="text-xl font-semibold text-gray-800">Admission Status</h2>
-                        <button className="text-blue-500 hover:underline text-sm">View All</button>
+                        <button className="text-blue-500 hover:underline text-sm"  >View All</button>
                     </div>
                     <ResponsiveContainer width="100%" height={220}>
                         <PieChart>

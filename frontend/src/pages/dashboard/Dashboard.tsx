@@ -25,71 +25,79 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import getProfileImage from "@/services/getProfileImage.ts";
-import {useDispatch} from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
 import Classroom from "@/types/Classroom.ts";
 import {putClassrooms} from "@/stores/ClassroomStore.ts";
 import Subject from "@/types/Subject.ts";
 import {putSubject} from "@/stores/SubjectStore.ts";
+import UserData from "@/types/UserInfo.ts";
+import {putData} from "@/stores/UserInfo.ts";
+import {RootState} from "@/stores/store.ts";
 
-interface UserData {
-    admin_name: string,
-    school_name: string,
-    role_name: string
-}
 
 const DashboardSideBar = () => {
     const [isOpen, setIsOpen] = useState(false);
-    const [role, setRole] = useState("");
-    const [userInfo, setUserInfo] = useState<UserData>({
-        admin_name: '',
-        school_name: '',
-        role_name: ''
-    });
-    const [permissionsData, setPermissionsData] = useState<string[]>([]);
-
+    const [isLoading, setIsLoading] = useState(true);
+    const userInfo = useSelector((state: RootState) => state.userInfo);
     const dispatch = useDispatch();
 
-    const fetchUserDetails = async () => {
-        await axiosInstance.get<UserData>('/api/dashboard').then((res) => {
-            setUserInfo(res.data);
-        }).catch((e) => console.error(e));
-    }
-
-    const fetchRoleDetails = async () => {
-        axiosInstance
-            .get<{ permission: string[]; role: string }>("/api/get-all-roles")
-            .then((res) => {
-                setPermissionsData(res.data.permission);
-                setRole(res.data.role);
-            })
-            .catch((e) => console.error(e));
-    };
-
     useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setIsLoading(true);
 
-        const FetchClassrooms = async () => {
-            await axiosInstance.get<Classroom[]>("/mobileAPI/classroom").then((res)=>{
-                dispatch(putClassrooms(res.data));
-            }).catch(error => {
-                console.log(error);
-            })
-        }
-        const FetchSubjects=async ()=>{
-            await axiosInstance.get<Subject[]>("/api/subject").then((res)=>{
-                dispatch(putSubject(res.data));
-            }).catch(error => {
-                console.log(error);
-            })
-        }
-        FetchClassrooms().then(() => console.log("saved the classrooms in the store"));
-        FetchSubjects().then(() => console.log("saved the Subjects in the store"));
-        fetchUserDetails();
-        fetchRoleDetails();
+                const FetchClassrooms = async () => {
+                    const res = await axiosInstance.get<Classroom[]>("/mobileAPI/classroom");
+                    dispatch(putClassrooms(res.data));
+                };
+
+                const FetchSubjects = async () => {
+                    const res = await axiosInstance.get<Subject[]>("/api/subject");
+                    dispatch(putSubject(res.data));
+                };
+
+                const FetchUserDetails = async () => {
+                    const res = await axiosInstance.get<UserData>('/api/dashboard');
+                     dispatch(putData(res.data));
+                };
+
+                await Promise.all([
+                    FetchClassrooms(),
+                    FetchSubjects(),
+                    FetchUserDetails()
+                ]);
+
+                console.log(userInfo);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchData();
+
     }, []);
 
+    // useEffect(() => {
+    //     console.log("Redux userInfo state:", userInfo);
+    //     if (userInfo?.admin_name) {
+    //         setIsLoading(false);
+    //     }
+    // }, [userInfo]);
+
     const hasPermission = (link: string) => {
-        return ["admin", "principal", "vice-principal"].includes(role) || permissionsData.includes(link);
+        return ["ADMIN", "principal", "vice-principal"].includes(userInfo.role_name) || userInfo.permissions.includes(link);
     };
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+            </div>
+        );
+    }
+
 
     return (
         <div className="flex flex-row min-h-screen bg-gray-100">

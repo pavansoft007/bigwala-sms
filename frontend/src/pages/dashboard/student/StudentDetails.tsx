@@ -304,7 +304,7 @@ const StudentDetails = () => {
                             <h2 className="text-2xl font-semibold text-gray-800 mt-6">Exam Details</h2>
                             <Dialog>
                                 <DialogTrigger asChild >
-                                    <Button variant="outline">Open Dialog</Button>
+                                    <Button variant="outline">Add exam marks</Button>
                                 </DialogTrigger>
                                 <DialogContent>
                                     <DialogHeader>

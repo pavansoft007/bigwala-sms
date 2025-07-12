@@ -128,7 +128,7 @@ GettingData.get("/api/main-dashboard", adminAuth('all'), async (req, res) => {
         });
 
         const [enrollmentData] =
-            await sequelize.query(`SELECT c.standard, COUNT(students.assignedClassroom) AS count
+            await sequelize.query(`SELECT c.standard as name, COUNT(students.assignedClassroom) AS count
                                    FROM students
                                        RIGHT JOIN bigwaladev.classrooms c
                                    ON students.assignedClassroom = c.classroom_id
@@ -166,12 +166,8 @@ GettingData.get("/api/main-dashboard", adminAuth('all'), async (req, res) => {
                                                                WHEN 5 THEN 'Sat'
                                                                WHEN 6 THEN 'Sun'
                                                                END    as name,
-                                                           COALESCE(
-                                                                   ROUND((sa.students_attended * 100.0 / st.total_students), 0),
-                                                                   0) as students,
-                                                           COALESCE(
-                                                                   ROUND((ta.teachers_attended * 100.0 / tt.total_teachers), 0),
-                                                                   0) as teachers
+                                                           CAST(COALESCE(ROUND((sa.students_attended * 100.0 / st.total_students), 0), 0) AS UNSIGNED) as students,
+                                                           CAST(COALESCE(ROUND((ta.teachers_attended * 100.0 / tt.total_teachers), 0), 0) AS UNSIGNED) as teachers
                                                     FROM week_days wd
                                                              CROSS JOIN student_totals st
                                                              CROSS JOIN teacher_totals tt

@@ -41,6 +41,7 @@ interface AttendanceData {
 
 const AdminDashboard = () => {
     const userInfo = useSelector((state: RootState) => state.userInfo);
+    const [isLoading, setIsLoading] = useState(true);
 
     // const attendanceData = [
     //     {name: "Mon", students: 95, teachers: 98},
@@ -110,6 +111,7 @@ const AdminDashboard = () => {
     // ];
 
     useEffect(() => {
+        setIsLoading(true);
         function formatIndianNumber(numStr: string) {
             const num = parseInt(numStr, 10);
             return num.toLocaleString("en-IN"); // ₹1,42,000
@@ -143,10 +145,19 @@ const AdminDashboard = () => {
                 setEnrollmentData(res.data.enrollmentData);
                 setAttendanceData(res.data.attendanceData);
             }).catch(error => console.log(error));
+            setIsLoading(false);
         }
 
         fetchData();
     }, []);
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+            </div>
+        );
+    }
 
     return (
         <div className="m-4 bg-gray-50 min-h-screen">

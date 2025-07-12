@@ -1,5 +1,6 @@
 import {Link, Outlet} from "react-router-dom";
 import {useEffect, useState} from "react";
+import { useNavigate } from 'react-router-dom';
 import axiosInstance from "../../services/axiosInstance.ts";
 import {
     FaUserGraduate,
@@ -13,7 +14,6 @@ import {
     FaImages,
     FaCog,
     FaBars,
-    FaTimes
 } from "react-icons/fa";
 import {BiDotsHorizontalRounded} from "react-icons/bi";
 import {
@@ -40,6 +40,7 @@ const DashboardSideBar = () => {
     const [isLoading, setIsLoading] = useState(true);
     const userInfo = useSelector((state: RootState) => state.userInfo);
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchData = async () => {
@@ -98,16 +99,20 @@ const DashboardSideBar = () => {
         );
     }
 
+    function dashboardNavigation(){
+        navigate('/dashboard');
+    }
+
 
     return (
         <div className="flex flex-row min-h-screen bg-gray-100">
             <div
                 className={`fixed md:relative bg-gray-800 text-white w-64 md:w-72 transition-all duration-300 ${isOpen ? "left-0" : "-left-64"} md:left-0 h-screen flex flex-col overflow-y-auto`}>
                 <div className="p-5 flex items-center justify-between md:justify-start">
-                    <h1 className="text-2xl font-bold">{userInfo.school_name}</h1>
-                    <button className="md:hidden text-white" onClick={() => setIsOpen(false)}>
-                        <FaTimes size={24}/>
-                    </button>
+                    {/*<h1 className="text-2xl font-bold" onClick={dashboardNavigation} >{userInfo.school_name}</h1>*/}
+                    <h1 className="text-2xl font-bold cursor-pointer hover:bg-gray-600 transition-colors" onClick={dashboardNavigation}>
+                        {userInfo.school_name}
+                    </h1>
                 </div>
                 <ul className="space-y-2 p-3 flex-1 overflow-y-auto">
                     {hasPermission("student management") && (

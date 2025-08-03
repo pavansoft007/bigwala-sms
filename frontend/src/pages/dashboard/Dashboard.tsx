@@ -8,8 +8,6 @@ import {
     FaMoneyBillWave,
     FaUsersCog,
     FaBell,
-    FaBook,
-    FaSchool,
     FaClipboardList,
     FaImages,
     FaCog,
@@ -98,6 +96,30 @@ const DashboardSideBar = () => {
 
     const dashboardItems: DashboardItem[] = [
         {
+            title: "Attendance Management",
+            icon: <FaUsersCog className="text-3xl" />,
+            link: "attendance",
+            permission: "attendance management",
+            description: "Track and manage attendance records",
+            color: "from-red-500 to-red-600"
+        },
+        {
+            title: "Leaves Management",
+            icon: <FaUsersCog className="text-3xl" />,
+            link: "leaves",
+            permission: "leaves management",
+            description: "Track and manage leaves",
+            color: "from-indigo-500 to-indigo-600"
+        },
+        {
+            title: "Fee Management",
+            icon: <FaMoneyBillWave className="text-3xl" />,
+            link: "fee/",
+            permission: "fee management",
+            description: "Handle fee collection and payments",
+            color: "from-yellow-500 to-yellow-600"
+        },
+        {
             title: "Student Management",
             icon: <FaUserGraduate className="text-3xl" />,
             link: "students/manage-student",
@@ -114,12 +136,12 @@ const DashboardSideBar = () => {
             color: "from-green-500 to-green-600"
         },
         {
-            title: "Fee Management",
-            icon: <FaMoneyBillWave className="text-3xl" />,
-            link: "fee/",
-            permission: "fee management",
-            description: "Handle fee collection and payments",
-            color: "from-yellow-500 to-yellow-600"
+            title: "Gallery",
+            icon: <FaImages className="text-3xl" />,
+            link: "gallery",
+            permission: "gallery",
+            description: "Manage school photo gallery",
+            color: "from-cyan-500 to-cyan-600"
         },
         {
             title: "User Management",
@@ -130,14 +152,6 @@ const DashboardSideBar = () => {
             color: "from-purple-500 to-purple-600"
         },
         {
-            title: "Attendance Management",
-            icon: <FaUsersCog className="text-3xl" />,
-            link: "attendance",
-            permission: "attendance management",
-            description: "Track and manage attendance records",
-            color: "from-red-500 to-red-600"
-        },
-        {
             title: "Notice Board",
             icon: <FaBell className="text-3xl" />,
             link: "notice-board",
@@ -145,22 +159,22 @@ const DashboardSideBar = () => {
             description: "Post and manage announcements",
             color: "from-orange-500 to-orange-600"
         },
-        {
-            title: "Subjects",
-            icon: <FaBook className="text-3xl" />,
-            link: "subjects",
-            permission: "subjects",
-            description: "Manage academic subjects and curriculum",
-            color: "from-indigo-500 to-indigo-600"
-        },
-        {
-            title: "Classroom",
-            icon: <FaSchool className="text-3xl" />,
-            link: "classroom",
-            permission: "classroom",
-            description: "Manage classroom assignments and schedules",
-            color: "from-teal-500 to-teal-600"
-        },
+        // {
+        //     title: "Subjects",
+        //     icon: <FaBook className="text-3xl" />,
+        //     link: "subjects",
+        //     permission: "subjects",
+        //     description: "Manage academic subjects and curriculum",
+        //     color: "from-indigo-500 to-indigo-600"
+        // },
+        // {
+        //     title: "Classroom",
+        //     icon: <FaSchool className="text-3xl" />,
+        //     link: "classroom",
+        //     permission: "classroom",
+        //     description: "Manage classroom assignments and schedules",
+        //     color: "from-teal-500 to-teal-600"
+        // },
         {
             title: "Exams",
             icon: <FaClipboardList className="text-3xl" />,
@@ -168,14 +182,6 @@ const DashboardSideBar = () => {
             permission: "exams",
             description: "Schedule and manage examinations",
             color: "from-pink-500 to-pink-600"
-        },
-        {
-            title: "Gallery",
-            icon: <FaImages className="text-3xl" />,
-            link: "gallery",
-            permission: "gallery",
-            description: "Manage school photo gallery",
-            color: "from-cyan-500 to-cyan-600"
         },
         {
             title: "App Banner Images",

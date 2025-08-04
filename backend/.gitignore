@@ -28,3 +28,5 @@ uploads
 *.njsproj
 *.sln
 .DS_Store
+
+/generated/prisma

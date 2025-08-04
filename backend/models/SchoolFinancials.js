@@ -1,6 +1,7 @@
 import { DataTypes, Model } from 'sequelize';
 import sequelize from '../config/database.js';
 import School from './School.js';
+import academicYear from "./AcademicYear.js";
 
 class SchoolFinancials extends Model {}
 
@@ -14,6 +15,14 @@ SchoolFinancials.init(
         year: {
             type: DataTypes.STRING,
             allowNull: false
+        },
+        year_id:{
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            references: {
+                model: academicYear,
+                key: 'id'
+            }
         },
         school_id: {
             type: DataTypes.INTEGER,

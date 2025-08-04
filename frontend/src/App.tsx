@@ -29,6 +29,8 @@ import RecentPayment from "@/pages/dashboard/fee/RecentPayment.tsx";
 import PendingPayments from "@/pages/dashboard/fee/PendingPayments.tsx";
 import Attendance from "@/pages/dashboard/attendence/Attendance.tsx";
 import ExamDashboard from "@/pages/dashboard/exam/ExamDashboard.tsx";
+import Leave from "@/pages/dashboard/leave/Leave.tsx";
+import TeacherLeaves from "@/pages/dashboard/leave/TeacherLeaves.tsx";
 
 function App() {
 
@@ -42,6 +44,10 @@ function App() {
                 <Route element={<ProtectedRoute/>}>
                     <Route path="/dashboard" element={<Dashboard/>}>
                         <Route path="" element={<Dashboard_main/>}/>
+                        <Route path="leaves" >
+                            <Route path="" element={<Leave />} />
+                            <Route path="teachers" element={<TeacherLeaves />} />
+                        </Route>
                         <Route path="students">
                             <Route path="add" element={<AddStudent/>}/>
                             <Route path="manage-student" element={<Students/>}/>

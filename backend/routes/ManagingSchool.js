@@ -6,6 +6,7 @@ import sequelize from "../config/database.js";
 import SchoolFinancials from "../models/SchoolFinancials.js";
 import FeeCategory from "../models/FeeCategory.js";
 import MasterAdminAuth from "../middleware/MasterAdminAuth.js";
+import AcademicYear from "../models/AcademicYear.js";
 
 const ManagingSchool = express.Router();
 
@@ -21,7 +22,8 @@ ManagingSchool.post("/super-admin/schools", MasterAdminAuth,async (req, res) => 
             admin_name,
             admin_email,
             admin_phone_number,
-            admin_password
+            admin_password,
+            year
         } = req.body;
         const school = await School.create({
             name: school_name,
@@ -30,6 +32,14 @@ ManagingSchool.post("/super-admin/schools", MasterAdminAuth,async (req, res) => 
             school_code: school_code,
             email: email,
         }, {
+            transaction: t
+        });
+
+        const academicYear=await AcademicYear.create({
+            year,
+            school_id: school.school_id,
+            is_current: true,
+        },{
             transaction: t
         });
 
@@ -60,6 +70,7 @@ ManagingSchool.post("/super-admin/schools", MasterAdminAuth,async (req, res) => 
         });
 
         await SchoolFinancials.create({
+            year_id: academicYear.id,
             year:new Date().getFullYear(),
             school_id: school.school_id,
             current_balance: 0

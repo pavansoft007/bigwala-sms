@@ -1,6 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -12,7 +11,44 @@ model SequelizeMeta {
   name String @id @unique(map: "name") @db.VarChar(255)
 }
 
-model Student_payment_pending {
+// Main School model (singular)
+model School {
+  school_id               Int                       @id @default(autoincrement())
+  name                    String                    @db.VarChar(100)
+  address                 String                    @db.VarChar(255)
+  phone_number            String?                   @db.VarChar(15)
+  email                   String?                   @db.VarChar(100)
+  school_code             String                    @unique @db.VarChar(100)
+  created_at              DateTime                  @default(now()) @db.DateTime(0)
+  updated_at              DateTime                  @updatedAt @db.DateTime(0)
+
+  // Relations
+  StudentPaymentPending   StudentPaymentPending[]
+  AcademicYear            AcademicYear[]
+  Admins                  Admins[]
+  BannerImages            BannerImages[]
+  Classrooms              Classrooms[]
+  ExamMarks               ExamMarks[]
+  Exams                   Exams[]
+  FeeCategories           FeeCategories[]
+  Gallery                 Gallery[]
+  Homeworks               Homeworks[]
+  MessageBoards           MessageBoards[]
+  Roles                   Roles[]
+  SchoolFinancials        SchoolFinancials[]
+  StudentAttendance       StudentAttendance[]
+  StudentFees             StudentFees[]
+  Students                Students[]
+  StudentsPayments        StudentsPayments[]
+  Subjects                Subjects[]
+  TeacherAttendance       TeacherAttendance[]
+  Teachers                Teachers[]
+  YoutubeVideo            YoutubeVideo[]
+
+  @@map("school")
+}
+
+model StudentPaymentPending {
   pending_payment_id Int                            @id @default(autoincrement())
   amount             Int
   student_id         Int
@@ -22,27 +58,29 @@ model Student_payment_pending {
   status             Student_payment_pending_status
   created_at         DateTime                       @db.DateTime(0)
   updated_at         DateTime                       @db.DateTime(0)
-  students           students                       @relation(fields: [student_id], references: [student_id], onDelete: NoAction, onUpdate: NoAction, map: "Student_payment_pending_ibfk_1")
-  schools            schools                        @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "Student_payment_pending_ibfk_2")
-  fee_categories     fee_categories                 @relation(fields: [category_id], references: [category_id], onDelete: NoAction, onUpdate: NoAction, map: "Student_payment_pending_ibfk_3")
+  Students           Students                       @relation(fields: [student_id], references: [student_id], onDelete: NoAction, onUpdate: NoAction, map: "Student_payment_pending_ibfk_1")
+  School             School                         @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "Student_payment_pending_ibfk_2")
+  FeeCategories      FeeCategories                  @relation(fields: [category_id], references: [category_id], onDelete: NoAction, onUpdate: NoAction, map: "Student_payment_pending_ibfk_3")
 
   @@index([category_id], map: "category_id")
   @@index([school_id], map: "school_id")
   @@index([student_id], map: "student_id")
+  @@map("Student_payment_pending")
 }
 
-model academic_year {
+model AcademicYear {
   id                Int                 @id @default(autoincrement())
   year              String              @db.VarChar(255)
   school_id         Int
   is_current        Boolean             @default(false)
-  schools           schools             @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "academic_year_ibfk_1")
-  school_financials school_financials[]
+  School            School              @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "academic_year_ibfk_1")
+  SchoolFinancials  SchoolFinancials[]
 
   @@index([school_id], map: "school_id")
+  @@map("academic_year")
 }
 
-model admins {
+model Admins {
   admin_id           Int                 @id @default(autoincrement())
   school_id          Int
   admin_name         String              @db.VarChar(100)
@@ -50,44 +88,47 @@ model admins {
   admin_phone_number String              @db.VarChar(15)
   admin_password     String              @db.VarChar(100)
   role_id            Int
-  schools            schools             @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "admins_ibfk_1")
-  roles              roles               @relation(fields: [role_id], references: [role_id], onDelete: NoAction, onUpdate: NoAction, map: "admins_ibfk_2")
-  student_fees       student_fees[]
-  students_payments  students_payments[]
+  School             School              @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "admins_ibfk_1")
+  Roles              Roles               @relation(fields: [role_id], references: [role_id], onDelete: NoAction, onUpdate: NoAction, map: "admins_ibfk_2")
+  StudentFees        StudentFees[]
+  StudentsPayments   StudentsPayments[]
 
   @@index([role_id], map: "role_id")
   @@index([school_id], map: "school_id")
+  @@map("admins")
 }
 
-model bannerImages {
+model BannerImages {
   banner_id  Int      @id @default(autoincrement())
   filename   String   @db.VarChar(255)
   school_id  Int
   uploadedOn DateTime @db.DateTime(0)
-  schools    schools  @relation(fields: [school_id], references: [school_id], onDelete: Cascade, map: "bannerImages_ibfk_1")
+  School     School   @relation(fields: [school_id], references: [school_id], onDelete: Cascade, map: "bannerImages_ibfk_1")
 
   @@index([school_id], map: "school_id")
+  @@map("bannerImages")
 }
 
-model classrooms {
+model Classrooms {
   classroom_id  Int             @id @default(autoincrement())
   standard      String          @db.VarChar(50)
   section       String          @db.VarChar(10)
   school_id     Int
   addedDate     DateTime        @db.Time(0)
-  schools       schools         @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "classrooms_ibfk_1")
-  exam_marks    exam_marks[]
-  exams         exams[]
-  homeworks     homeworks[]
-  messageBoards messageBoards[]
-  student_fees  student_fees[]
-  students      students[]
-  teachers      teachers?
+  School        School          @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "classrooms_ibfk_1")
+  ExamMarks     ExamMarks[]
+  Exams         Exams[]
+  Homeworks     Homeworks[]
+  MessageBoards MessageBoards[]
+  StudentFees   StudentFees[]
+  Students      Students[]
+  Teachers      Teachers?
 
   @@index([school_id], map: "school_id")
+  @@map("classrooms")
 }
 
-model exam_marks {
+model ExamMarks {
   id         Int        @id @default(autoincrement())
   school_id  Int
   subject_id Int
@@ -95,20 +136,21 @@ model exam_marks {
   student_id Int
   exam_id    Int
   marks      Int
-  schools    schools    @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "exam_marks_ibfk_1")
-  subjects   subjects   @relation(fields: [subject_id], references: [subject_id], onDelete: NoAction, onUpdate: NoAction, map: "exam_marks_ibfk_2")
-  classrooms classrooms @relation(fields: [class_id], references: [classroom_id], onDelete: NoAction, onUpdate: NoAction, map: "exam_marks_ibfk_3")
-  students   students   @relation(fields: [student_id], references: [student_id], onDelete: NoAction, onUpdate: NoAction, map: "exam_marks_ibfk_4")
-  exams      exams      @relation(fields: [exam_id], references: [exam_id], onDelete: NoAction, onUpdate: NoAction, map: "exam_marks_ibfk_5")
+  School     School     @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "exam_marks_ibfk_1")
+  Subjects   Subjects   @relation(fields: [subject_id], references: [subject_id], onDelete: NoAction, onUpdate: NoAction, map: "exam_marks_ibfk_2")
+  Classrooms Classrooms @relation(fields: [class_id], references: [classroom_id], onDelete: NoAction, onUpdate: NoAction, map: "exam_marks_ibfk_3")
+  Students   Students   @relation(fields: [student_id], references: [student_id], onDelete: NoAction, onUpdate: NoAction, map: "exam_marks_ibfk_4")
+  Exams      Exams      @relation(fields: [exam_id], references: [exam_id], onDelete: NoAction, onUpdate: NoAction, map: "exam_marks_ibfk_5")
 
   @@index([class_id], map: "class_id")
   @@index([exam_id], map: "exam_id")
   @@index([school_id], map: "school_id")
   @@index([student_id], map: "student_id")
   @@index([subject_id], map: "subject_id")
+  @@map("exam_marks")
 }
 
-model exams {
+model Exams {
   exam_id         Int          @id @default(autoincrement())
   exam_name       String       @db.VarChar(225)
   class_id        Int
@@ -118,57 +160,61 @@ model exams {
   timetable_photo String       @db.VarChar(200)
   end_date        DateTime     @db.DateTime(0)
   status          exams_status
-  exam_marks      exam_marks[]
-  classrooms      classrooms   @relation(fields: [class_id], references: [classroom_id], onDelete: NoAction, onUpdate: NoAction, map: "exams_ibfk_1")
-  schools         schools      @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "exams_ibfk_2")
+  ExamMarks       ExamMarks[]
+  Classrooms      Classrooms   @relation(fields: [class_id], references: [classroom_id], onDelete: NoAction, onUpdate: NoAction, map: "exams_ibfk_1")
+  School          School       @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "exams_ibfk_2")
 
   @@index([class_id], map: "class_id")
   @@index([school_id], map: "school_id")
+  @@map("exams")
 }
 
-model fee_categories {
+model FeeCategories {
   category_id             Int                       @id @default(autoincrement())
   school_id               Int
   category_name           String                    @db.VarChar(225)
   description             String?                   @db.Text
   created_at              DateTime?                 @db.DateTime(0)
   updated_at              DateTime?                 @db.DateTime(0)
-  Student_payment_pending Student_payment_pending[]
-  schools                 schools                   @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "fee_categories_ibfk_1")
-  student_fees            student_fees[]
-  students_payments       students_payments[]
+  StudentPaymentPending   StudentPaymentPending[]
+  School                  School                    @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "fee_categories_ibfk_1")
+  StudentFees             StudentFees[]
+  StudentsPayments        StudentsPayments[]
 
   @@index([school_id], map: "school_id")
+  @@map("fee_categories")
 }
 
-model gallery {
+model Gallery {
   gallery_id Int      @id @default(autoincrement())
   filename   String   @db.VarChar(255)
   event_name String   @db.VarChar(20)
   school_id  Int
   uploadedOn DateTime @db.DateTime(0)
-  schools    schools  @relation(fields: [school_id], references: [school_id], onDelete: Cascade, map: "gallery_ibfk_1")
+  School     School   @relation(fields: [school_id], references: [school_id], onDelete: Cascade, map: "gallery_ibfk_1")
 
   @@index([school_id], map: "school_id")
+  @@map("gallery")
 }
 
-model homeworks {
+model Homeworks {
   homework_id  Int        @id @default(autoincrement())
   school_id    Int
   classroom_id Int
   subject_id   Int
   context      String     @db.Text
   addedDate    DateTime   @db.Date
-  schools      schools    @relation(fields: [school_id], references: [school_id], onDelete: NoAction, map: "homeworks_ibfk_1")
-  classrooms   classrooms @relation(fields: [classroom_id], references: [classroom_id], onDelete: NoAction, map: "homeworks_ibfk_2")
-  subjects     subjects   @relation(fields: [subject_id], references: [subject_id], onDelete: NoAction, onUpdate: NoAction, map: "homeworks_ibfk_3")
+  School       School     @relation(fields: [school_id], references: [school_id], onDelete: NoAction, map: "homeworks_ibfk_1")
+  Classrooms   Classrooms @relation(fields: [classroom_id], references: [classroom_id], onDelete: NoAction, map: "homeworks_ibfk_2")
+  Subjects     Subjects   @relation(fields: [subject_id], references: [subject_id], onDelete: NoAction, onUpdate: NoAction, map: "homeworks_ibfk_3")
 
   @@index([classroom_id], map: "classroom_id")
   @@index([school_id], map: "school_id")
   @@index([subject_id], map: "subject_id")
+  @@map("homeworks")
 }
 
-model interested_schools {
+model InterestedSchools {
   school_id    Int                       @id @default(autoincrement())
   school_name  String                    @db.VarChar(225)
   location     String                    @db.VarChar(225)
@@ -177,9 +223,11 @@ model interested_schools {
   phone_number String                    @db.VarChar(13)
   created_at   DateTime                  @db.DateTime(0)
   updated_at   DateTime                  @db.DateTime(0)
+
+  @@map("interested_schools")
 }
 
-model messageBoards {
+model MessageBoards {
   message_id      Int                        @id @default(autoincrement())
   student_id      Int?
   classroom_id    Int?
@@ -191,33 +239,37 @@ model messageBoards {
   added_member_id Int?
   added_on        DateTime                   @db.DateTime(0)
   type            messageBoards_type
-  students        students?                  @relation(fields: [student_id], references: [student_id], onDelete: Cascade, map: "messageBoards_ibfk_1")
-  classrooms      classrooms?                @relation(fields: [classroom_id], references: [classroom_id], onDelete: Cascade, map: "messageBoards_ibfk_2")
-  schools         schools                    @relation(fields: [school_id], references: [school_id], onDelete: Cascade, map: "messageBoards_ibfk_3")
+  Students        Students?                  @relation(fields: [student_id], references: [student_id], onDelete: Cascade, map: "messageBoards_ibfk_1")
+  Classrooms      Classrooms?                @relation(fields: [classroom_id], references: [classroom_id], onDelete: Cascade, map: "messageBoards_ibfk_2")
+  School          School                     @relation(fields: [school_id], references: [school_id], onDelete: Cascade, map: "messageBoards_ibfk_3")
 
   @@index([classroom_id], map: "classroom_id")
   @@index([school_id], map: "school_id")
   @@index([student_id], map: "student_id")
+  @@map("messageBoards")
 }
 
-model modules {
+model Modules {
   id          Int     @id @default(autoincrement())
   module_name String? @db.VarChar(225)
+
+  @@map("modules")
 }
 
-model roles {
+model Roles {
   role_id     Int        @id @default(autoincrement())
   role_name   String     @db.VarChar(225)
   school_id   Int
   permissions Json?
-  admins      admins[]
-  schools     schools    @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "roles_ibfk_1")
-  teachers    teachers[]
+  Admins      Admins[]
+  School      School     @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "roles_ibfk_1")
+  Teachers    Teachers[]
 
   @@index([school_id], map: "school_id")
+  @@map("roles")
 }
 
-model school_financials {
+model SchoolFinancials {
   school_financial_id Int           @id @default(autoincrement())
   year                String        @db.VarChar(255)
   year_id             Int
@@ -225,57 +277,29 @@ model school_financials {
   current_balance     Int
   created_at          DateTime      @db.DateTime(0)
   updated_at          DateTime      @db.DateTime(0)
-  academic_year       academic_year @relation(fields: [year_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "school_financials_ibfk_1")
-  schools             schools       @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "school_financials_ibfk_2")
+  AcademicYear        AcademicYear  @relation(fields: [year_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "school_financials_ibfk_1")
+  School              School        @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "school_financials_ibfk_2")
 
   @@index([school_id], map: "school_id")
   @@index([year_id], map: "year_id")
+  @@map("schoolFinancials")
 }
 
-model schools {
-  school_id               Int                       @id @default(autoincrement())
-  name                    String                    @db.VarChar(100)
-  address                 String                    @db.VarChar(255)
-  phone_number            String?                   @db.VarChar(15)
-  email                   String?                   @db.VarChar(100)
-  school_code             String                    @db.VarChar(100)
-  Student_payment_pending Student_payment_pending[]
-  academic_year           academic_year[]
-  admins                  admins[]
-  bannerImages            bannerImages[]
-  classrooms              classrooms[]
-  exam_marks              exam_marks[]
-  exams                   exams[]
-  fee_categories          fee_categories[]
-  gallery                 gallery[]
-  homeworks               homeworks[]
-  messageBoards           messageBoards[]
-  roles                   roles[]
-  school_financials       school_financials[]
-  studentAttendance       studentAttendance[]
-  student_fees            student_fees[]
-  students                students[]
-  students_payments       students_payments[]
-  subjects                subjects[]
-  teacherAttendance       teacherAttendance[]
-  teachers                teachers[]
-  youtudeVideo            youtudeVideo[]
-}
-
-model studentAttendance {
+model StudentAttendance {
   attendance_id Int      @id @default(autoincrement())
   student_id    Int
   school_id     Int
   attendDate    DateTime @db.Date
   attendTime    DateTime @db.Time(0)
-  students      students @relation(fields: [student_id], references: [student_id], onDelete: NoAction, onUpdate: NoAction, map: "studentAttendance_ibfk_1")
-  schools       schools  @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "studentAttendance_ibfk_2")
+  Students      Students @relation(fields: [student_id], references: [student_id], onDelete: NoAction, onUpdate: NoAction, map: "studentAttendance_ibfk_1")
+  School        School   @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "studentAttendance_ibfk_2")
 
   @@index([school_id], map: "school_id")
   @@index([student_id], map: "student_id")
+  @@map("studentAttendance")
 }
 
-model student_fees {
+model StudentFees {
   fee_id         Int            @id @default(autoincrement())
   fee_amount     Int
   total_fee_paid Int
@@ -289,12 +313,12 @@ model student_fees {
   admin_id       Int?
   created_at     DateTime?      @db.DateTime(0)
   updated_at     DateTime?      @db.DateTime(0)
-  schools        schools        @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "student_fees_ibfk_1")
-  fee_categories fee_categories @relation(fields: [category_id], references: [category_id], onDelete: NoAction, onUpdate: NoAction, map: "student_fees_ibfk_2")
-  students       students       @relation(fields: [student_id], references: [student_id], onDelete: NoAction, onUpdate: NoAction, map: "student_fees_ibfk_3")
-  classrooms     classrooms     @relation(fields: [classroom_id], references: [classroom_id], onDelete: NoAction, onUpdate: NoAction, map: "student_fees_ibfk_4")
-  teachers       teachers?      @relation(fields: [teacher_id], references: [teacher_id], onDelete: NoAction, onUpdate: NoAction, map: "student_fees_ibfk_5")
-  admins         admins?        @relation(fields: [admin_id], references: [admin_id], onDelete: NoAction, onUpdate: NoAction, map: "student_fees_ibfk_6")
+  School         School         @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "student_fees_ibfk_1")
+  FeeCategories  FeeCategories  @relation(fields: [category_id], references: [category_id], onDelete: NoAction, onUpdate: NoAction, map: "student_fees_ibfk_2")
+  Students       Students       @relation(fields: [student_id], references: [student_id], onDelete: NoAction, onUpdate: NoAction, map: "student_fees_ibfk_3")
+  Classrooms     Classrooms     @relation(fields: [classroom_id], references: [classroom_id], onDelete: NoAction, onUpdate: NoAction, map: "student_fees_ibfk_4")
+  Teachers       Teachers?      @relation(fields: [teacher_id], references: [teacher_id], onDelete: NoAction, onUpdate: NoAction, map: "student_fees_ibfk_5")
+  Admins         Admins?        @relation(fields: [admin_id], references: [admin_id], onDelete: NoAction, onUpdate: NoAction, map: "student_fees_ibfk_6")
 
   @@index([admin_id], map: "admin_id")
   @@index([category_id], map: "category_id")
@@ -302,9 +326,10 @@ model student_fees {
   @@index([school_id], map: "school_id")
   @@index([student_id], map: "student_id")
   @@index([teacher_id], map: "teacher_id")
+  @@map("student_fees")
 }
 
-model students {
+model Students {
   student_id              Int                       @id @default(autoincrement())
   admission_ID            String                    @unique(map: "admission_ID") @db.VarChar(50)
   first_name              String                    @db.VarChar(50)
@@ -326,20 +351,21 @@ model students {
   assignedClassroom       Int?
   school_code             String                    @db.VarChar(20)
   school_id               Int
-  Student_payment_pending Student_payment_pending[]
-  exam_marks              exam_marks[]
-  messageBoards           messageBoards[]
-  studentAttendance       studentAttendance[]
-  student_fees            student_fees[]
-  classrooms              classrooms?               @relation(fields: [assignedClassroom], references: [classroom_id], onDelete: NoAction, onUpdate: NoAction, map: "students_ibfk_1")
-  schools                 schools                   @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "students_ibfk_2")
-  students_payments       students_payments[]
+  StudentPaymentPending   StudentPaymentPending[]
+  ExamMarks               ExamMarks[]
+  MessageBoards           MessageBoards[]
+  StudentAttendance       StudentAttendance[]
+  StudentFees             StudentFees[]
+  Classrooms              Classrooms?               @relation(fields: [assignedClassroom], references: [classroom_id], onDelete: NoAction, onUpdate: NoAction, map: "students_ibfk_1")
+  School                  School                    @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "students_ibfk_2")
+  StudentsPayments        StudentsPayments[]
 
   @@index([assignedClassroom], map: "assignedClassroom")
   @@index([school_id], map: "school_id")
+  @@map("students")
 }
 
-model students_payments {
+model StudentsPayments {
   payment_id     Int                            @id @default(autoincrement())
   amount         Int
   school_id      Int
@@ -350,31 +376,33 @@ model students_payments {
   payment_date   DateTime?                      @db.DateTime(0)
   created_at     DateTime                       @db.DateTime(0)
   updated_at     DateTime                       @db.DateTime(0)
-  schools        schools                        @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "students_payments_ibfk_1")
-  fee_categories fee_categories                 @relation(fields: [category_id], references: [category_id], onDelete: NoAction, onUpdate: NoAction, map: "students_payments_ibfk_2")
-  students       students                       @relation(fields: [student_id], references: [student_id], onDelete: NoAction, onUpdate: NoAction, map: "students_payments_ibfk_3")
-  admins         admins?                        @relation(fields: [collected_by], references: [admin_id], onDelete: NoAction, onUpdate: NoAction, map: "students_payments_ibfk_4")
+  School         School                         @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "students_payments_ibfk_1")
+  FeeCategories  FeeCategories                  @relation(fields: [category_id], references: [category_id], onDelete: NoAction, onUpdate: NoAction, map: "students_payments_ibfk_2")
+  Students       Students                       @relation(fields: [student_id], references: [student_id], onDelete: NoAction, onUpdate: NoAction, map: "students_payments_ibfk_3")
+  Admins         Admins?                        @relation(fields: [collected_by], references: [admin_id], onDelete: NoAction, onUpdate: NoAction, map: "students_payments_ibfk_4")
 
   @@index([category_id], map: "category_id")
   @@index([collected_by], map: "collected_by")
   @@index([school_id], map: "school_id")
   @@index([student_id], map: "student_id")
+  @@map("students_payments")
 }
 
-model subjects {
+model Subjects {
   subject_id   Int          @id @default(autoincrement())
   subject_name String       @db.VarChar(225)
   subject_code String       @db.VarChar(10)
   school_id    Int
-  exam_marks   exam_marks[]
-  homeworks    homeworks[]
-  schools      schools      @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "subjects_ibfk_1")
-  teachers     teachers[]
+  ExamMarks    ExamMarks[]
+  Homeworks    Homeworks[]
+  School       School       @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "subjects_ibfk_1")
+  Teachers     Teachers[]
 
   @@index([school_id], map: "school_id")
+  @@map("subjects")
 }
 
-model teacherAttendance {
+model TeacherAttendance {
   attendance_id Int                      @id @default(autoincrement())
   teacher_id    Int
   school_id     Int
@@ -382,14 +410,15 @@ model teacherAttendance {
   attendTime    DateTime                 @db.Time(0)
   status        teacherAttendance_status @default(pending)
   submitted_at  DateTime                 @db.DateTime(0)
-  teachers      teachers                 @relation(fields: [teacher_id], references: [teacher_id], onDelete: NoAction, onUpdate: NoAction, map: "teacherAttendance_ibfk_1")
-  schools       schools                  @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "teacherAttendance_ibfk_2")
+  Teachers      Teachers                 @relation(fields: [teacher_id], references: [teacher_id], onDelete: NoAction, onUpdate: NoAction, map: "teacherAttendance_ibfk_1")
+  School        School                   @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "teacherAttendance_ibfk_2")
 
   @@index([school_id], map: "school_id")
   @@index([teacher_id], map: "teacher_id")
+  @@map("teacherAttendance")
 }
 
-model teachers {
+model Teachers {
   teacher_id                        Int                 @id @default(autoincrement())
   TeacherID                         String              @unique(map: "TeacherID") @db.VarChar(20)
   first_name                        String              @db.VarChar(50)
@@ -408,35 +437,40 @@ model teachers {
   teachers_qualification            String?             @db.VarChar(255)
   teacher_photo                     String?             @db.VarChar(255)
   teacher_qualification_certificate String?             @db.VarChar(255)
-  student_fees                      student_fees[]
-  teacherAttendance                 teacherAttendance[]
-  subjects                          subjects            @relation(fields: [subject_id], references: [subject_id], onDelete: NoAction, onUpdate: NoAction, map: "teachers_ibfk_1")
-  classrooms                        classrooms?         @relation(fields: [assignedClass], references: [classroom_id], onDelete: NoAction, onUpdate: NoAction, map: "teachers_ibfk_2")
-  schools                           schools             @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "teachers_ibfk_3")
-  roles                             roles               @relation(fields: [role_id], references: [role_id], onDelete: NoAction, onUpdate: NoAction, map: "teachers_ibfk_4")
+  StudentFees                       StudentFees[]
+  TeacherAttendance                 TeacherAttendance[]
+  Subjects                          Subjects            @relation(fields: [subject_id], references: [subject_id], onDelete: NoAction, onUpdate: NoAction, map: "teachers_ibfk_1")
+  Classrooms                        Classrooms?         @relation(fields: [assignedClass], references: [classroom_id], onDelete: NoAction, onUpdate: NoAction, map: "teachers_ibfk_2")
+  School                            School              @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "teachers_ibfk_3")
+  Roles                             Roles               @relation(fields: [role_id], references: [role_id], onDelete: NoAction, onUpdate: NoAction, map: "teachers_ibfk_4")
 
   @@index([role_id], map: "role_id")
   @@index([school_id], map: "school_id")
   @@index([subject_id], map: "subject_id")
+  @@map("teachers")
 }
 
-model users {
+model Users {
   id           Int        @id @default(autoincrement())
   phone_number String     @db.VarChar(15)
   role         users_role
   original_id  String     @db.VarChar(50)
   createdAt    DateTime?  @default(now()) @db.DateTime(0)
   updatedAt    DateTime?  @default(now()) @db.DateTime(0)
+
+  @@index([phone_number],map: "phone_number")
+  @@map("users")
 }
 
-model youtudeVideo {
+model YoutubeVideo {
   youtude_id  Int     @id @default(autoincrement())
   event_name  String  @db.VarChar(20)
   youtudeLink String  @db.VarChar(225)
   school_id   Int
-  schools     schools @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "youtudeVideo_ibfk_1")
+  School      School  @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "youtudeVideo_ibfk_1")
 
   @@index([school_id], map: "school_id")
+  @@map("youtudeVideo")
 }
 
 enum users_role {

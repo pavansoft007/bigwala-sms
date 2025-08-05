@@ -26,6 +26,8 @@ import ManagingStaticFiles from "./routes/ManagingStaticFiles.js";
 import ManagingFeePayment from "./routes/ManagingFeePayment.js";
 import {realIpMiddleware} from "./middleware/realIpMiddleware.js";
 import ManagingSchool from "./routes/ManagingSchool.js";
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
 
 const app = express();
 app.use(express.json());
@@ -33,7 +35,7 @@ app.use(express.urlencoded({extended: true}));
 if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'prod' ) {
     app.set('trust proxy', 'loopback');
 } else {
-    app.set('trust proxy', false); // Don't trust proxies in dev environment
+    app.set('trust proxy', false);
 }
 app.use(realIpMiddleware);
 app.use(
@@ -58,13 +60,13 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-sequelize.sync()
-    .then(() => {
-        console.log('Database synced successfully.');
-    })
-    .catch((error) => {
-        console.error('Error syncing the database:', error);
-    });
+// sequelize.sync()
+//     .then(() => {
+//         console.log('Database synced successfully.');
+//     })
+//     .catch((error) => {
+//         console.error('Error syncing the database:', error);
+//     });
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -109,6 +111,7 @@ app.get('*', (req, res) => {
 process.on('SIGINT', async () => {
     console.log('Closing database connection...');
     await sequelize.close();
+    await prisma.$disconnect();
     console.log('Database connection closed.');
     process.exit(0);
 });

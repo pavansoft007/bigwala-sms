@@ -25,7 +25,7 @@ model School {
   // Relations
   StudentPaymentPending   StudentPaymentPending[]
   AcademicYear            AcademicYear[]
-  Admins                  Admins[]
+  Admin                   Admin[]
   BannerImages            BannerImages[]
   Classrooms              Classrooms[]
   ExamMarks               ExamMarks[]
@@ -80,7 +80,7 @@ model AcademicYear {
   @@map("academic_year")
 }
 
-model Admins {
+model Admin {
   admin_id           Int                 @id @default(autoincrement())
   school_id          Int
   admin_name         String              @db.VarChar(100)
@@ -95,6 +95,7 @@ model Admins {
 
   @@index([role_id], map: "role_id")
   @@index([school_id], map: "school_id")
+  @@index([admin_email], map: "admin_email")
   @@map("admins")
 }
 
@@ -261,7 +262,7 @@ model Roles {
   role_name   String     @db.VarChar(225)
   school_id   Int
   permissions Json?
-  Admins      Admins[]
+  Admin       Admin[]
   School      School     @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "roles_ibfk_1")
   Teachers    Teachers[]
 
@@ -275,8 +276,8 @@ model SchoolFinancials {
   year_id             Int
   school_id           Int
   current_balance     Int
-  created_at          DateTime      @db.DateTime(0)
-  updated_at          DateTime      @db.DateTime(0)
+  created_at          DateTime      @default(now()) @db.DateTime(0)
+  updated_at          DateTime      @updatedAt @db.DateTime(0)
   AcademicYear        AcademicYear  @relation(fields: [year_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "school_financials_ibfk_1")
   School              School        @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "school_financials_ibfk_2")
 
@@ -318,7 +319,7 @@ model StudentFees {
   Students       Students       @relation(fields: [student_id], references: [student_id], onDelete: NoAction, onUpdate: NoAction, map: "student_fees_ibfk_3")
   Classrooms     Classrooms     @relation(fields: [classroom_id], references: [classroom_id], onDelete: NoAction, onUpdate: NoAction, map: "student_fees_ibfk_4")
   Teachers       Teachers?      @relation(fields: [teacher_id], references: [teacher_id], onDelete: NoAction, onUpdate: NoAction, map: "student_fees_ibfk_5")
-  Admins         Admins?        @relation(fields: [admin_id], references: [admin_id], onDelete: NoAction, onUpdate: NoAction, map: "student_fees_ibfk_6")
+  Admin          Admin?         @relation(fields: [admin_id], references: [admin_id], onDelete: NoAction, onUpdate: NoAction, map: "student_fees_ibfk_6")
 
   @@index([admin_id], map: "admin_id")
   @@index([category_id], map: "category_id")
@@ -379,7 +380,7 @@ model StudentsPayments {
   School         School                         @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "students_payments_ibfk_1")
   FeeCategories  FeeCategories                  @relation(fields: [category_id], references: [category_id], onDelete: NoAction, onUpdate: NoAction, map: "students_payments_ibfk_2")
   Students       Students                       @relation(fields: [student_id], references: [student_id], onDelete: NoAction, onUpdate: NoAction, map: "students_payments_ibfk_3")
-  Admins         Admins?                        @relation(fields: [collected_by], references: [admin_id], onDelete: NoAction, onUpdate: NoAction, map: "students_payments_ibfk_4")
+  Admin          Admin?                         @relation(fields: [collected_by], references: [admin_id], onDelete: NoAction, onUpdate: NoAction, map: "students_payments_ibfk_4")
 
   @@index([category_id], map: "category_id")
   @@index([collected_by], map: "collected_by")
@@ -450,7 +451,7 @@ model Teachers {
   @@map("teachers")
 }
 
-model Users {
+model User {
   id           Int        @id @default(autoincrement())
   phone_number String     @db.VarChar(15)
   role         users_role
@@ -458,19 +459,19 @@ model Users {
   createdAt    DateTime?  @default(now()) @db.DateTime(0)
   updatedAt    DateTime?  @default(now()) @db.DateTime(0)
 
-  @@index([phone_number],map: "phone_number")
+  @@index([phone_number], map: "phone_number")
   @@map("users")
 }
 
 model YoutubeVideo {
-  youtude_id  Int     @id @default(autoincrement())
-  event_name  String  @db.VarChar(20)
-  youtudeLink String  @db.VarChar(225)
-  school_id   Int
-  School      School  @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "youtudeVideo_ibfk_1")
+  youtube_id   Int     @id @default(autoincrement())
+  event_name   String  @db.VarChar(20)
+  youtubeLink  String  @db.VarChar(225)
+  school_id    Int
+  School       School  @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "youtubeVideo_ibfk_1")
 
   @@index([school_id], map: "school_id")
-  @@map("youtudeVideo")
+  @@map("youtubeVideo")
 }
 
 enum users_role {

@@ -24,9 +24,9 @@ ManagingSchool.post('/super-admin/schools', MasterAdminAuth, async (req, res) =>
     try {
         await prisma.$transaction(async (tx) => {
             /* ---------- SCHOOL ---------- */
-            const school = await tx.school.create({
+            const school = await tx.School.create({
                 data: {
-                    name:         school_name,
+                    name: school_name,
                     address,
                     phone_number,
                     school_code,
@@ -34,8 +34,7 @@ ManagingSchool.post('/super-admin/schools', MasterAdminAuth, async (req, res) =>
                 }
             });
 
-            /* ---------- ACADEMIC YEAR ---------- */
-            const academicYear = await tx.academicYear.create({
+            const academicYear = await tx.AcademicYear.create({
                 data: {
                     year,
                     school_id: school.school_id,
@@ -43,41 +42,38 @@ ManagingSchool.post('/super-admin/schools', MasterAdminAuth, async (req, res) =>
                 }
             });
 
-            /* ---------- ROLE ---------- */
-            const role = await tx.role.create({
+            const role = await tx.Roles.create({
                 data: {
                     role_name: 'admin',
                     school_id: school.school_id
                 }
             });
 
-            /* ---------- ADMIN ---------- */
-            await tx.admin.create({
+
+            await tx.Admin.create({
                 data: {
                     admin_name,
                     admin_email,
                     admin_phone_number,
                     admin_password,
-                    role_id:  role.role_id,
+                    role_id: role.role_id,
                     school_id: school.school_id
                 }
             });
 
-            /* ---------- FEE CATEGORY ---------- */
-            await tx.feeCategory.create({
+            await tx.FeeCategories.create({
                 data: {
-                    school_id:     school.school_id,
+                    school_id: school.school_id,
                     category_name: 'tuition fee',
-                    description:   'Default tuition Fee for the school'
+                    description: 'Default tuition Fee for the school'
                 }
             });
 
-            /* ---------- SCHOOL FINANCIALS ---------- */
-            await tx.schoolFinancials.create({
+            await tx.SchoolFinancials.create({
                 data: {
-                    year_id:         academicYear.id,
-                    year:            new Date().getFullYear(),
-                    school_id:       school.school_id,
+                    year_id: academicYear.id,
+                    year: new Date().getFullYear().toString(),
+                    school_id: school.school_id,
                     current_balance: 0
                 }
             });
@@ -90,6 +86,5 @@ ManagingSchool.post('/super-admin/schools', MasterAdminAuth, async (req, res) =>
         res.status(500).json({ error: 'Internal server error' });
     }
 });
-
 
 export default ManagingSchool;

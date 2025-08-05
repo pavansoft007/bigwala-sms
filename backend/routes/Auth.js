@@ -19,7 +19,7 @@ Auth.post('/mobileAPI/otp-request', async (req, res) => {
     if (!phonePattern.test(phone.slice(3)) && phone.startsWith('+91'))
         return res.status(400).json({message: 'Phone number must be 10 digits'});
 
-    const user = await prisma.user.findFirst({where: {phone_number: phone}});
+    const user = await prisma.User.findFirst({where: {phone_number: phone}});
     if (!user) return res.status(404).json({message: 'User not found'});
 
     const token = jwt.sign({phone, otp}, JWT_SECRET, {expiresIn: '10m'});
@@ -42,7 +42,7 @@ Auth.post('/mobileAPI/otp-verify', otpTokenVerification, async (req, res) => {
         if (tokenDetails.otp !== otp && otp !== '123456')
             return res.status(400).json({message: 'Invalid OTP'});
 
-        const users = await prisma.user.findMany({
+        const users = await prisma.User.findMany({
             where: {phone_number: tokenDetails.phone}
         });
         if (!users.length) return res.status(404).json({message: 'User not found'});
@@ -52,9 +52,9 @@ Auth.post('/mobileAPI/otp-verify', otpTokenVerification, async (req, res) => {
         for (const currentUser of users) {
             /* ---------- STUDENT ---------- */
             if (currentUser.role === 'student') {
-                const student = await prisma.student.findFirst({
+                const student = await prisma.Students.findFirst({
                     where: {phone_number: currentUser.phone_number},
-                    include: {classroom: true}
+                    include: {Classrooms: true}
                 });
                 if (!student) return res.status(404).json({message: 'Student not found'});
 
@@ -71,8 +71,8 @@ Auth.post('/mobileAPI/otp-verify', otpTokenVerification, async (req, res) => {
                     school_id: student.school_id,
                     status: student.status,
                     admission_id: student.admission_ID,
-                    standard: student.classroom.standard,
-                    section: student.classroom.section,
+                    standard: student.Classrooms?.standard,
+                    section: student.Classrooms?.section,
                     role: 'student'
                 };
 
@@ -81,8 +81,9 @@ Auth.post('/mobileAPI/otp-verify', otpTokenVerification, async (req, res) => {
 
                 /* ---------- TEACHER / ADMIN-TEACHER ---------- */
             } else if (['teacher', 'admin-teacher'].includes(currentUser.role)) {
-                const teacher = await prisma.teacher.findFirst({
-                    where: {phone_number: currentUser.phone_number}
+                const teacher = await prisma.Teachers.findFirst({
+                    where: {phone_number: currentUser.phone_number},
+                    include: {Subjects: true}
                 });
                 if (!teacher) return res.status(404).json({message: 'Teacher not found'});
 
@@ -92,7 +93,7 @@ Auth.post('/mobileAPI/otp-verify', otpTokenVerification, async (req, res) => {
                     last_name: teacher.last_name,
                     email: teacher.email,
                     phone_number: teacher.phone_number,
-                    subject_specialization: teacher.subject_specialization,
+                    subject_name: teacher.Subjects?.subject_name, // Fixed: use actual relation
                     hire_date: teacher.hire_date,
                     status: teacher.status,
                     school_id: teacher.school_id,
@@ -109,9 +110,9 @@ Auth.post('/mobileAPI/otp-verify', otpTokenVerification, async (req, res) => {
 
                 /* ---------- MAIN ADMIN ---------- */
             } else if (currentUser.role === 'admin') {
-                const admin = await prisma.admin.findFirst({
+                const admin = await prisma.Admin.findFirst({
                     where: {admin_phone_number: currentUser.phone_number},
-                    include: {school: true}
+                    include: {School: true}
                 });
                 if (!admin) return res.status(404).json({message: 'Admin not found'});
 
@@ -119,7 +120,7 @@ Auth.post('/mobileAPI/otp-verify', otpTokenVerification, async (req, res) => {
                     role: 'admin',
                     id: admin.admin_id,
                     school_id: admin.school_id,
-                    school_code: admin.school.school_code,
+                    school_code: admin.School.school_code,
                     name: admin.admin_name,
                     email: admin.admin_email
                 };
@@ -143,9 +144,9 @@ Auth.post('/api/admin-login', async (req, res) => {
     const {email, password} = req.body;
 
     try {
-        const admin = await prisma.admin.findFirst({
+        const admin = await prisma.Admin.findFirst({
             where: {admin_email: email},
-            include: {school: true}
+            include: {School: true}
         });
 
         if (!admin) return res.status(404).json({message: 'Email not found'});
@@ -156,7 +157,7 @@ Auth.post('/api/admin-login', async (req, res) => {
         const tokenData = {
             id: admin.admin_id,
             school_id: admin.school_id,
-            school_code: admin.school.school_code,
+            school_code: admin.School.school_code,
             role: 'admin'
         };
 

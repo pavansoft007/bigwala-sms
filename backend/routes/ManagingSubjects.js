@@ -1,91 +1,113 @@
 import express from "express";
+import { PrismaClient } from "@prisma/client";
 import AdminAuth from "../middleware/AdminAuth.js";
-import Subject from "../models/Subject.js";
 import completeLogin from "../middleware/completeLogin.js";
 
-const ManagingSubjects=express.Router();
+const prisma = new PrismaClient();
+const ManagingSubjects = express.Router();
 
-ManagingSubjects.post('/api/subject',AdminAuth('subject'),async (req,res)=>{
-    try{
-        const {subject_name,subject_code}=req.body;
-        const school_id=req['sessionData']['school_id'];
-        const newSubject=await Subject.create({
-            subject_code,
-            subject_name,
-            school_id
+ManagingSubjects.post('/api/subject', AdminAuth('subject'), async (req, res) => {
+    try {
+        const { subject_name, subject_code } = req.body;
+        const school_id = req.sessionData.school_id;
+
+        const newSubject = await prisma.subjects.create({
+            data: {
+                subject_code,
+                subject_name,
+                school_id
+            }
         });
-        res.status(200).json(newSubject)
-    }catch (e) {
-        console.error(' got error in saving the subject :',e );
-        res.status(500).json({ message:"error in saving the subject" });
+
+        res.status(200).json(newSubject);
+    } catch (e) {
+        console.error('Error in saving the subject:', e);
+        // Handle potential unique constraint violation
+        if (e.code === 'P2002') {
+            return res.status(409).json({ message: "A subject with this code or name already exists." });
+        }
+        res.status(500).json({ message: "Error while saving the subject" });
     }
 });
-ManagingSubjects.get("/api/subject",completeLogin,async (req,res)=>{
-   try{
-       const subjects = await Subject.findAll({
-           where: {
-               school_id: req['sessionData']['school_id']
-           },
-           attributes: ['subject_id', 'subject_name', 'subject_code'],
-       });
 
-       res.json(subjects);
-   } catch (e) {
-       console.error(' got error in getting the subject :',e );
-       res.status(500).json({ message:"error in getting the subject" });
-   }
-});
-ManagingSubjects.put('/api/subject/:id', AdminAuth('subject'), async (req, res) => {
+ManagingSubjects.get("/api/subject", completeLogin, async (req, res) => {
     try {
-        const subject_id = req.params.id;
-        const { subject_name, subject_code } = req.body;
-        const school_id = req['sessionData']['school_id'];
-
-
-        const existingSubject = await Subject.findOne({
-            where: { subject_id: subject_id, school_id }
+        const subjects = await prisma.subjects.findMany({
+            where: {
+                school_id: req.sessionData.school_id
+            },
+            select: {
+                subject_id: true,
+                subject_name: true,
+                subject_code: true
+            },
         });
 
-        if (!existingSubject) {
-            return res.status(404).json({ message: 'Subject not found' });
+        res.json(subjects);
+    } catch (e) {
+        console.error('Error in getting the subjects:', e);
+        res.status(500).json({ message: "Error while getting the subjects" });
+    }
+});
+
+ManagingSubjects.put('/api/subject/:id', AdminAuth('subject'), async (req, res) => {
+    try {
+        const subject_id = parseInt(req.params.id);
+        const { subject_name, subject_code } = req.body;
+        const school_id = req.sessionData.school_id;
+
+        const updateResult = await prisma.subjects.updateMany({
+            where: {
+                subject_id: subject_id,
+                school_id: school_id
+            },
+            data: {
+                subject_name,
+                subject_code,
+            },
+        });
+
+        if (updateResult.count === 0) {
+            return res.status(404).json({ message: 'Subject not found or you do not have permission to update it.' });
         }
 
+        // Fetch the updated subject to return it
+        const updatedSubject = await prisma.subjects.findUnique({
+            where: { subject_id }
+        });
 
-        existingSubject.subject_name = subject_name;
-        existingSubject.subject_code = subject_code;
-
-
-        await existingSubject.save();
-
-        res.json(existingSubject);
+        res.json(updatedSubject);
     } catch (e) {
         console.error('Error in updating the subject:', e);
+        if (e.code === 'P2002') {
+            return res.status(409).json({ message: "A subject with this code or name already exists." });
+        }
         res.status(500).json({ message: 'Error while updating the subject' });
     }
 });
+
+
 ManagingSubjects.delete('/api/subject/:id', AdminAuth('subject'), async (req, res) => {
     try {
-        const subject_id = req.params.id;
-        const school_id = req['sessionData']['school_id'];
+        const subject_id = parseInt(req.params.id);
+        const school_id = req.sessionData.school_id;
 
-        const existingSubject = await Subject.findOne({
-            where: { subject_id: subject_id, school_id }
+        const deleteResult = await prisma.subjects.deleteMany({
+            where: {
+                subject_id: subject_id,
+                school_id: school_id
+            }
         });
 
-        if (!existingSubject) {
-            return res.status(404).json({ message: 'Subject not found' });
+        if (deleteResult.count === 0) {
+            return res.status(404).json({ message: 'Subject not found or you do not have permission to delete it.' });
         }
 
-
-        await existingSubject.destroy();
-
-        res.json({ message: 'Subject deleted successfully' });
+        res.status(200).json({ message: 'Subject deleted successfully' });
     } catch (e) {
         console.error('Error in deleting the subject:', e);
         res.status(500).json({ message: 'Error while deleting the subject' });
     }
 });
-
-
 
 export default ManagingSubjects;

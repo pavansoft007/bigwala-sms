@@ -1,5 +1,4 @@
 import { PrismaClient } from '@prisma/client';
-
 const prisma = new PrismaClient();
 
 const modules = [
@@ -13,25 +12,25 @@ const modules = [
     { id: 8, module_name: 'message board' },
     { id: 9, module_name: 'exam timetable' },
     { id: 10, module_name: 'expenses' },
-    { id: 11, module_name: 'banner Images' }
+    { id: 11, module_name: 'banner Images' },
 ];
 
 async function main() {
-    console.log('Start seeding modules...');
+    console.log('🌱 Start seeding modules...');
 
     for (const module of modules) {
-        const result = await prisma.Modules.upsert({
+        const result = await prisma.modules.upsert({
             where: { id: module.id },
             update: {},
             create: {
                 id: module.id,
-                module_name: module.module_name
-            }
+                module_name: module.module_name,
+            },
         });
-        console.log(`Created/Updated module: ${result.module_name}`);
+        console.log(`✅ Created/Updated module: ${result.module_name}`);
     }
 
-    console.log('Seeding finished.');
+    console.log('✅ Seeding finished.');
 }
 
 main()

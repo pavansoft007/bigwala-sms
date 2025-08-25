@@ -26,7 +26,6 @@ Auth.post('/mobileAPI/otp-request', async (req, res) => {
     res.status(200).json({message: 'OTP sent successfully', token});
 });
 
-/* ─────────────────────────  OTP VERIFY  ───────────────────────── */
 Auth.post('/mobileAPI/otp-verify', otpTokenVerification, async (req, res) => {
     const {otp} = req.body;
     const tokenDetails = req.tokenDetails;
@@ -50,7 +49,7 @@ Auth.post('/mobileAPI/otp-verify', otpTokenVerification, async (req, res) => {
         const oneData = [];
 
         for (const currentUser of users) {
-            /* ---------- STUDENT ---------- */
+            console.log(currentUser.role);
             if (currentUser.role === 'student') {
                 const student = await prisma.Students.findFirst({
                     where: {phone_number: currentUser.phone_number},
@@ -80,7 +79,7 @@ Auth.post('/mobileAPI/otp-verify', otpTokenVerification, async (req, res) => {
                 oneData.push({role: 'student', token: studentToken, student: studentData});
 
                 /* ---------- TEACHER / ADMIN-TEACHER ---------- */
-            } else if (['teacher', 'admin-teacher'].includes(currentUser.role)) {
+            } else if (['teacher', 'admin_teacher'].includes(currentUser.role)) {
                 const teacher = await prisma.Teachers.findFirst({
                     where: {phone_number: currentUser.phone_number},
                     include: {Subjects: true}

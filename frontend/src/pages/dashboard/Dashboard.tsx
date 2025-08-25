@@ -358,7 +358,7 @@ const DashboardSideBar = () => {
                             to="/dashboard"
                             className="text-xl font-bold text-gray-900 hover:text-blue-600 transition-colors"
                         >
-                            ← {userInfo.school_name}
+                            {userInfo.school_name}
                         </Link>
 
                         <div className="flex items-center space-x-4">

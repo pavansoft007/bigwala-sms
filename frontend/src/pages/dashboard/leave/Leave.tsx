@@ -29,7 +29,7 @@ const LeaveOptionsPage: React.FC = () => {
             title: 'Student Leaves',
             icon: GraduationCap,
             color: 'blue',
-            route: '/leaves/students'
+            route: 'students'
         },
         {
             id: 'teacher',

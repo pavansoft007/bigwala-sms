@@ -31,6 +31,7 @@ import Attendance from "@/pages/dashboard/attendence/Attendance.tsx";
 import ExamDashboard from "@/pages/dashboard/exam/ExamDashboard.tsx";
 import Leave from "@/pages/dashboard/leave/Leave.tsx";
 import TeacherLeaves from "@/pages/dashboard/leave/TeacherLeaves.tsx";
+import StudentAbsentsPage from "@/pages/dashboard/attendence/StudentAbsentsPage.tsx";
 
 function App() {
 
@@ -47,6 +48,7 @@ function App() {
                         <Route path="leaves" >
                             <Route path="" element={<Leave />} />
                             <Route path="teachers" element={<TeacherLeaves />} />
+                            <Route path="students" element={<StudentAbsentsPage />} />
                         </Route>
                         <Route path="students">
                             <Route path="add" element={<AddStudent/>}/>

@@ -1,14 +1,13 @@
 import express from "express";
+import {PrismaClient} from "@prisma/client";
 import AdminAuth from "../middleware/AdminAuth.js";
 import generateTeacherID from "../services/generateTeacherID.js";
-import Teacher from "../models/Teacher.js";
-import User from "../models/User.js";
-import sequelize from "../config/database.js";
 import upload from "../services/multerService.js";
-import {Sequelize} from "sequelize";
 import Encrypt from "../services/Encrypt.js";
 
+const prisma = new PrismaClient();
 const ManagingTeacher = express.Router();
+
 
 ManagingTeacher.post("/api/teacher", AdminAuth("teacher management"),
     upload.fields([
@@ -23,45 +22,53 @@ ManagingTeacher.post("/api/teacher", AdminAuth("teacher management"),
                 phone_number,
                 hire_date,
                 status,
-                subject_id,
                 salary,
-                assignedClass,
                 teachers_qualification,
             } = req.body;
 
-            let {role_id} = req.body;
-            console.log(role_id);
+            // Ensure numeric and boolean values are correctly typed
+            const subject_id = req.body.subject_id ? parseInt(req.body.subject_id) : null;
+            const assignedClass = req.body.assignedClass ? parseInt(req.body.assignedClass) : null;
+            const role_id = req.body.role_id ? parseInt(req.body.role_id) : null;
+            const adminAccess = req.body.adminAccess === 'true' || req.body.adminAccess === true;
 
-            const adminAccess = req.body.adminAccess || false;
+            const newTeacherID = await generateTeacherID(req.sessionData.school_code);
+            const teacher_photo = req.files?.teacher_photo?.[0]?.path;
+            const teacher_qualification_certificate = req.files?.teacher_qualification_certificate?.[0]?.path;
 
-            const newTeacherID = await generateTeacherID(req["sessionData"]["school_code"]);
-            const teacher_photo = req.files["teacher_photo"] ? req.files["teacher_photo"][0].path : null;
-            const teacher_qualification_certificate = req.files["teacher_qualification_certificate"] ? req.files["teacher_qualification_certificate"][0].path : null;
+            // Use a transaction to create teacher and user atomically
+            const {newTeacher, newUser} = await prisma.$transaction(async (tx) => {
+                const createdTeacher = await tx.teachers.create({
+                    data: {
+                        first_name,
+                        last_name,
+                        TeacherID: newTeacherID,
+                        email,
+                        phone_number,
+                        subject_id,
+                        salary: salary ? parseInt(salary) : 0,
+                        hire_date: new Date(hire_date),
+                        assignedClass,
+                        school_id: req.sessionData.school_id,
+                        school_code: req.sessionData.school_code,
+                        adminAccess,
+                        status: status || "Active",
+                        teachers_qualification,
+                        teacher_photo,
+                        role_id,
+                        teacher_qualification_certificate,
+                    },
+                });
 
-            const newTeacher = await Teacher.create({
-                first_name,
-                last_name,
-                TeacherID: newTeacherID,
-                email,
-                phone_number,
-                subject_id,
-                salary,
-                hire_date,
-                assignedClass,
-                school_id: req["sessionData"]["school_id"],
-                school_code: req["sessionData"]["school_code"],
-                adminAccess,
-                status: status || "Active",
-                teachers_qualification,
-                teacher_photo,
-                role_id,
-                teacher_qualification_certificate,
-            });
+                const createdUser = await tx.user.create({
+                    data: {
+                        phone_number,
+                        role: adminAccess ? "admin_teacher" : "teacher",
+                        original_id: createdTeacher.teacher_id.toString(),
+                    },
+                });
 
-            const newUser = await User.create({
-                phone_number,
-                role: adminAccess ? "admin-teacher" : "teacher",
-                original_id: newTeacher.teacher_id,
+                return {newTeacher: createdTeacher, newUser: createdUser};
             });
 
             res.status(201).json({
@@ -70,304 +77,234 @@ ManagingTeacher.post("/api/teacher", AdminAuth("teacher management"),
                 user: newUser,
             });
         } catch (error) {
-            if (error.original && error.original.errno === 1062) {
-                res.status(403).json({
-                    message: error.errors[0].message,
-                });
-            } else {
-                res.status(500).json({
-                    message: "An error occurred while creating teacher and user",
-                    error: error.message,
-                });
+            console.error("Error creating teacher:", error);
+            if (error.code === 'P2002') { // Prisma unique constraint violation
+                return res.status(409).json({message: "A teacher with this email, phone number, or TeacherID already exists."});
             }
+            res.status(500).json({
+                message: "An error occurred while creating teacher and user",
+                error: error.message,
+            });
         }
     }
 );
 
-ManagingTeacher.put(
-    "/api/teacher/:id",
-    AdminAuth("teacher management"),
+
+ManagingTeacher.put("/api/teacher/:id", AdminAuth("teacher management"),
     upload.fields([
         {name: "teacher_photo", maxCount: 1},
         {name: "teacher_qualification_certificate", maxCount: 1},
     ]),
     async (req, res) => {
         try {
-            const teacherId = req.params.id;
-            const {
-                first_name,
-                last_name,
-                email,
-                phone_number,
-                hire_date,
-                status,
-                subject_id,
-                adminAccess,
-                teachers_qualification,
-                salary
-            } = req.body;
+            const teacherId = parseInt(req.params.id);
+            const {first_name, last_name, email, phone_number, hire_date, status, teachers_qualification} = req.body;
 
+            // Ensure numeric and boolean values are correctly typed
+            const subject_id = req.body.subject_id ? parseInt(req.body.subject_id) : undefined;
+            const salary = req.body.salary ? parseInt(req.body.salary) : undefined;
+            const adminAccess = req.body.adminAccess === 'true' || req.body.adminAccess === true;
 
-            const teacher = await Teacher.findByPk(teacherId);
+            const teacher = await prisma.teachers.findUnique({where: {teacher_id: teacherId}});
             if (!teacher) {
                 return res.status(404).json({message: "Teacher not found"});
             }
 
-            const teacher_photo = req.files["teacher_photo"] ? req.files["teacher_photo"][0].path : teacher.teacher_photo;
-            const teacher_qualification_certificate = req.files["teacher_qualification_certificate"] ? req.files["teacher_qualification_certificate"][0].path
-                : teacher.teacher_qualification_certificate;
+            const updatedData = await prisma.$transaction(async (tx) => {
+                const updatedTeacher = await tx.teachers.update({
+                    where: {teacher_id: teacherId},
+                    data: {
+                        first_name,
+                        last_name,
+                        email,
+                        phone_number,
+                        salary,
+                        subject_id,
+                        hire_date: hire_date ? new Date(hire_date) : undefined,
+                        status: status || "Active",
+                        adminAccess,
+                        teachers_qualification,
+                        teacher_photo: req.files?.teacher_photo?.[0]?.path || teacher.teacher_photo,
+                        teacher_qualification_certificate: req.files?.teacher_qualification_certificate?.[0]?.path || teacher.teacher_qualification_certificate,
+                    },
+                });
 
-            await teacher.update({
-                first_name,
-                last_name,
-                email,
-                phone_number,
-                salary,
-                subject_id,
-                hire_date: hire_date,
-                status: status || "Active",
-                adminAccess,
-                teachers_qualification,
-                teacher_photo,
-                teacher_qualification_certificate,
+                await tx.user.updateMany({
+                    where: {original_id: teacherId.toString()},
+                    data: {
+                        role: adminAccess ? "admin_teacher" : "teacher",
+                        phone_number: updatedTeacher.phone_number,
+                    },
+                });
+                return updatedTeacher;
             });
 
-            await User.update(
-                {role: adminAccess ? "admin-teacher" : "teacher", phone_number: teacher.phone_number},
-                {where: {original_id: teacherId}}
-            );
-
-            if (teacher["teacher_photo"]) {
-                teacher["teacher_photo"] = Encrypt(teacher["teacher_photo"] + (req['ip'] || '0.0.0.0'));
+            // Encrypt file paths for response
+            if (updatedData.teacher_photo) {
+                updatedData.teacher_photo = Encrypt(updatedData.teacher_photo + (req['ip'] || '0.0.0.0'));
             }
-            if (teacher["teacher_qualification_certificate"]) {
-                teacher["teacher_qualification_certificate"] = Encrypt(teacher["teacher_qualification_certificate"] + (req['ip'] || '0.0.0.0'));
+            if (updatedData.teacher_qualification_certificate) {
+                updatedData.teacher_qualification_certificate = Encrypt(updatedData.teacher_qualification_certificate + (req['ip'] || '0.0.0.0'));
             }
 
-            res.status(200).json({
-                message: "Teacher updated successfully",
-                teacher,
-            });
+            res.status(200).json({message: "Teacher updated successfully", teacher: updatedData});
         } catch (error) {
             console.error("Error updating teacher:", error);
-            res.status(500).json({
-                message: "An error occurred while updating the teacher",
-                error: error.message,
-            });
+            res.status(500).json({message: "An error occurred while updating the teacher", error: error.message});
         }
     }
 );
+
 
 ManagingTeacher.post("/api/search/teacher", AdminAuth("teacher management"), async (req, res) => {
-        const limit = parseInt(req.body.limit) || 10;
-        const page = parseInt(req.body.page) || 1;
+    try {
+        const {limit = 10, page = 1, ...body} = req.body;
         const offset = (page - 1) * limit;
 
-        const where = [];
-        const body = req.body;
+        const where = {school_id: req.sessionData.school_id};
 
-        if (body.email) {
-            where.push(`teachers.email = '${body.email}'`);
-        }
+        if (body.email) where.email = body.email;
+        if (body.phone_number) where.phone_number = body.phone_number;
+        if (body.TeacherID) where.TeacherID = body.TeacherID;
+        if (body.status) where.status = body.status;
+        if (body.assignedClass) where.assignedClass = parseInt(body.assignedClass);
+        if (body.subject_id) where.subject_id = parseInt(body.subject_id);
+
         if (body.name) {
-            where.push(
-                `(teachers.first_name LIKE '${body.name}%' OR teachers.last_name LIKE '${body.name}%')`
-            );
-        }
-        if (body.phone_number) {
-            where.push(`teachers.phone_number = '${body.phone_number}'`);
-        }
-        if (body.TeacherID) {
-            where.push(`teachers.TeacherID = '${body.TeacherID}'`);
-        }
-        if (body.subject_name) {
-            where.push(`s.subject_name  LIKE  '${body.subject_name}%'`);
+            where.OR = [
+                {first_name: {startsWith: body.name}},
+                {last_name: {startsWith: body.name}},
+            ];
         }
         if (body.teachers_qualification) {
-            where.push(
-                `teachers.teachers_qualification LIKE '${body.teachers_qualification}%'`
-            );
+            where.teachers_qualification = {startsWith: body.teachers_qualification};
+        }
+        if (body.subject_name) {
+            where.Subjects = {subject_name: {startsWith: body.subject_name}};
         }
         if (body.standard) {
-            if (body.section) {
-                where.push(`c.section = '${body.section}'`);
+            where.Classrooms = {
+                standard: body.standard,
+                ...(body.section && {section: body.section}),
+            };
+        }
+
+        const [teachers, totalCount] = await prisma.$transaction([
+            prisma.teachers.findMany({
+                where,
+                include: {Subjects: true, Classrooms: true},
+                take: limit,
+                skip: offset,
+            }),
+            prisma.teachers.count({where}),
+        ]);
+
+        // Encrypt file paths for response
+        teachers.forEach(teacher => {
+            if (teacher.teacher_photo) {
+                teacher.teacher_photo = Encrypt(teacher.teacher_photo + (req['ip'] || '0.0.0.0'));
             }
-            if (body.standard) {
-                where.push(`c.standard = '${body.standard}'`);
+            if (teacher.teacher_qualification_certificate) {
+                teacher.teacher_qualification_certificate = Encrypt(teacher.teacher_qualification_certificate + (req['ip'] || '0.0.0.0'));
             }
-        } else if (body.assignedClass) {
-            where.push(`teachers.assignedClass = '${body.assignedClass}'`);
-        }
-        if (body.subject_id) {
-            where.push(`s.subject_id = '${body.subject_id}'`);
-        }
-        if (body.status) {
-            where.push(`teachers.status = '${body.status}'`);
-        }
+        });
 
-        where.push(`teachers.school_id = '${req.sessionData.school_id}'`);
-
-        let baseQuery = `
-            SELECT teachers.*, classrooms.standard, classrooms.section
-            FROM teachers
-                     left JOIN subjects s ON s.subject_id = teachers.subject_id
-                     LEFT JOIN classrooms ON classrooms.classroom_id = teachers.assignedClass`;
-
-        let countQuery = `
-            SELECT COUNT(*) as totalCount
-            FROM teachers
-                     left JOIN subjects s ON s.subject_id = teachers.subject_id
-                     LEFT JOIN classrooms ON classrooms.classroom_id = teachers.assignedClass`;
-
-        if (where.length > 0) {
-            const condition = `WHERE ${where.join(" AND ")}`;
-            baseQuery += ` ${condition}`;
-            countQuery += ` ${condition}`;
-        }
-
-        baseQuery += ` LIMIT ${limit} OFFSET ${offset}`;
-
-        try {
-            const [teachers] = await sequelize.query(baseQuery);
-            const [countResult] = await sequelize.query(countQuery);
-
-            const totalCount = countResult[0]?.totalCount || 0;
-
-            const totalPages = Math.ceil(totalCount / limit);
-
-            for (let i = 0; i < teachers.length; i++) {
-                if (teachers[i]["teacher_photo"]) {
-                    teachers[i]["teacher_photo"] = Encrypt(teachers[i]["teacher_photo"] + (req['ip'] || '0.0.0.0'));
-                }
-                if (teachers[i]["teacher_qualification_certificate"]) {
-                    teachers[i]["teacher_qualification_certificate"] = Encrypt(teachers[i]["teacher_qualification_certificate"] + (req['ip'] || '0.0.0.0'));
-                }
-            }
-
-            res.json({
-                pagination: {
-                    totalCount,
-                    totalPages,
-                    currentPage: page,
-                    limit,
-                },
-                teachers,
-            });
-        } catch (e) {
-            console.error("Error searching teacher:", e);
-            res.status(500).json({
-                message: "An error occurred while searching for the teacher",
-            });
-        }
+        res.json({
+            teachers,
+            pagination: {
+                totalCount,
+                totalPages: Math.ceil(totalCount / limit),
+                currentPage: page,
+                limit,
+            },
+        });
+    } catch (e) {
+        console.error("Error searching teacher:", e);
+        res.status(500).json({message: "An error occurred while searching for the teacher"});
     }
-);
+});
 
 ManagingTeacher.get("/api/teacher/:id", AdminAuth("teacher management"), async (req, res) => {
-        const teacherID = req.params.id;
-        const school_id = req["sessionData"]["school_id"];
-        try {
-            const [teacherDetails] = await sequelize.query(
-                "SELECT *,s.subject_name,s.subject_name,c.standard,c.section FROM teachers LEFT JOIN subjects s ON s.subject_id=teachers.subject_id LEFT JOIN classrooms c ON c.classroom_id=teachers.assignedClass where teachers.school_id=? and  teacher_id=?",
-                {
-                    replacements: [school_id, teacherID],
-                    type: Sequelize.QueryTypes.SELECT
-                }
-            );
+    try {
+        const teacherID = parseInt(req.params.id);
+        const school_id = req.sessionData.school_id;
 
-            if (teacherDetails) {
-                teacherDetails["adminAccess"] = teacherDetails["adminAccess"] === "0";
-                if (teacherDetails["teacher_photo"]) {
-                    teacherDetails["teacher_photo"] = Encrypt(teacherDetails["teacher_photo"] + (req['ip'] || '0.0.0.0'));
-                }
-                if (teacherDetails["teacher_qualification_certificate"]) {
-                    teacherDetails["teacher_qualification_certificate"] = Encrypt(teacherDetails["teacher_qualification_certificate"] + (req['ip'] || '0.0.0.0'));
-                }
+        const teacherDetails = await prisma.teachers.findFirst({
+            where: {teacher_id: teacherID, school_id: school_id},
+            include: {Subjects: true, Classrooms: true},
+        });
 
-                res.json(teacherDetails);
-            } else {
-                res.status(404).json({message: "teacher not found"});
+        if (teacherDetails) {
+            if (teacherDetails.teacher_photo) {
+                teacherDetails.teacher_photo = Encrypt(teacherDetails.teacher_photo + (req['ip'] || '0.0.0.0'));
             }
-        } catch (e) {
-            console.error("Error deleting teacher:", e);
-            res.status(500).json({
-                message: "An error occurred while getting the teacher",
-            });
+            if (teacherDetails.teacher_qualification_certificate) {
+                teacherDetails.teacher_qualification_certificate = Encrypt(teacherDetails.teacher_qualification_certificate + (req['ip'] || '0.0.0.0'));
+            }
+            res.json(teacherDetails);
+        } else {
+            res.status(404).json({message: "Teacher not found"});
         }
+    } catch (e) {
+        console.error("Error getting teacher:", e);
+        res.status(500).json({message: "An error occurred while getting the teacher"});
     }
-);
-
+});
 
 ManagingTeacher.get("/api/teacher", AdminAuth("teacher management"), async (req, res) => {
-        const school_id = req["sessionData"]["school_id"];
-        try {
-            let [teacherDetails] = await sequelize.query(
-                `SELECT teachers.teacher_id,
-                        teachers.TeacherID,
-                        teachers.first_name,
-                        teachers.last_name,
-                        teachers.status,
-                        teachers.adminAccess,
-                        teachers.email,
-                        teachers.phone_number,
-                        teachers.hire_date,
-                        teachers.teachers_qualification,
-                        teachers.teacher_photo,
-                        teachers.teacher_qualification_certificate,
-                        s.subject_name,
-                        s.subject_name,
-                        c.standard,
-                        c.section
-                 FROM teachers
-                          left join subjects s ON s.subject_id = teachers.subject_id
-                          left join classrooms c ON c.classroom_id = teachers.assignedClass
-                 where teachers.school_id = ${school_id}`
-            );
-            if (teacherDetails) {
-                teacherDetails = teacherDetails.map((item) => {
-                    item["adminAccess"] = item["adminAccess"] === 0;
+    try {
+        const school_id = req.sessionData.school_id;
+        const teacherDetails = await prisma.teachers.findMany({
+            where: {school_id: school_id},
+            include: {Subjects: true, Classrooms: true},
+        });
 
-                    return item;
-                });
-                res.json(teacherDetails);
-            } else {
-                res.status(404).json({message: "teacher not found"});
-            }
-        } catch (e) {
-            console.error("Error getting teachers:", e);
-            res.status(500).json({
-                message: "An error occurred while getting the teacher",
-            });
-        }
+        res.json(teacherDetails);
+    } catch (e) {
+        console.error("Error getting teachers:", e);
+        res.status(500).json({message: "An error occurred while getting the teachers"});
     }
-);
+});
 
 ManagingTeacher.delete("/api/teacher/:id", AdminAuth("teacher management"), async (req, res) => {
-        try {
-            const teacherId = req.params.id;
+    try {
+        const teacherId = parseInt(req.params.id);
 
-            const teacher = await Teacher.findByPk(teacherId);
+        await prisma.$transaction(async (tx) => {
+            const teacher = await tx.teachers.findUnique({
+                where: {teacher_id: teacherId},
+            });
+
             if (!teacher) {
-                return res.status(404).json({message: "Teacher not found"});
+                throw new Error("Teacher not found");
             }
 
-            await User.destroy({
+            // Determine role from the fetched teacher data
+            const role = teacher.adminAccess ? "admin_teacher" : "teacher";
+
+            await tx.user.deleteMany({
                 where: {
-                    original_id: teacherId,
-                    role: adminAccess ? "admin-teacher" : "teacher",
+                    original_id: teacherId.toString(),
+                    role: role,
                 },
             });
 
-            await teacher.destroy();
-
-            res.status(200).json({message: "Teacher and associated user deleted successfully"});
-        } catch (error) {
-            console.error("Error deleting teacher:", error);
-            res.status(500).json({
-                message: "An error occurred while deleting the teacher",
-                error: error.message,
+            await tx.teachers.delete({
+                where: {teacher_id: teacherId},
             });
+        });
+
+        res.status(200).json({message: "Teacher and associated user deleted successfully"});
+    } catch (error) {
+        console.error("Error deleting teacher:", error);
+        if (error.message === "Teacher not found") {
+            return res.status(404).json({message: "Teacher not found"});
         }
+        res.status(500).json({
+            message: "An error occurred while deleting the teacher",
+            error: error.message,
+        });
     }
-);
+});
 
 export default ManagingTeacher;

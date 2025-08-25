@@ -4,7 +4,7 @@
   "main": "index.js",
   "type": "module",
   "prisma": {
-    "seed": "node seeds/seed.js"
+    "seed": "node seeds/moduleSeed.js"
   },
   "scripts": {
     "db:seed": "prisma db seed",

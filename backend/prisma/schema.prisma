@@ -121,7 +121,7 @@ model Classrooms {
   standard      String          @db.VarChar(50)
   section       String          @db.VarChar(10)
   school_id     Int
-  addedDate     DateTime        @db.DateTime(0)
+  addedDate     DateTime        @default(now()) @db.DateTime(0)
   School        School          @relation(fields: [school_id], references: [school_id], onDelete: NoAction)
   ExamMarks     ExamMarks[]
   Exams         Exams[]
@@ -162,8 +162,8 @@ model Exams {
   exam_name       String       @db.VarChar(225)
   class_id        Int
   school_id       Int
-  addedOn         DateTime     @db.DateTime(0)
-  start_date      DateTime     @db.DateTime(0)
+  addedOn         DateTime     @default(now()) @db.DateTime(0)
+  start_date      DateTime     @default(now()) @db.DateTime(0)
   timetable_photo String       @db.VarChar(200)
   end_date        DateTime     @db.DateTime(0)
   status          exams_status
@@ -181,8 +181,8 @@ model FeeCategories {
   school_id             Int
   category_name         String                  @db.VarChar(225)
   description           String?                 @db.Text
-  created_at            DateTime?               @db.DateTime(0)
-  updated_at            DateTime?               @db.DateTime(0)
+  created_at            DateTime?               @default(now()) @db.DateTime(0)
+  updated_at            DateTime?               @default(now()) @db.DateTime(0)
   StudentPaymentPending StudentPaymentPending[]
   School                School                  @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "fee_categories_ibfk_1")
   StudentFees           StudentFees[]
@@ -197,7 +197,7 @@ model Gallery {
   filename   String   @db.VarChar(255)
   event_name String   @db.VarChar(20)
   school_id  Int
-  uploadedOn DateTime @db.DateTime(0)
+  uploadedOn DateTime @default(now()) @db.DateTime(0)
   School     School   @relation(fields: [school_id], references: [school_id], onDelete: Cascade, map: "gallery_ibfk_1")
 
   @@index([school_id], map: "school_id")
@@ -228,8 +228,8 @@ model InterestedSchools {
   status       interested_schools_status
   admin_name   String                    @db.VarChar(225)
   phone_number String                    @db.VarChar(13)
-  created_at   DateTime                  @db.DateTime(0)
-  updated_at   DateTime                  @db.DateTime(0)
+  created_at   DateTime                  @default(now()) @db.DateTime(0)
+  updated_at   DateTime                  @updatedAt
 
   @@map("interested_schools")
 }
@@ -244,7 +244,8 @@ model MessageBoards {
   school_id       Int
   added_by        messageBoards_added_by
   added_member_id Int?
-  added_on        DateTime                   @db.DateTime(0)
+  added_on        DateTime                   @default(now()) @db.DateTime(0)
+  updated_on      DateTime                   @updatedAt
   type            messageBoards_type
   Students        Students?                  @relation(fields: [student_id], references: [student_id], onDelete: Cascade, map: "messageBoards_ibfk_1")
   Classrooms      Classrooms?                @relation(fields: [classroom_id], references: [classroom_id], onDelete: Cascade, map: "messageBoards_ibfk_2")
@@ -318,8 +319,8 @@ model StudentFees {
   created_by     String        @db.VarChar(255)
   teacher_id     Int?
   admin_id       Int?
-  created_at     DateTime?     @db.DateTime(0)
-  updated_at     DateTime?     @db.DateTime(0)
+  created_at     DateTime?     @default(now()) @db.DateTime(0)
+  updated_at     DateTime?     @updatedAt @db.DateTime(0)
   School         School        @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "student_fees_ibfk_1")
   FeeCategories  FeeCategories @relation(fields: [category_id], references: [category_id], onDelete: NoAction, onUpdate: NoAction, map: "student_fees_ibfk_2")
   Students       Students      @relation(fields: [student_id], references: [student_id], onDelete: NoAction, onUpdate: NoAction, map: "student_fees_ibfk_3")
@@ -381,8 +382,8 @@ model StudentsPayments {
   payment_mode  students_payments_payment_mode
   collected_by  Int?
   payment_date  DateTime?                      @db.DateTime(0)
-  created_at    DateTime                       @db.DateTime(0)
-  updated_at    DateTime                       @db.DateTime(0)
+  created_at    DateTime                       @default(now()) @db.DateTime(0)
+  updated_at    DateTime                       @updatedAt @db.DateTime(0)
   School        School                         @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "students_payments_ibfk_1")
   FeeCategories FeeCategories                  @relation(fields: [category_id], references: [category_id], onDelete: NoAction, onUpdate: NoAction, map: "students_payments_ibfk_2")
   Students      Students                       @relation(fields: [student_id], references: [student_id], onDelete: NoAction, onUpdate: NoAction, map: "students_payments_ibfk_3")
@@ -416,7 +417,7 @@ model TeacherAttendance {
   attendDate    DateTime                 @db.Date
   attendTime    DateTime                 @db.Time(0)
   status        teacherAttendance_status @default(pending)
-  submitted_at  DateTime                 @db.DateTime(0)
+  submitted_at  DateTime                 @default(now()) @db.DateTime(0)
   Teachers      Teachers                 @relation(fields: [teacher_id], references: [teacher_id], onDelete: NoAction, onUpdate: NoAction, map: "teacherAttendance_ibfk_1")
   School        School                   @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "teacherAttendance_ibfk_2")
 

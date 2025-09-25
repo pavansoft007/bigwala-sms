@@ -1,241 +1,210 @@
 import express from "express";
-import Classroom from "../models/Classroom.js";
-import Student from "../models/Student.js";
+import { PrismaClient } from "@prisma/client";
 import semiAdminAuth from "../middleware/semiAdminAuth.js";
-import Teacher from "../models/Teacher.js";
 import adminAuth from "../middleware/AdminAuth.js";
 import teacherAuth from "../middleware/teacherAuth.js";
 import completeLogin from "../middleware/completeLogin.js";
 
-const ManagingClassrooms=express.Router();
+const ManagingClassrooms = express.Router();
+const prisma = new PrismaClient();
 
-ManagingClassrooms.post('/mobileAPI/classroom',adminAuth('classroom'),async (req, res)=>{
-    const body=req.body;
-    const existingClassroom=await Classroom.findOne({
-        where:{
-            standard:body.standard,
-            section:body.section,
-            school_id:req['sessionData']['school_id']
-        }
-    })
-
-    if (existingClassroom){
-        return res.status(409).json({message:"classroom already exists"});
-    }
-
-    try{
-        const newClassroom=await Classroom.create({
-            standard:body.standard,
-            section:body.section,
-            school_id:req['sessionData']['school_id']
-        });
-        res.status(201).json({
-            message: 'classroom created successfully',
-            classroomInfo:newClassroom
-        });
-    }catch (error) {
-        console.error('Error fetching students:', error);
-        res.status(500).json({
-            message: 'An error occurred while fetching students',
-            error: error.message
-        });
-    }
-});
-
-ManagingClassrooms.get('/mobileAPI/classroom',teacherAuth('classroom'),async (req, res)=>{
-    const school_id=req.sessionData['school_id'];
-    try{
-        const classroomDetails=await Classroom.findAll({
-            where:{
-                school_id
-            },
-            attributes:['classroom_id','standard','section']
-        })
-        res.send(classroomDetails);
-    } catch (error) {
-        console.error('Error fetching students:', error);
-        res.status(500).json({
-            message: 'An error occurred while fetching students',
-            error: error.message
-        });
-    }
-});
-
-ManagingClassrooms.get('/mobileAPI/standard',completeLogin,async (req,res)=>{
-    const school_id=req.sessionData['school_id'];
-    try{
-        const classroomDetails = await Classroom.findAll({
-            where: {
-                school_id
-            },
-            attributes: ['standard'],
-            group: ['standard']
-        });
-        const classStandard=classroomDetails.map((item)=>{
-            return item.standard
-        });
-        res.send(classStandard);
-    } catch (error) {
-        console.error('Error fetching students:', error);
-        res.status(500).json({
-            message: 'An error occurred while fetching students',
-            error: error.message
-        });
-    }
-});
-
-ManagingClassrooms.get('/mobileAPI/section',completeLogin,async (req,res)=>{
-    const standard=req.query.standard;
-    const school_id=req['sessionData']['school_id'];
-   try{
-       const classroomDetails = await Classroom.findAll({
-           where: {
-               school_id,standard
-           },
-           attributes: ['section'],
-       });
-       const classStandard=classroomDetails.map((item)=>{
-           return item.section
-       });
-       res.json(classStandard);
-   } catch (error) {
-       console.error('Error fetching students:', error);
-       res.status(500).json({
-           message: 'An error occurred while fetching students',
-           error: error.message
-       });
-   }
-});
-
-ManagingClassrooms.get('/mobileAPI/getStudent/:classroomID',teacherAuth('classroom'),async (req, res)=>{
-    const classroomID=req.params.classroomID;
-    try{
-        const studentINFO=await Student.findAll({
-            where:{
-                assignedClassroom:classroomID
-            }
-        });
-        res.status(200).json(studentINFO)
-    } catch (error) {
-        console.error('Error fetching students:', error);
-        res.status(500).json({
-            message: 'An error occurred while fetching students',
-            error: error.message
-        });
-    }
-});
-
-ManagingClassrooms.post('/mobileAPI/student-assign-classroom',semiAdminAuth('classroom'), async  (req, res)=>{
-    const {standard,section,studentID}=req.body;
-    const schoolID=req['sessionData']['school_id'];
-    try{
-        const classDetails=await Classroom.findOne({
-            where:{
-                standard,section,school_id:schoolID
-            }
-        })
-        if(classDetails){
-            const updateStudent=await Student.update(
-                {assignedClassroom:classDetails.classroom_id},
-                {
-                    where:{
-                        student_id: studentID
-                    }
-                }
-            )
-            if (updateStudent[0] === 1) {
-                res.status(200).json({ message: 'Student updated successfully' });
-            } else {
-                res.status(404).json({ message: 'Student not found or no changes made' });
-            }
-        }else{
-            res.status(404).json({message:'section is not found in your school'});
-        }
-    }catch (e) {
-        console.error('Error fetching students:', e);
-        res.status(500).json({
-            message: 'An error occurred while fetching students',
-            error: e.message
-        });
-    }
-});
-ManagingClassrooms.post('/mobileAPI/teacher-assign-classroom',semiAdminAuth('classroom'), async  (req, res)=>{
-    const {standard,section,teacher_id}=req.body;
-    const schoolID=req['sessionData']['school_id'];
-    try{
-        const classDetails=await Classroom.findOne({
-            where:{
-                standard,section,school_id:schoolID
-            }
-        })
-        if(classDetails){
-            const updateTeacher=await Teacher.update(
-                {assignedClass:classDetails.classroom_id},
-                {
-                    where:{
-                        teacher_id: teacher_id
-                    }
-                }
-            )
-            if (updateTeacher[0] === 1) {
-                res.status(200).json({ message: 'teacher updated successfully' });
-            } else {
-                res.status(404).json({ message: 'teacher not found or no changes made' });
-            }
-        }else{
-            res.status(404).json({message:'section is not found in your school'});
-        }
-    }catch (e) {
-        console.error('Error fetching students:', e);
-        if(e.original.errno === 1062 ){
-            return res.status(409).json({ message:"already an teacher was assigned to that class " });
-        }
-        res.status(500).json({
-            message: 'An error occurred while fetching students',
-            error: e.message
-        });
-    }
-});
-
-//@todo need to add the delete route
-ManagingClassrooms.delete('/mobileAPI/classroom/:classroomID', adminAuth('classroom'), async (req, res) => {
-    const classroomID = req.params.classroomID;
-    const schoolID = req.sessionData['school_id'];
+// Create Classroom
+ManagingClassrooms.post('/mobileAPI/classroom', adminAuth('classroom'), async (req, res) => {
+    const { standard, section } = req.body;
+    const school_id = req.sessionData.school_id;
 
     try {
-        const studentsInClassroom = await Student.findAll({
+        const existingClassroom = await prisma.classrooms.findFirst({
+            where: { standard:standard.toString(), section : section.toString(), school_id }
+        });
+
+        if (existingClassroom) {
+            return res.status(409).json({ message: "Classroom already exists" });
+        }
+
+        const newClassroom = await prisma.classrooms.create({
+            data: { standard:standard.toString(), section : section.toString(), school_id }
+        });
+
+        res.status(201).json({
+            message: 'Classroom created successfully',
+            classroomInfo: newClassroom
+        });
+    } catch (error) {
+        console.error('Error creating classroom:', error);
+        res.status(500).json({ message: 'An error occurred', error: error.message });
+    }
+});
+
+// Get All Classrooms
+ManagingClassrooms.get('/mobileAPI/classroom', teacherAuth('classroom'), async (req, res) => {
+    const school_id = req.sessionData.school_id;
+
+    try {
+        const classroomDetails = await prisma.classrooms.findMany({
+            where: { school_id },
+            select: { classroom_id: true, standard: true, section: true }
+        });
+
+        res.json(classroomDetails);
+    } catch (error) {
+        console.error('Error fetching classrooms:', error);
+        res.status(500).json({ message: 'An error occurred', error: error.message });
+    }
+});
+
+// Get All Standards
+ManagingClassrooms.get('/mobileAPI/standard', completeLogin, async (req, res) => {
+    const school_id = req.sessionData.school_id;
+
+    try {
+        const classroomDetails = await prisma.classrooms.findMany({
+            where: { school_id },
+            select: { standard: true },
+            distinct: ['standard']
+        });
+
+        const classStandard = classroomDetails.map(item => item.standard);
+        res.json(classStandard);
+    } catch (error) {
+        console.error('Error fetching standards:', error);
+        res.status(500).json({ message: 'An error occurred', error: error.message });
+    }
+});
+
+// Get Sections by Standard
+ManagingClassrooms.get('/mobileAPI/section', completeLogin, async (req, res) => {
+    const school_id = req.sessionData.school_id;
+    const { standard } = req.query;
+
+    try {
+        const classroomDetails = await prisma.classrooms.findMany({
+            where: { school_id, standard },
+            select: { section: true }
+        });
+
+        const sections = classroomDetails.map(item => item.section);
+        res.json(sections);
+    } catch (error) {
+        console.error('Error fetching sections:', error);
+        res.status(500).json({ message: 'An error occurred', error: error.message });
+    }
+});
+
+// Get Students by Classroom
+ManagingClassrooms.get('/mobileAPI/getStudent/:classroomID', teacherAuth('classroom'), async (req, res) => {
+    const classroomID = parseInt(req.params.classroomID);
+
+    try {
+        const studentINFO = await prisma.students.findMany({
+            where: { assignedClassroom: classroomID }
+        });
+
+        res.status(200).json(studentINFO);
+    } catch (error) {
+        console.error('Error fetching students:', error);
+        res.status(500).json({ message: 'An error occurred', error: error.message });
+    }
+});
+
+// Assign Student to Classroom
+ManagingClassrooms.post('/mobileAPI/student-assign-classroom', semiAdminAuth('classroom'), async (req, res) => {
+    const { standard, section, studentID } = req.body;
+    const school_id = req.sessionData.school_id;
+
+    try {
+        const classDetails = await prisma.classrooms.findFirst({
+            where: { standard, section, school_id }
+        });
+
+        if (!classDetails) {
+            return res.status(404).json({ message: 'Section not found in your school' });
+        }
+
+        const updateStudent = await prisma.students.updateMany({
+            where: { student_id: studentID },
+            data: { assignedClassroom: classDetails.classroom_id }
+        });
+
+        if (updateStudent.count === 1) {
+            res.status(200).json({ message: 'Student updated successfully' });
+        } else {
+            res.status(404).json({ message: 'Student not found or no changes made' });
+        }
+    } catch (error) {
+        console.error('Error assigning student:', error);
+        res.status(500).json({ message: 'An error occurred', error: error.message });
+    }
+});
+
+// Assign Teacher to Classroom
+ManagingClassrooms.post('/mobileAPI/teacher-assign-classroom', semiAdminAuth('classroom'), async (req, res) => {
+    const { standard, section, teacher_id } = req.body;
+    const school_id = req.sessionData.school_id;
+
+    try {
+        const classDetails = await prisma.classrooms.findFirst({
+            where: { standard, section, school_id }
+        });
+
+        if (!classDetails) {
+            return res.status(404).json({ message: 'Section not found in your school' });
+        }
+
+        const updateTeacher = await prisma.teachers.updateMany({
+            where: { teacher_id },
+            data: { assignedClass: classDetails.classroom_id }
+        });
+
+        if (updateTeacher.count === 1) {
+            res.status(200).json({ message: 'Teacher updated successfully' });
+        } else {
+            res.status(404).json({ message: 'Teacher not found or no changes made' });
+        }
+    } catch (error) {
+        console.error('Error assigning teacher:', error);
+        if (error.code === 'P2002') {
+            return res.status(409).json({ message: "A teacher is already assigned to that class" });
+        }
+        res.status(500).json({ message: 'An error occurred', error: error.message });
+    }
+});
+
+// Delete Classroom
+ManagingClassrooms.delete('/mobileAPI/classroom/:classroomID', adminAuth('classroom'), async (req, res) => {
+    const classroomID = parseInt(req.params.classroomID);
+    const school_id = req.sessionData.school_id;
+
+    try {
+        const studentsInClassroom = await prisma.students.findMany({
             where: { assignedClassroom: classroomID }
         });
 
         if (studentsInClassroom.length > 0) {
-            return res.status(400).json({ message: 'Cannot delete classroom. There are students assigned to this classroom.' });
+            return res.status(400).json({ message: 'Cannot delete classroom. There are students assigned.' });
         }
 
-        const teachersInClassroom = await Teacher.findAll({
+        const teachersInClassroom = await prisma.teachers.findMany({
             where: { assignedClass: classroomID }
         });
 
         if (teachersInClassroom.length > 0) {
-            return res.status(400).json({ message: 'Cannot delete classroom. There are teachers assigned to this classroom.' });
+            return res.status(400).json({ message: 'Cannot delete classroom. There are teachers assigned.' });
         }
 
-        const deletedClassroom = await Classroom.destroy({
-            where: { classroom_id: classroomID, school_id: schoolID }
+        const deletedClassroom = await prisma.classrooms.deleteMany({
+            where: { classroom_id: classroomID, school_id }
         });
 
-        if (deletedClassroom === 1) {
+        if (deletedClassroom.count === 1) {
             return res.status(200).json({ message: 'Classroom deleted successfully' });
         } else {
             return res.status(404).json({ message: 'Classroom not found or already deleted' });
         }
     } catch (error) {
         console.error('Error deleting classroom:', error);
-        res.status(500).json({
-            message: 'An error occurred while deleting the classroom',
-            error: error.message
-        });
+        res.status(500).json({ message: 'An error occurred', error: error.message });
     }
 });
-
 
 export default ManagingClassrooms;

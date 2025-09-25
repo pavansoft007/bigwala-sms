@@ -7,6 +7,21 @@ CREATE TABLE `SequelizeMeta` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
+CREATE TABLE `school` (
+    `school_id` INTEGER NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(100) NOT NULL,
+    `address` VARCHAR(255) NOT NULL,
+    `phone_number` VARCHAR(15) NULL,
+    `email` VARCHAR(100) NULL,
+    `school_code` VARCHAR(100) NOT NULL,
+    `created_at` DATETIME(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0),
+    `updated_at` DATETIME(0) NOT NULL,
+
+    UNIQUE INDEX `school_school_code_key`(`school_code`),
+    PRIMARY KEY (`school_id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
 CREATE TABLE `Student_payment_pending` (
     `pending_payment_id` INTEGER NOT NULL AUTO_INCREMENT,
     `amount` INTEGER NOT NULL,
@@ -47,6 +62,7 @@ CREATE TABLE `admins` (
 
     INDEX `role_id`(`role_id`),
     INDEX `school_id`(`school_id`),
+    INDEX `admin_email`(`admin_email`),
     PRIMARY KEY (`admin_id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -202,30 +218,18 @@ CREATE TABLE `roles` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `school_financials` (
+CREATE TABLE `schoolFinancials` (
     `school_financial_id` INTEGER NOT NULL AUTO_INCREMENT,
     `year` VARCHAR(255) NOT NULL,
     `year_id` INTEGER NOT NULL,
     `school_id` INTEGER NOT NULL,
     `current_balance` INTEGER NOT NULL,
-    `created_at` DATETIME(0) NOT NULL,
+    `created_at` DATETIME(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0),
     `updated_at` DATETIME(0) NOT NULL,
 
     INDEX `school_id`(`school_id`),
     INDEX `year_id`(`year_id`),
     PRIMARY KEY (`school_financial_id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `schools` (
-    `school_id` INTEGER NOT NULL AUTO_INCREMENT,
-    `name` VARCHAR(100) NOT NULL,
-    `address` VARCHAR(255) NOT NULL,
-    `phone_number` VARCHAR(15) NULL,
-    `email` VARCHAR(100) NULL,
-    `school_code` VARCHAR(100) NOT NULL,
-
-    PRIMARY KEY (`school_id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -385,42 +389,42 @@ CREATE TABLE `users` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `youtudeVideo` (
-    `youtude_id` INTEGER NOT NULL AUTO_INCREMENT,
+CREATE TABLE `youtubeVideo` (
+    `youtube_id` INTEGER NOT NULL AUTO_INCREMENT,
     `event_name` VARCHAR(20) NOT NULL,
-    `youtudeLink` VARCHAR(225) NOT NULL,
+    `youtubeLink` VARCHAR(225) NOT NULL,
     `school_id` INTEGER NOT NULL,
 
     INDEX `school_id`(`school_id`),
-    PRIMARY KEY (`youtude_id`)
+    PRIMARY KEY (`youtube_id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- AddForeignKey
 ALTER TABLE `Student_payment_pending` ADD CONSTRAINT `Student_payment_pending_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `students`(`student_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE `Student_payment_pending` ADD CONSTRAINT `Student_payment_pending_ibfk_2` FOREIGN KEY (`school_id`) REFERENCES `schools`(`school_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE `Student_payment_pending` ADD CONSTRAINT `Student_payment_pending_ibfk_2` FOREIGN KEY (`school_id`) REFERENCES `school`(`school_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE `Student_payment_pending` ADD CONSTRAINT `Student_payment_pending_ibfk_3` FOREIGN KEY (`category_id`) REFERENCES `fee_categories`(`category_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE `academic_year` ADD CONSTRAINT `academic_year_ibfk_1` FOREIGN KEY (`school_id`) REFERENCES `schools`(`school_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE `academic_year` ADD CONSTRAINT `academic_year_ibfk_1` FOREIGN KEY (`school_id`) REFERENCES `school`(`school_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE `admins` ADD CONSTRAINT `admins_ibfk_1` FOREIGN KEY (`school_id`) REFERENCES `schools`(`school_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE `admins` ADD CONSTRAINT `admins_ibfk_1` FOREIGN KEY (`school_id`) REFERENCES `school`(`school_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE `admins` ADD CONSTRAINT `admins_ibfk_2` FOREIGN KEY (`role_id`) REFERENCES `roles`(`role_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE `bannerImages` ADD CONSTRAINT `bannerImages_ibfk_1` FOREIGN KEY (`school_id`) REFERENCES `schools`(`school_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `bannerImages` ADD CONSTRAINT `bannerImages_ibfk_1` FOREIGN KEY (`school_id`) REFERENCES `school`(`school_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `classrooms` ADD CONSTRAINT `classrooms_ibfk_1` FOREIGN KEY (`school_id`) REFERENCES `schools`(`school_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE `classrooms` ADD CONSTRAINT `classrooms_ibfk_1` FOREIGN KEY (`school_id`) REFERENCES `school`(`school_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE `exam_marks` ADD CONSTRAINT `exam_marks_ibfk_1` FOREIGN KEY (`school_id`) REFERENCES `schools`(`school_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE `exam_marks` ADD CONSTRAINT `exam_marks_ibfk_1` FOREIGN KEY (`school_id`) REFERENCES `school`(`school_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE `exam_marks` ADD CONSTRAINT `exam_marks_ibfk_2` FOREIGN KEY (`subject_id`) REFERENCES `subjects`(`subject_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
@@ -438,16 +442,16 @@ ALTER TABLE `exam_marks` ADD CONSTRAINT `exam_marks_ibfk_5` FOREIGN KEY (`exam_i
 ALTER TABLE `exams` ADD CONSTRAINT `exams_ibfk_1` FOREIGN KEY (`class_id`) REFERENCES `classrooms`(`classroom_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE `exams` ADD CONSTRAINT `exams_ibfk_2` FOREIGN KEY (`school_id`) REFERENCES `schools`(`school_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE `exams` ADD CONSTRAINT `exams_ibfk_2` FOREIGN KEY (`school_id`) REFERENCES `school`(`school_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE `fee_categories` ADD CONSTRAINT `fee_categories_ibfk_1` FOREIGN KEY (`school_id`) REFERENCES `schools`(`school_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE `fee_categories` ADD CONSTRAINT `fee_categories_ibfk_1` FOREIGN KEY (`school_id`) REFERENCES `school`(`school_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE `gallery` ADD CONSTRAINT `gallery_ibfk_1` FOREIGN KEY (`school_id`) REFERENCES `schools`(`school_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `gallery` ADD CONSTRAINT `gallery_ibfk_1` FOREIGN KEY (`school_id`) REFERENCES `school`(`school_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `homeworks` ADD CONSTRAINT `homeworks_ibfk_1` FOREIGN KEY (`school_id`) REFERENCES `schools`(`school_id`) ON DELETE NO ACTION ON UPDATE CASCADE;
+ALTER TABLE `homeworks` ADD CONSTRAINT `homeworks_ibfk_1` FOREIGN KEY (`school_id`) REFERENCES `school`(`school_id`) ON DELETE NO ACTION ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `homeworks` ADD CONSTRAINT `homeworks_ibfk_2` FOREIGN KEY (`classroom_id`) REFERENCES `classrooms`(`classroom_id`) ON DELETE NO ACTION ON UPDATE CASCADE;
@@ -462,25 +466,25 @@ ALTER TABLE `messageBoards` ADD CONSTRAINT `messageBoards_ibfk_1` FOREIGN KEY (`
 ALTER TABLE `messageBoards` ADD CONSTRAINT `messageBoards_ibfk_2` FOREIGN KEY (`classroom_id`) REFERENCES `classrooms`(`classroom_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `messageBoards` ADD CONSTRAINT `messageBoards_ibfk_3` FOREIGN KEY (`school_id`) REFERENCES `schools`(`school_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `messageBoards` ADD CONSTRAINT `messageBoards_ibfk_3` FOREIGN KEY (`school_id`) REFERENCES `school`(`school_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `roles` ADD CONSTRAINT `roles_ibfk_1` FOREIGN KEY (`school_id`) REFERENCES `schools`(`school_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE `roles` ADD CONSTRAINT `roles_ibfk_1` FOREIGN KEY (`school_id`) REFERENCES `school`(`school_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE `school_financials` ADD CONSTRAINT `school_financials_ibfk_1` FOREIGN KEY (`year_id`) REFERENCES `academic_year`(`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE `schoolFinancials` ADD CONSTRAINT `school_financials_ibfk_1` FOREIGN KEY (`year_id`) REFERENCES `academic_year`(`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE `school_financials` ADD CONSTRAINT `school_financials_ibfk_2` FOREIGN KEY (`school_id`) REFERENCES `schools`(`school_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE `schoolFinancials` ADD CONSTRAINT `school_financials_ibfk_2` FOREIGN KEY (`school_id`) REFERENCES `school`(`school_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE `studentAttendance` ADD CONSTRAINT `studentAttendance_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `students`(`student_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE `studentAttendance` ADD CONSTRAINT `studentAttendance_ibfk_2` FOREIGN KEY (`school_id`) REFERENCES `schools`(`school_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE `studentAttendance` ADD CONSTRAINT `studentAttendance_ibfk_2` FOREIGN KEY (`school_id`) REFERENCES `school`(`school_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE `student_fees` ADD CONSTRAINT `student_fees_ibfk_1` FOREIGN KEY (`school_id`) REFERENCES `schools`(`school_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE `student_fees` ADD CONSTRAINT `student_fees_ibfk_1` FOREIGN KEY (`school_id`) REFERENCES `school`(`school_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE `student_fees` ADD CONSTRAINT `student_fees_ibfk_2` FOREIGN KEY (`category_id`) REFERENCES `fee_categories`(`category_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
@@ -501,10 +505,10 @@ ALTER TABLE `student_fees` ADD CONSTRAINT `student_fees_ibfk_6` FOREIGN KEY (`ad
 ALTER TABLE `students` ADD CONSTRAINT `students_ibfk_1` FOREIGN KEY (`assignedClassroom`) REFERENCES `classrooms`(`classroom_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE `students` ADD CONSTRAINT `students_ibfk_2` FOREIGN KEY (`school_id`) REFERENCES `schools`(`school_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE `students` ADD CONSTRAINT `students_ibfk_2` FOREIGN KEY (`school_id`) REFERENCES `school`(`school_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE `students_payments` ADD CONSTRAINT `students_payments_ibfk_1` FOREIGN KEY (`school_id`) REFERENCES `schools`(`school_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE `students_payments` ADD CONSTRAINT `students_payments_ibfk_1` FOREIGN KEY (`school_id`) REFERENCES `school`(`school_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE `students_payments` ADD CONSTRAINT `students_payments_ibfk_2` FOREIGN KEY (`category_id`) REFERENCES `fee_categories`(`category_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
@@ -516,13 +520,13 @@ ALTER TABLE `students_payments` ADD CONSTRAINT `students_payments_ibfk_3` FOREIG
 ALTER TABLE `students_payments` ADD CONSTRAINT `students_payments_ibfk_4` FOREIGN KEY (`collected_by`) REFERENCES `admins`(`admin_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE `subjects` ADD CONSTRAINT `subjects_ibfk_1` FOREIGN KEY (`school_id`) REFERENCES `schools`(`school_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE `subjects` ADD CONSTRAINT `subjects_ibfk_1` FOREIGN KEY (`school_id`) REFERENCES `school`(`school_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE `teacherAttendance` ADD CONSTRAINT `teacherAttendance_ibfk_1` FOREIGN KEY (`teacher_id`) REFERENCES `teachers`(`teacher_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE `teacherAttendance` ADD CONSTRAINT `teacherAttendance_ibfk_2` FOREIGN KEY (`school_id`) REFERENCES `schools`(`school_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE `teacherAttendance` ADD CONSTRAINT `teacherAttendance_ibfk_2` FOREIGN KEY (`school_id`) REFERENCES `school`(`school_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE `teachers` ADD CONSTRAINT `teachers_ibfk_1` FOREIGN KEY (`subject_id`) REFERENCES `subjects`(`subject_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
@@ -531,10 +535,10 @@ ALTER TABLE `teachers` ADD CONSTRAINT `teachers_ibfk_1` FOREIGN KEY (`subject_id
 ALTER TABLE `teachers` ADD CONSTRAINT `teachers_ibfk_2` FOREIGN KEY (`assignedClass`) REFERENCES `classrooms`(`classroom_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE `teachers` ADD CONSTRAINT `teachers_ibfk_3` FOREIGN KEY (`school_id`) REFERENCES `schools`(`school_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE `teachers` ADD CONSTRAINT `teachers_ibfk_3` FOREIGN KEY (`school_id`) REFERENCES `school`(`school_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE `teachers` ADD CONSTRAINT `teachers_ibfk_4` FOREIGN KEY (`role_id`) REFERENCES `roles`(`role_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE `youtudeVideo` ADD CONSTRAINT `youtudeVideo_ibfk_1` FOREIGN KEY (`school_id`) REFERENCES `schools`(`school_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE `youtubeVideo` ADD CONSTRAINT `youtubeVideo_ibfk_1` FOREIGN KEY (`school_id`) REFERENCES `school`(`school_id`) ON DELETE NO ACTION ON UPDATE NO ACTION;

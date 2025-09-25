@@ -103,7 +103,7 @@ model BannerImages {
   banner_id  Int      @id @default(autoincrement())
   filename   String   @db.VarChar(255)
   school_id  Int
-  uploadedOn DateTime @db.DateTime(0)
+  uploadedOn DateTime @default(now())
   School     School   @relation(fields: [school_id], references: [school_id], onDelete: Cascade, map: "bannerImages_ibfk_1")
 
   @@index([school_id], map: "school_id")

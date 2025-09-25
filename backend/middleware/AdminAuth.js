@@ -8,7 +8,6 @@ const AdminAuth = (required) => {
         try {
             const bearerToken = token.split(" ")[1];
             if (!bearerToken) return res.status(403).json({ message: "No token provided" });
-
             const tokenDetails = await jwt.verify(bearerToken, process.env.JWTKEY);
             if (tokenDetails.role === "admin") {
                 if (required === "all") {

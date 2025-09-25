@@ -297,6 +297,15 @@ ManagingStudent.post("/api/search/student", AdminAuth("student management"), asy
         if (body.admission_ID) where.admission_ID = body.admission_ID;
         if (body.status) where.status = body.status;
         if (body.assignedClassroom) where.assignedClassroom = parseInt(body.assignedClassroom);
+        if (body.searchKey) {
+            const searchKey = body.searchKey.trim();
+            where.OR = [
+                { admission_ID: { startsWith: searchKey } },
+                { first_name: { startsWith: searchKey} },
+                { last_name: { startsWith: searchKey} },
+            ];
+        }
+
 
         if (body.name) {
             where.OR = [

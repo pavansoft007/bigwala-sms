@@ -10,6 +10,7 @@ import FormatDate from "../services/FormatDate.js";
 import sequelize from "../config/database.js";
 import Subject from "../models/Subject.js";
 
+
 const ManagingExam = express.Router();
 
 ManagingExam.post(
@@ -202,15 +203,15 @@ ManagingExam.post('/api/studentMarks', AdminAuth('exam'), async (req, res) => {
         });
 
         if(checkExamMarks.length > 0) {
-           return res.status(400).json({
-               error: "Exam marks already exists for this student",
-           });
+            return res.status(400).json({
+                error: "Exam marks already exists for this student",
+            });
         }
 
         const subjects = await Subject.findAll({
-           where:{
-               school_id: school_id
-           }
+            where:{
+                school_id: school_id
+            }
         });
 
         const marksArray=[];

@@ -1,54 +1,49 @@
 import express from "express";
 import TeacherAuth from "../middleware/teacherAuth.js";
-import AdminAuth from "../middleware/AdminAuth.js"; // Assuming you have admin auth middleware
-import TeacherLeave from "../models/TeacherLeave.js";
-import Teacher from "../models/Teacher.js";
-import academicYear from "../models/AcademicYear.js";
-import AcademicYear from "../models/AcademicYear.js"; // Assuming you have a Teacher model
+import AdminAuth from "../middleware/AdminAuth.js";
+import { PrismaClient } from "@prisma/client";
 
+const prisma = new PrismaClient();
 const ManageLeaves = express.Router();
 
-// TEACHER ENDPOINTS
+// ----------------- TEACHER ENDPOINTS -----------------
 
-// Get all leaves for the authenticated teacher
+// Get leaves for teacher (paginated)
 ManageLeaves.get("/api/teacher/leaves", TeacherAuth, async (req, res) => {
     try {
-        const teacherId = req.sessionData.id; // Assuming TeacherAuth sets req.teacher
+        const teacherId = req.sessionData.id;
         const { status, page = 1, limit = 10 } = req.query;
 
         const offset = (page - 1) * limit;
         const whereClause = { teacher_id: teacherId };
+        if (status) whereClause.status = status;
 
-        if (status) {
-            whereClause.status = status;
-        }
-
-        const leaves = await TeacherLeave.findAndCountAll({
-            where: whereClause,
-            order: [['created_at', 'DESC']],
-            limit: parseInt(limit),
-            offset: parseInt(offset)
-        });
+        const [total, leaves] = await Promise.all([
+            prisma.teacherLeave.count({ where: whereClause }),
+            prisma.teacherLeave.findMany({
+                where: whereClause,
+                orderBy: { created_at: "desc" },
+                take: parseInt(limit),
+                skip: parseInt(offset),
+            }),
+        ]);
 
         res.status(200).json({
             success: true,
-            data: leaves.rows,
+            data: leaves,
             pagination: {
-                total: leaves.count,
+                total,
                 page: parseInt(page),
-                pages: Math.ceil(leaves.count / limit)
-            }
+                pages: Math.ceil(total / limit),
+            },
         });
     } catch (err) {
         console.log(err);
-        res.status(500).json({
-            success: false,
-            message: "Internal server error"
-        });
+        res.status(500).json({ success: false, message: "Internal server error" });
     }
 });
 
-// Create a new leave request
+// Create a leave request
 ManageLeaves.post("/api/teacher/leaves", TeacherAuth, async (req, res) => {
     try {
         const teacherId = req.sessionData.id;
@@ -60,370 +55,336 @@ ManageLeaves.post("/api/teacher/leaves", TeacherAuth, async (req, res) => {
             is_half_day = false,
             half_day_period,
             emergency_contact,
-            attachment_url
+            attachment_url,
         } = req.body;
 
-        // Validation
         if (!leave_type || !start_date || !end_date || !reason) {
             return res.status(400).json({
                 success: false,
-                message: "Please provide all required fields"
+                message: "Please provide all required fields",
             });
         }
 
-        const year=await AcademicYear.find({
+        const year = await prisma.academicYear.findFirst({
             where: {
-                is_current:true,
-                school_id:req.sessionData.school_id,
-            }
+                is_current: true,
+                school_id: req.sessionData.school_id,
+            },
         });
 
-        const leaveRequest = await TeacherLeave.create({
-            teacher_id: teacherId,
-            year:year.id,
-            leave_type,
-            start_date,
-            end_date,
-            reason,
-            is_half_day,
-            half_day_period,
-            emergency_contact,
-            attachment_url
+        if (!year) {
+            return res.status(400).json({
+                success: false,
+                message: "Current academic year not found",
+            });
+        }
+
+        const leaveRequest = await prisma.teacherLeave.create({
+            data: {
+                teacher_id: teacherId,
+                year: year.id,
+                leave_type,
+                start_date: new Date(start_date),
+                end_date: new Date(end_date),
+                reason,
+                is_half_day,
+                half_day_period,
+                emergency_contact,
+                attachment_url,
+                status: "pending",
+            },
         });
 
         res.status(201).json({
             success: true,
             message: "Leave request submitted successfully",
-            data: leaveRequest
+            data: leaveRequest,
         });
     } catch (err) {
         console.log(err);
-        res.status(500).json({
-            success: false,
-            message: "Internal server error"
-        });
+        res.status(500).json({ success: false, message: "Internal server error" });
     }
 });
 
-// Update a leave request (only if pending)
+// Update a pending leave request
 ManageLeaves.put("/api/teacher/leaves/:id", TeacherAuth, async (req, res) => {
     try {
         const teacherId = req.sessionData.id;
-        const leaveId = req.params.id;
+        const leaveId = parseInt(req.params.id);
 
-        const leave = await TeacherLeave.findOne({
-            where: { id: leaveId, teacher_id: teacherId }
+        const leave = await prisma.teacherLeave.findFirst({
+            where: { id: leaveId, teacher_id: teacherId },
         });
 
         if (!leave) {
-            return res.status(404).json({
-                success: false,
-                message: "Leave request not found"
-            });
+            return res.status(404).json({ success: false, message: "Leave not found" });
         }
 
-        if (leave.status !== 'pending') {
-            return res.status(400).json({
-                success: false,
-                message: "Cannot update leave request that is not pending"
-            });
+        if (leave.status !== "pending") {
+            return res
+                .status(400)
+                .json({ success: false, message: "Cannot update non-pending leave" });
         }
 
-        const updatedLeave = await leave.update(req.body);
+        const updatedLeave = await prisma.teacherLeave.update({
+            where: { id: leaveId },
+            data: req.body,
+        });
 
         res.status(200).json({
             success: true,
             message: "Leave request updated successfully",
-            data: updatedLeave
+            data: updatedLeave,
         });
     } catch (err) {
         console.log(err);
-        res.status(500).json({
-            success: false,
-            message: "Internal server error"
-        });
+        res.status(500).json({ success: false, message: "Internal server error" });
     }
 });
 
 // Cancel a leave request
-ManageLeaves.patch("/api/teacher/leaves/:id/cancel", TeacherAuth, async (req, res) => {
-    try {
-        const teacherId = req.sessionData.id;
-        const leaveId = req.params.id;
+ManageLeaves.patch(
+    "/api/teacher/leaves/:id/cancel",
+    TeacherAuth,
+    async (req, res) => {
+        try {
+            const teacherId = req.sessionData.id;
+            const leaveId = parseInt(req.params.id);
 
-        const leave = await TeacherLeave.findOne({
-            where: { id: leaveId, teacher_id: teacherId }
-        });
-
-        if (!leave) {
-            return res.status(404).json({
-                success: false,
-                message: "Leave request not found"
+            const leave = await prisma.teacherLeave.findFirst({
+                where: { id: leaveId, teacher_id: teacherId },
             });
-        }
 
-        if (leave.status === 'cancelled') {
-            return res.status(400).json({
-                success: false,
-                message: "Leave request is already cancelled"
+            if (!leave) {
+                return res.status(404).json({ success: false, message: "Leave not found" });
+            }
+
+            if (leave.status === "cancelled") {
+                return res
+                    .status(400)
+                    .json({ success: false, message: "Leave is already cancelled" });
+            }
+
+            const updatedLeave = await prisma.teacherLeave.update({
+                where: { id: leaveId },
+                data: { status: "cancelled" },
             });
+
+            res.status(200).json({
+                success: true,
+                message: "Leave cancelled successfully",
+                data: updatedLeave,
+            });
+        } catch (err) {
+            console.log(err);
+            res.status(500).json({ success: false, message: "Internal server error" });
         }
-
-        const updatedLeave = await leave.update({ status: 'cancelled' });
-
-        res.status(200).json({
-            success: true,
-            message: "Leave request cancelled successfully",
-            data: updatedLeave
-        });
-    } catch (err) {
-        console.log(err);
-        res.status(500).json({
-            success: false,
-            message: "Internal server error"
-        });
     }
-});
+);
 
-// ADMIN ENDPOINTS
+// ----------------- ADMIN ENDPOINTS -----------------
 
-// Get all leave requests for admin review
+// Get all leaves (paginated)
 ManageLeaves.get("/api/admin/leaves", AdminAuth, async (req, res) => {
     try {
-        const { status = 'pending', page = 1, limit = 10, school_id } = req.query;
+        const { status = "pending", page = 1, limit = 10, school_id } = req.query;
         const offset = (page - 1) * limit;
 
         const whereClause = {};
-        if (status !== 'all') {
-            whereClause.status = status;
-        }
+        if (status !== "all") whereClause.status = status;
 
-        const includeClause = [{
-            model: Teacher,
-            as: 'teacher',
-            attributes: ['id', 'first_name', 'last_name', 'employee_id', 'department'],
-            where: school_id ? { school_id } : {}
-        }];
+        if (school_id) whereClause.teacher = { school_id: parseInt(school_id) };
 
-        const leaves = await TeacherLeave.findAndCountAll({
-            where: whereClause,
-            include: includeClause,
-            order: [['created_at', 'DESC']],
-            limit: parseInt(limit),
-            offset: parseInt(offset)
-        });
+        const [total, leaves] = await Promise.all([
+            prisma.teacherLeave.count({
+                where: whereClause,
+            }),
+            prisma.teacherLeave.findMany({
+                where: whereClause,
+                orderBy: { created_at: "desc" },
+                include: {
+                    teacher: {
+                        select: {
+                            id: true,
+                            first_name: true,
+                            last_name: true,
+                            employee_id: true,
+                            department: true,
+                        },
+                    },
+                },
+                take: parseInt(limit),
+                skip: parseInt(offset),
+            }),
+        ]);
 
         res.status(200).json({
             success: true,
-            data: leaves.rows,
+            data: leaves,
             pagination: {
-                total: leaves.count,
+                total,
                 page: parseInt(page),
-                pages: Math.ceil(leaves.count / limit)
-            }
+                pages: Math.ceil(total / limit),
+            },
         });
     } catch (err) {
         console.log(err);
-        res.status(500).json({
-            success: false,
-            message: "Internal server error"
-        });
+        res.status(500).json({ success: false, message: "Internal server error" });
     }
 });
 
-// Get specific leave request details
+// Get leave details
 ManageLeaves.get("/api/admin/leaves/:id", AdminAuth, async (req, res) => {
     try {
-        const leaveId = req.params.id;
+        const leaveId = parseInt(req.params.id);
 
-        const leave = await TeacherLeave.findByPk(leaveId, {
-            include: [{
-                model: Teacher,
-                as: 'teacher',
-                attributes: ['id', 'first_name', 'last_name', 'employee_id', 'department', 'phone', 'email']
-            }]
+        const leave = await prisma.teacherLeave.findUnique({
+            where: { id: leaveId },
+            include: {
+                teacher: {
+                    select: {
+                        id: true,
+                        first_name: true,
+                        last_name: true,
+                        employee_id: true,
+                        department: true,
+                        phone: true,
+                        email: true,
+                    },
+                },
+            },
         });
 
         if (!leave) {
-            return res.status(404).json({
-                success: false,
-                message: "Leave request not found"
-            });
+            return res.status(404).json({ success: false, message: "Leave not found" });
         }
 
-        res.status(200).json({
-            success: true,
-            data: leave
-        });
+        res.status(200).json({ success: true, data: leave });
     } catch (err) {
         console.log(err);
-        res.status(500).json({
-            success: false,
-            message: "Internal server error"
-        });
+        res.status(500).json({ success: false, message: "Internal server error" });
     }
 });
 
-// Approve a leave request
+// Approve leave
 ManageLeaves.patch("/api/admin/leaves/:id/approve", AdminAuth, async (req, res) => {
     try {
-        const leaveId = req.params.id;
-        const adminId = req.admin.id; // Assuming AdminAuth sets req.admin
+        const leaveId = parseInt(req.params.id);
+        const adminId = req.admin.id;
         const { substitute_teacher_id } = req.body;
 
-        const leave = await TeacherLeave.findByPk(leaveId);
+        const leave = await prisma.teacherLeave.findUnique({ where: { id: leaveId } });
 
         if (!leave) {
-            return res.status(404).json({
-                success: false,
-                message: "Leave request not found"
-            });
+            return res.status(404).json({ success: false, message: "Leave not found" });
         }
 
-        if (leave.status !== 'pending') {
-            return res.status(400).json({
-                success: false,
-                message: "Only pending leave requests can be approved"
-            });
+        if (leave.status !== "pending") {
+            return res.status(400).json({ success: false, message: "Only pending leaves can be approved" });
         }
 
-        const updateData = {
-            status: 'approved',
-            approved_by: adminId,
-            approved_at: new Date()
-        };
-
-        if (substitute_teacher_id) {
-            updateData.substitute_teacher_id = substitute_teacher_id;
-        }
-
-        const updatedLeave = await leave.update(updateData);
+        const updatedLeave = await prisma.teacherLeave.update({
+            where: { id: leaveId },
+            data: {
+                status: "approved",
+                approved_by: adminId,
+                approved_at: new Date(),
+                substitute_teacher_id: substitute_teacher_id || null,
+            },
+        });
 
         res.status(200).json({
             success: true,
-            message: "Leave request approved successfully",
-            data: updatedLeave
+            message: "Leave approved successfully",
+            data: updatedLeave,
         });
     } catch (err) {
         console.log(err);
-        res.status(500).json({
-            success: false,
-            message: "Internal server error"
-        });
+        res.status(500).json({ success: false, message: "Internal server error" });
     }
 });
 
-// Reject a leave request
+// Reject leave
 ManageLeaves.patch("/api/admin/leaves/:id/reject", AdminAuth, async (req, res) => {
     try {
-        const leaveId = req.params.id;
+        const leaveId = parseInt(req.params.id);
         const adminId = req.admin.id;
         const { rejection_reason } = req.body;
 
         if (!rejection_reason) {
-            return res.status(400).json({
-                success: false,
-                message: "Rejection reason is required"
-            });
+            return res.status(400).json({ success: false, message: "Rejection reason required" });
         }
 
-        const leave = await TeacherLeave.findByPk(leaveId);
+        const leave = await prisma.teacherLeave.findUnique({ where: { id: leaveId } });
 
         if (!leave) {
-            return res.status(404).json({
-                success: false,
-                message: "Leave request not found"
-            });
+            return res.status(404).json({ success: false, message: "Leave not found" });
         }
 
-        if (leave.status !== 'pending') {
-            return res.status(400).json({
-                success: false,
-                message: "Only pending leave requests can be rejected"
-            });
+        if (leave.status !== "pending") {
+            return res.status(400).json({ success: false, message: "Only pending leaves can be rejected" });
         }
 
-        const updatedLeave = await leave.update({
-            status: 'rejected',
-            approved_by: adminId,
-            approved_at: new Date(),
-            rejection_reason
+        const updatedLeave = await prisma.teacherLeave.update({
+            where: { id: leaveId },
+            data: {
+                status: "rejected",
+                approved_by: adminId,
+                approved_at: new Date(),
+                rejection_reason,
+            },
         });
 
         res.status(200).json({
             success: true,
-            message: "Leave request rejected successfully",
-            data: updatedLeave
+            message: "Leave rejected successfully",
+            data: updatedLeave,
         });
     } catch (err) {
         console.log(err);
-        res.status(500).json({
-            success: false,
-            message: "Internal server error"
-        });
+        res.status(500).json({ success: false, message: "Internal server error" });
     }
 });
 
-// Get leave statistics/dashboard data
+// Leave stats
 ManageLeaves.get("/api/admin/leaves/stats", AdminAuth, async (req, res) => {
     try {
         const { school_id } = req.query;
 
-        // Get counts by status
-        const statusCounts = await TeacherLeave.findAll({
-            attributes: [
-                'status',
-                [sequelize.fn('COUNT', sequelize.col('id')), 'count']
-            ],
-            include: school_id ? [{
-                model: Teacher,
-                as: 'teacher',
-                attributes: [],
-                where: { school_id }
-            }] : [],
-            group: ['status'],
-            raw: true
+        // Count by status
+        const statusCountsRaw = await prisma.teacherLeave.groupBy({
+            by: ["status"],
+            _count: { _all: true },
+            where: school_id ? { teacher: { school_id: parseInt(school_id) } } : {},
         });
 
-        // Get current month's leave requests
-        const currentMonth = new Date();
-        currentMonth.setDate(1);
-        currentMonth.setHours(0, 0, 0, 0);
+        const statusCounts = statusCountsRaw.reduce((acc, item) => {
+            acc[item.status] = item._count._all;
+            return acc;
+        }, {});
 
-        const nextMonth = new Date(currentMonth);
-        nextMonth.setMonth(nextMonth.getMonth() + 1);
+        // Current month leaves
+        const startMonth = new Date();
+        startMonth.setDate(1);
+        startMonth.setHours(0, 0, 0, 0);
 
-        const monthlyCount = await TeacherLeave.count({
+        const endMonth = new Date(startMonth);
+        endMonth.setMonth(endMonth.getMonth() + 1);
+
+        const monthlyCount = await prisma.teacherLeave.count({
             where: {
-                created_at: {
-                    [sequelize.Sequelize.Op.gte]: currentMonth,
-                    [sequelize.Sequelize.Op.lt]: nextMonth
-                }
+                created_at: { gte: startMonth, lt: endMonth },
+                ...(school_id ? { teacher: { school_id: parseInt(school_id) } } : {}),
             },
-            include: school_id ? [{
-                model: Teacher,
-                as: 'teacher',
-                attributes: [],
-                where: { school_id }
-            }] : []
         });
 
         res.status(200).json({
             success: true,
-            data: {
-                statusCounts: statusCounts.reduce((acc, item) => {
-                    acc[item.status] = parseInt(item.count);
-                    return acc;
-                }, {}),
-                monthlyCount
-            }
+            data: { statusCounts, monthlyCount },
         });
     } catch (err) {
         console.log(err);
-        res.status(500).json({
-            success: false,
-            message: "Internal server error"
-        });
+        res.status(500).json({ success: false, message: "Internal server error" });
     }
 });
 

@@ -1,5 +1,7 @@
 import jwt from "jsonwebtoken";
-import sequelize from "../config/database.js";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 const AdminAuth = (required) => {
     return async (req, res, next) => {
@@ -14,23 +16,20 @@ const AdminAuth = (required) => {
                     req["sessionData"] = tokenDetails;
                     return next();
                 }
-                const [result] = await sequelize.query(
-                    `SELECT permissions, r.role_name 
+                const results = await prisma.$queryRaw`
+                     SELECT permissions, r.role_name 
                      FROM admins 
                      INNER JOIN roles r ON r.role_id = admins.role_id 
-                     WHERE admin_id = :adminId`,
-                    {
-                        replacements: { adminId: tokenDetails.id },
-                        type: sequelize.QueryTypes.SELECT
-                    }
-                );
+                     WHERE admin_id = ${tokenDetails.id}
+                `;
+                const result = results[0];
 
-                if (result["role_name"] === "admin") {
+                if (result && result.role_name === "admin") {
                     req["sessionData"] = tokenDetails;
                     return next();
                 }
 
-                const permissions = result["permissions"];
+                const permissions = result ? result.permissions : [];
                 for (const item of permissions) {
                     if (item === required) {
                         req["sessionData"] = tokenDetails;

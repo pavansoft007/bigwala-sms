@@ -1,18 +1,21 @@
-import Teacher from "../models/Teacher.js";
-import Student from "../models/Student.js";
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 const GetAssignedClassroom=async (id,role)=>{
     try{
         if(role === 'teacher'){
-            const teacherDetails=await Teacher.findByPk(id,{
-                attributes:['assignedClass']
+            const teacherDetails=await prisma.teachers.findUnique({
+                where: { teacher_id: Number(id) },
+                select: { assignedClass: true }
             })
-            return teacherDetails.assignedClass;
+            return teacherDetails?.assignedClass;
         }else {
-            const teacherDetails=await Student.findByPk(id,{
-                attributes:['assignedClassroom']
+            const studentDetails=await prisma.students.findUnique({
+                where: { student_id: Number(id) },
+                select: { assignedClassroom: true }
             })
-            return teacherDetails.assignedClassroom;
+            return studentDetails?.assignedClassroom;
         }
     }catch (e) {
        console.error('error in getting the assigned classroom details'+e);

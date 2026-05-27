@@ -1,16 +1,12 @@
 import express from "express";
 import AdminAuth from "../middleware/AdminAuth.js";
 import upload from "../services/multerService.js";
-import Exam from "../models/Exam.js";
 import completeLogin from "../middleware/completeLogin.js";
-import ExamMarks from "../models/ExamMarks.js";
-import {Op} from "sequelize";
 import Encrypt from "../services/Encrypt.js";
 import FormatDate from "../services/FormatDate.js";
-import sequelize from "../config/database.js";
-import Subject from "../models/Subject.js";
+import { PrismaClient } from "@prisma/client";
 
-
+const prisma = new PrismaClient();
 const ManagingExam = express.Router();
 
 ManagingExam.post(
@@ -35,21 +31,13 @@ ManagingExam.post(
                 return res.status(400).json({error: "Timetable photo is required"});
             }
 
-            const examSearch = await Exam.findOne({
+            const examSearch = await prisma.exams.findFirst({
                 where: {
-                    class_id,
-                    school_id,
-                    [Op.and]: [
-                        {
-                            start_date: {
-                                [Op.lte]: end_date
-                            }
-                        },
-                        {
-                            end_date: {
-                                [Op.gte]: start_date
-                            }
-                        }
+                    class_id: parseInt(class_id),
+                    school_id: parseInt(school_id),
+                    AND: [
+                        { start_date: { lte: new Date(end_date) } },
+                        { end_date: { gte: new Date(start_date) } }
                     ]
                 }
             });
@@ -58,14 +46,16 @@ ManagingExam.post(
             }
 
             const timetable_photo = timetablePhotoFile.path;
-            const exam = await Exam.create({
-                exam_name,
-                class_id,
-                school_id,
-                start_date,
-                end_date,
-                status,
-                timetable_photo,
+            const exam = await prisma.exams.create({
+                data: {
+                    exam_name,
+                    class_id: parseInt(class_id),
+                    school_id: parseInt(school_id),
+                    start_date: new Date(start_date),
+                    end_date: new Date(end_date),
+                    status,
+                    timetable_photo,
+                }
             });
 
             return res.status(201).json({message: "Exam created successfully", exam});
@@ -80,7 +70,7 @@ ManagingExam.get("/api/exam", completeLogin, async (req, res) => {
     try {
         const school_id = req.sessionData.school_id;
 
-        let [exams] = await sequelize.query(`
+        let exams = await prisma.$queryRaw`
             select e.exam_id,
                    e.exam_name,
                    c.classroom_id,
@@ -91,13 +81,9 @@ ManagingExam.get("/api/exam", completeLogin, async (req, res) => {
                    e.start_date,
                    e.end_date
             from exams e
-                     inner join bigwaladev.classrooms c on e.class_id = c.classroom_id
-            where e.school_id = :school_id;
-        `, {
-            replacements: {
-                school_id
-            }
-        });
+                     inner join classrooms c on e.class_id = c.classroom_id
+            where e.school_id = ${school_id};
+        `;
 
         exams = exams.map((exam) => {
             exam['start_date'] = FormatDate(exam['start_date']);
@@ -126,14 +112,14 @@ ManagingExam.put(
     ]),
     async (req, res) => {
         try {
-            const exam_id = req.params.exam_id;
+            const exam_id = parseInt(req.params.exam_id);
             const school_id = req.sessionData.school_id;
             const {exam_name, classroom_id, start_date, end_date, status} = req.body;
 
-            const examInfo = await Exam.findOne({
+            const examInfo = await prisma.exams.findFirst({
                 where: {
                     exam_id,
-                    school_id
+                    school_id: parseInt(school_id)
                 }
             });
 
@@ -154,17 +140,20 @@ ManagingExam.put(
                 timetable_photo = timetablePhotoFile.filename;
             }
 
-            await examInfo.update({
-                exam_name,
-                class_id: classroom_id,
-                school_id,
-                start_date,
-                end_date,
-                status,
-                timetable_photo
+            const updatedExam = await prisma.exams.update({
+                where: { exam_id },
+                data: {
+                    exam_name,
+                    class_id: parseInt(classroom_id),
+                    school_id: parseInt(school_id),
+                    start_date: new Date(start_date),
+                    end_date: new Date(end_date),
+                    status,
+                    timetable_photo
+                }
             });
 
-            return res.status(200).json({message: "Exam updated successfully", exam: examInfo});
+            return res.status(200).json({message: "Exam updated successfully", exam: updatedExam});
         } catch (err) {
             console.error("Error updating exam:", err);
             return res.status(500).json({error: "Internal server error"});
@@ -177,13 +166,13 @@ ManagingExam.post('/api/studentMarks', AdminAuth('exam'), async (req, res) => {
     try {
         const school_id = req.sessionData.school_id;
         const marksObj = req.body.marks;
-        const student_id = req.body.student_id;
-        const exam_id = req.body.exam_id;
-        const class_id = req.body.classroom_id;
+        const student_id = parseInt(req.body.student_id);
+        const exam_id = parseInt(req.body.exam_id);
+        const class_id = parseInt(req.body.classroom_id);
 
-        const examCheck = await Exam.findOne({
+        const examCheck = await prisma.exams.findFirst({
             where: {
-                school_id: school_id,
+                school_id: parseInt(school_id),
                 exam_id: exam_id,
                 class_id: class_id,
                 status: "completed"
@@ -194,9 +183,9 @@ ManagingExam.post('/api/studentMarks', AdminAuth('exam'), async (req, res) => {
             return res.status(400).json({error: "invalid exam or ID not found"});
         }
 
-        const checkExamMarks = await ExamMarks.findAll({
+        const checkExamMarks = await prisma.examMarks.findMany({
             where: {
-                school_id: school_id,
+                school_id: parseInt(school_id),
                 exam_id: exam_id,
                 student_id: student_id,
             }
@@ -208,9 +197,9 @@ ManagingExam.post('/api/studentMarks', AdminAuth('exam'), async (req, res) => {
             });
         }
 
-        const subjects = await Subject.findAll({
+        const subjects = await prisma.subjects.findMany({
             where:{
-                school_id: school_id
+                school_id: parseInt(school_id)
             }
         });
 
@@ -220,13 +209,13 @@ ManagingExam.post('/api/studentMarks', AdminAuth('exam'), async (req, res) => {
             const newMark={};
             newMark['exam_id'] = exam_id;
             newMark['subject_id'] = subject.subject_id;
-            newMark['marks']=marksObj[subject.subject_id]?.marks ?? 0;
+            newMark['marks'] = parseInt(marksObj[subject.subject_id]?.marks ?? 0);
             newMark['student_id'] = student_id;
             newMark['class_id'] = class_id;
-            newMark['school_id'] = school_id;
+            newMark['school_id'] = parseInt(school_id);
             marksArray.push(newMark);
         }
-        await ExamMarks.bulkCreate(marksArray);
+        await prisma.examMarks.createMany({ data: marksArray });
         return res.status(200).json({ success: "marks added successfully" });
 
     } catch (e) {
@@ -244,12 +233,15 @@ ManagingExam.post('/api/exam-marks', AdminAuth('exam'), async (req, res) => {
             return res.status(400).json({error: 'All fields are required'});
         }
 
-        const newMark = await ExamMarks.create({
-            subject_id,
-            class_id,
-            student_id,
-            exam_id,
-            marks,
+        const newMark = await prisma.examMarks.create({
+            data: {
+                subject_id: parseInt(subject_id),
+                class_id: parseInt(class_id),
+                student_id: parseInt(student_id),
+                exam_id: parseInt(exam_id),
+                marks: parseInt(marks),
+                school_id: parseInt(req.sessionData.school_id)
+            }
         });
 
         return res.status(201).json({message: 'Exam mark added successfully', data: newMark});
@@ -264,11 +256,11 @@ ManagingExam.get('/api/exam-marks', AdminAuth('exam'), async (req, res) => {
         const {exam_id, class_id, student_id} = req.query;
 
         const where = {};
-        if (exam_id) where.exam_id = exam_id;
-        if (class_id) where.class_id = class_id;
-        if (student_id) where.student_id = student_id;
+        if (exam_id) where.exam_id = parseInt(exam_id);
+        if (class_id) where.class_id = parseInt(class_id);
+        if (student_id) where.student_id = parseInt(student_id);
 
-        const marks = await ExamMarks.findAll({where});
+        const marks = await prisma.examMarks.findMany({where});
 
         return res.status(200).json({data: marks});
     } catch (error) {
@@ -282,10 +274,10 @@ ManagingExam.get('/api/exam-marks/:student_id/:exam_id', AdminAuth('exam'), asyn
     try {
         const {student_id, exam_id} = req.params;
 
-        const studentMarks = await ExamMarks.findAll({
+        const studentMarks = await prisma.examMarks.findMany({
             where: {
-                student_id,
-                exam_id,
+                student_id: parseInt(student_id),
+                exam_id: parseInt(exam_id),
             }
         });
 
@@ -310,15 +302,18 @@ ManagingExam.put('/api/exam-marks/:id', AdminAuth('exam'), async (req, res) => {
             return res.status(400).json({error: 'Marks are required to update'});
         }
 
-        const mark = await ExamMarks.findByPk(id);
+        const mark = await prisma.examMarks.findUnique({ where: { id: parseInt(id) } });
 
         if (!mark) {
             return res.status(404).json({error: 'Mark not found'});
         }
 
-        await mark.update({marks});
+        const updatedMark = await prisma.examMarks.update({
+            where: { id: parseInt(id) },
+            data: { marks: parseInt(marks) }
+        });
 
-        return res.status(200).json({message: 'Marks updated successfully', data: mark});
+        return res.status(200).json({message: 'Marks updated successfully', data: updatedMark});
     } catch (error) {
         console.error('Error updating exam mark:', error);
         return res.status(500).json({error: 'Internal server error'});

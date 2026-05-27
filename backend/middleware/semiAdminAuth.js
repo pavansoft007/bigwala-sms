@@ -1,5 +1,8 @@
 import jwt from "jsonwebtoken";
-import sequelize from "../config/database.js";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
 const SemiAdminAuth = (required) => {
     return async (req, res, next) => {
         const token = req.headers['authorization'];
@@ -11,30 +14,28 @@ const SemiAdminAuth = (required) => {
 
             const tokenDetails = await jwt.verify(bearerToken, process.env.JWTKEY);
 
-
-
-            if ( tokenDetails.role === 'admin') {
-                const [result]=await sequelize.query('SELECT permissions,r.role_name FROM admins INNER  JOIN roles r ON r.role_id=admins.role_id WHERE admin_id='+tokenDetails['id']);
-                if(result[0]['role_name'] === 'admin' ){
+            if (tokenDetails.role === 'admin') {
+                const results = await prisma.$queryRaw`SELECT permissions,r.role_name FROM admins INNER JOIN roles r ON r.role_id=admins.role_id WHERE admin_id=${tokenDetails['id']}`;
+                if (results.length > 0 && results[0]['role_name'] === 'admin') {
                     req['sessionData'] = tokenDetails;
                     return next();
                 }
-                const permissions=result[0]['permissions'];
-                permissions.forEach((item)=>{
-                    if(item === required){
+                
+                const permissions = results.length > 0 ? results[0]['permissions'] : [];
+                for (const item of permissions) {
+                    if (item === required) {
                         req['sessionData'] = tokenDetails;
-                        next();
+                        return next();
                     }
-                })
+                }
 
                 return res.status(404).json({});
 
-            }else if(tokenDetails.role === 'teacher-admin'){
+            } else if (tokenDetails.role === 'teacher-admin') {
                 req['sessionData'] = tokenDetails;
-                next();
-            }
-            else {
-                res.status(403).json({ message: 'You do not have access' });
+                return next();
+            } else {
+                return res.status(403).json({ message: 'You do not have access' });
             }
         } catch (e) {
             console.log(e);

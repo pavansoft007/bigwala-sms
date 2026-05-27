@@ -1,16 +1,13 @@
 import express from "express";
-import AdminAuth from "../middleware/AdminAuth.js";
-import StudentPayment from "../models/StudentPayment.js";
-import StudentFee from "../models/StudentFee.js";
-import sequelize from "../config/database.js";
-import SchoolFinancials from "../models/SchoolFinancials.js";
 import adminAuth from "../middleware/AdminAuth.js";
 import multerService from "../services/multerService.js";
-import StudentPaymentPending from "../models/StudentPaymentPending.js";
 import studentAuth from "../middleware/StudentAuth.js";
+import { PrismaClient } from "@prisma/client";
 
+const prisma = new PrismaClient();
 const ManagingFeePayment = express.Router();
-ManagingFeePayment.post('/api/fee/fee-collect', AdminAuth('fee'), async (req, res) => {
+
+ManagingFeePayment.post('/api/fee/fee-collect', adminAuth('fee'), async (req, res) => {
     try {
         const {amount, student_id, category_id, remarks,payment_mode} = req.body;
 
@@ -20,56 +17,67 @@ ManagingFeePayment.post('/api/fee/fee-collect', AdminAuth('fee'), async (req, re
         }
 
         const {school_id, id: collected_by} = req.sessionData;
-        const transaction = await sequelize.transaction();
 
         try {
-            const studentFeeDetails = await StudentFee.findOne({
-                where: {student_id, category_id, school_id},
-                transaction
-            });
+            const newPayment = await prisma.$transaction(async (tx) => {
+                const studentFeeDetails = await tx.studentFees.findFirst({
+                    where: {
+                        student_id: parseInt(student_id),
+                        category_id: parseInt(category_id),
+                        school_id: parseInt(school_id)
+                    }
+                });
 
-            if (!studentFeeDetails) {
-                return res.status(404).json({message: "Student fee details not found"});
-            }
-
-            const remaining_fee=studentFeeDetails.fee_remaining-amount;
-            if(remaining_fee < 0){
-                return res.status(400).json({message: "this is more than required fee"});
-            }
-
-            const newPayment = await StudentPayment.create({
-                amount,
-                student_id,
-                category_id,
-                remarks,
-                payment_mode,
-                school_id,
-                collected_by
-            }, {transaction});
-
-
-            await studentFeeDetails.increment(
-                {total_fee_paid: amount, fee_remaining: -amount},
-                {transaction}
-            );
-
-            const school_fincanicals = await SchoolFinancials.findOne({
-                where: {
-                    school_id
+                if (!studentFeeDetails) {
+                    throw new Error("Student fee details not found");
                 }
+
+                const remaining_fee = studentFeeDetails.fee_remaining - amount;
+                if(remaining_fee < 0){
+                    throw new Error("This is more than required fee");
+                }
+
+                const createdPayment = await tx.studentsPayments.create({
+                    data: {
+                        amount: parseInt(amount),
+                        student_id: parseInt(student_id),
+                        category_id: parseInt(category_id),
+                        remarks: remarks || null,
+                        payment_mode,
+                        school_id: parseInt(school_id),
+                        collected_by: parseInt(collected_by)
+                    }
+                });
+
+                await tx.studentFees.update({
+                    where: { fee_id: studentFeeDetails.fee_id },
+                    data: {
+                        total_fee_paid: { increment: parseInt(amount) },
+                        fee_remaining: { decrement: parseInt(amount) }
+                    }
+                });
+
+                const school_financials = await tx.schoolFinancials.findFirst({
+                    where: {
+                        school_id: parseInt(school_id)
+                    }
+                });
+
+                if (school_financials) {
+                    await tx.schoolFinancials.update({
+                        where: { school_financial_id: school_financials.school_financial_id },
+                        data: { current_balance: { increment: parseInt(amount) } }
+                    });
+                }
+
+                return createdPayment;
             });
-
-            await school_fincanicals.increment(
-                {current_balance: amount}
-                , {transaction});
-
-
-            await transaction.commit();
 
             return res.status(200).json({message: "Fee collected successfully", newPayment});
         } catch (error) {
-            await transaction.rollback();
             console.error("Database error in fee collection:", error);
+            if (error.message === "Student fee details not found") return res.status(404).json({message: error.message});
+            if (error.message === "This is more than required fee") return res.status(400).json({message: error.message});
             return res.status(500).json({message: "Internal server error"});
         }
     } catch (error) {
@@ -82,13 +90,16 @@ ManagingFeePayment.post("/api/fee/online-fee-payment", studentAuth, multerServic
     const {student_id, school_id} = req.sessionData;
     const {amount,category_id} = req.body;
     try {
-        const newOnlinePayment = await StudentPaymentPending.create({
-            student_id,
-            school_id,
-            amount,
-            category_id,
-            payment_photo: req.file.path,
-            status: 'pending',
+        const newOnlinePayment = await prisma.studentPaymentPending.create({
+            data: {
+                student_id: parseInt(student_id),
+                school_id: parseInt(school_id),
+                amount: parseInt(amount),
+                category_id: parseInt(category_id),
+                payment_photo: req.file.path,
+                status: 'pending',
+                created_at: new Date()
+            }
         });
 
         if (newOnlinePayment) {
@@ -110,98 +121,112 @@ ManagingFeePayment.post("/api/fee/online-fee-payment", studentAuth, multerServic
 
 ManagingFeePayment.get("/api/fee/pending-online-fee", adminAuth('fee'), async (req, res) => {
     try {
-        const [pendingPaymentDetails] = await sequelize.query(
-            "SELECT s.admission_ID,s.first_name,s.last_name,Student_payment_pending.* from Student_payment_pending inner JOIN students s on s.student_id=Student_payment_pending.student_id WHERE Student_payment_pending.school_id=:school_id && Student_payment_pending.status='pending'; ",
-            {
-                replacements: {
-                    school_id: req.sessionData.school_id
-                }
-            });
+        const pendingPaymentDetails = await prisma.$queryRaw`
+            SELECT s.admission_ID, s.first_name, s.last_name, Student_payment_pending.* 
+            FROM Student_payment_pending 
+            INNER JOIN students s ON s.student_id = Student_payment_pending.student_id 
+            WHERE Student_payment_pending.school_id = ${req.sessionData.school_id} 
+              AND Student_payment_pending.status = 'pending';
+        `;
         res.status(200).json(pendingPaymentDetails);
     } catch (error) {
-        console.error("Unexpected error in fetching  online fee payment:", error);
+        console.error("Unexpected error in fetching online fee payment:", error);
         return res.status(500).json({message: "Unexpected error occurred"});
     }
 });
 
 ManagingFeePayment.put('/api/fee/update-online-fee/:id', adminAuth('fee'), async (req, res) => {
     const { remarks } = req.body;
-    const payment_id = req.params.id;
-    const transaction = await sequelize.transaction();
+    const payment_id = parseInt(req.params.id);
+    
     try {
-        const pendingOnlinePaymentDetails = await StudentPaymentPending.findByPk(payment_id);
-        if (!pendingOnlinePaymentDetails) {
-            return res.status(404).json({ message: "Online payment details not found" });
-        }
+        await prisma.$transaction(async (tx) => {
+            const pendingOnlinePaymentDetails = await tx.studentPaymentPending.findUnique({
+                where: { pending_payment_id: payment_id }
+            });
+            
+            if (!pendingOnlinePaymentDetails) {
+                throw new Error("Online payment details not found");
+            }
 
-        await pendingOnlinePaymentDetails.update({
-            status: 'approved'
-        }, { transaction });
+            await tx.studentPaymentPending.update({
+                where: { pending_payment_id: payment_id },
+                data: { status: 'approved' }
+            });
 
-        await StudentPayment.create({
-            amount: pendingOnlinePaymentDetails.amount,
-            student_id: pendingOnlinePaymentDetails.student_id,
-            category_id: pendingOnlinePaymentDetails.category_id,
-            school_id: req.sessionData.school_id,
-            collected_by: req.sessionData.id,
-            payment_mode: 'upi',
-            remarks: "Online UPI payments: " + (remarks ?? ''),
-            payment_date: pendingOnlinePaymentDetails.created_at,
-            created_at: pendingOnlinePaymentDetails.created_at
-        }, { transaction });
+            await tx.studentsPayments.create({
+                data: {
+                    amount: pendingOnlinePaymentDetails.amount,
+                    student_id: pendingOnlinePaymentDetails.student_id,
+                    category_id: pendingOnlinePaymentDetails.category_id,
+                    school_id: req.sessionData.school_id,
+                    collected_by: req.sessionData.id,
+                    payment_mode: 'upi',
+                    remarks: "Online UPI payments: " + (remarks ?? ''),
+                    payment_date: pendingOnlinePaymentDetails.created_at,
+                    created_at: pendingOnlinePaymentDetails.created_at
+                }
+            });
 
-        const school_financials = await SchoolFinancials.findOne({
-            where: { school_id: req.sessionData.school_id }
+            const school_financials = await tx.schoolFinancials.findFirst({
+                where: { school_id: req.sessionData.school_id }
+            });
+
+            if (school_financials) {
+                await tx.schoolFinancials.update({
+                    where: { school_financial_id: school_financials.school_financial_id },
+                    data: { current_balance: { increment: pendingOnlinePaymentDetails.amount } }
+                });
+            }
+
+            const studentFee = await tx.studentFees.findFirst({
+                where: {
+                    student_id: pendingOnlinePaymentDetails.student_id,
+                    category_id: pendingOnlinePaymentDetails.category_id,
+                    school_id: req.sessionData.school_id
+                }
+            });
+
+            if (studentFee) {
+                await tx.studentFees.update({
+                    where: { fee_id: studentFee.fee_id },
+                    data: {
+                        total_fee_paid: { increment: pendingOnlinePaymentDetails.amount },
+                        fee_remaining: { decrement: pendingOnlinePaymentDetails.amount }
+                    }
+                });
+            } else {
+                throw new Error("Student fee details not found");
+            }
         });
-
-        await school_financials.increment(
-            { current_balance: pendingOnlinePaymentDetails.amount },
-            { transaction }
-        );
-
-        const studentFee = await StudentFee.findOne({
-            where: {
-                student_id: pendingOnlinePaymentDetails.student_id,
-                category_id: pendingOnlinePaymentDetails.category_id,
-                school_id: req.sessionData.school_id
-            },
-            transaction
-        });
-
-        if (studentFee) {
-            await studentFee.increment(
-                { total_fee_paid: pendingOnlinePaymentDetails.amount, fee_remaining: -pendingOnlinePaymentDetails.amount },
-                { transaction }
-            );
-        } else {
-            await transaction.rollback();
-            return res.status(404).json({ message: "Student fee details not found" });
-        }
-
-        await transaction.commit();
 
         res.status(200).json({ message: "Payment approved and fee updated successfully" });
     } catch (error) {
-        await transaction.rollback();
         console.error("Error updating online fee payment:", error);
+        if (error.message === "Online payment details not found") return res.status(404).json({ message: error.message });
+        if (error.message === "Student fee details not found") return res.status(404).json({ message: error.message });
         return res.status(500).json({ message: "Unexpected error occurred" });
     }
 });
 
 
 ManagingFeePayment.put("/api/fee/reject-online-fee/:id", adminAuth('fee'), async (req, res) => {
-    const payment_id = req.params.id;
+    const payment_id = parseInt(req.params.id);
     try {
-        const pendingOnlinePaymentDetails = await StudentPaymentPending.findByPk(payment_id);
+        const pendingOnlinePaymentDetails = await prisma.studentPaymentPending.findUnique({
+            where: { pending_payment_id: payment_id }
+        });
+        
         if (!pendingOnlinePaymentDetails) {
-            res.status(404).json({message: "online payment details not found"});
+            return res.status(404).json({message: "online payment details not found"});
         }
 
-        await pendingOnlinePaymentDetails.update({
-            status: 'rejected'
+        await prisma.studentPaymentPending.update({
+            where: { pending_payment_id: payment_id },
+            data: { status: 'rejected' }
         });
 
-        res.status(200);
+        res.status(200).json({message: "Payment rejected"});
 
     } catch (error) {
         console.error("Unexpected updating in fetching  online fee payment:", error);
@@ -211,15 +236,9 @@ ManagingFeePayment.put("/api/fee/reject-online-fee/:id", adminAuth('fee'), async
 
 ManagingFeePayment.get("/api/fee/class", adminAuth('fee'), async (req, res) => {
     try {
-        const school_id = req.sessionData.school_id;
-        let [class_details] = await sequelize.query("select classrooms.standard from classrooms where school_id=:school_id group by standard",
-            {
-                replacements: {
-                    school_id
-                }
-            }
-        );
-        class_details=class_details.map(item=>item.standard);
+        const school_id = parseInt(req.sessionData.school_id);
+        let class_details = await prisma.$queryRaw`select classrooms.standard from classrooms where school_id=${school_id} group by standard`;
+        class_details = class_details.map(item => item.standard);
         res.status(200).json(class_details);
     } catch (error) {
         console.error("Error at getting the class details:", error);
@@ -229,25 +248,20 @@ ManagingFeePayment.get("/api/fee/class", adminAuth('fee'), async (req, res) => {
 
 
 ManagingFeePayment.get("/api/fee/student_data/:standard",adminAuth('fee'),async (req,res)=>{
-    const standard=req.params.standard;
-    const school_id=req.sessionData.school_id;
+    const standard = req.params.standard;
+    const school_id = parseInt(req.sessionData.school_id);
     try{
-        const [student_data]=await sequelize.query(`select students.admission_ID,
-                                                           student_id,
-                                                           first_name,
-                                                           last_name,
-                                                           c.standard,
-                                                           c.section
-                                                    from students
-                                                             left join bigwaladev.classrooms c on c.classroom_id = students.assignedClassroom
-                                                    where c.standard = :standard
-                                                      and c.school_id = :school_id`,
-            {
-                replacements:{
-                    standard,
-                    school_id
-                }
-            });
+        const student_data = await prisma.$queryRaw`
+            select students.admission_ID,
+                   students.student_id,
+                   students.first_name,
+                   students.last_name,
+                   c.standard,
+                   c.section
+            from students
+            left join classrooms c on c.classroom_id = students.assignedClassroom
+            where c.standard = ${standard}
+              and c.school_id = ${school_id}`;
         res.status(200).json(student_data);
     }catch (error) {
         console.error("Error at getting the student details:", error);
@@ -258,15 +272,14 @@ ManagingFeePayment.get("/api/fee/student_data/:standard",adminAuth('fee'),async 
 ManagingFeePayment.get("/api/fee/recent-transactions",adminAuth('fee'),async (req,res)=>{
    try {
        let { page, limit} = req.query;
-       const school_id=req.sessionData['school_id'];
+       const school_id = parseInt(req.sessionData['school_id']);
 
        page = parseInt(page) || 1;
        limit = parseInt(limit) || 10;
        const offset = (page - 1) * limit;
 
-
-       const [transactions] = await sequelize.query(
-           `SELECT 
+       const transactions = await prisma.$queryRaw`
+           SELECT 
                 sp.payment_id, 
                 sp.amount, 
                 sp.payment_date, 
@@ -281,18 +294,13 @@ ManagingFeePayment.get("/api/fee/recent-transactions",adminAuth('fee'),async (re
             LEFT JOIN classrooms c ON c.classroom_id=s.assignedClassroom
             LEFT JOIN admins a ON sp.collected_by = a.admin_id
             LEFT JOIN fee_categories fc ON sp.category_id = fc.category_id
-            where sp.school_id=:school_id
+            where sp.school_id=${school_id}
             ORDER BY sp.payment_date DESC
-            LIMIT :limit OFFSET :offset;`,
-           {
-               replacements: { limit, offset ,school_id}
-           }
-       );
+            LIMIT ${limit} OFFSET ${offset};
+       `;
 
-
-       const [[{ total_count }]] = await sequelize.query(
-           `SELECT COUNT(*) AS total_count FROM students_payments;`
-       );
+       const total_count_res = await prisma.$queryRaw`SELECT COUNT(*) AS total_count FROM students_payments WHERE school_id=${school_id};`;
+       const total_count = Number(total_count_res[0].total_count);
 
        res.json({
            success: true,
@@ -306,6 +314,6 @@ ManagingFeePayment.get("/api/fee/recent-transactions",adminAuth('fee'),async (re
        console.error("Error at getting the recent transactions:", error);
        return res.status(500).json({message: "internal server error"});
    }
-})
+});
 
 export default ManagingFeePayment;

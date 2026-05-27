@@ -1,12 +1,12 @@
 import express from "express";
-import Gallery from "../models/Gallery.js";
 import FormatDate from "../services/FormatDate.js";
 import Encrypt from "../services/Encrypt.js";
 import semiAdminAuth from "../middleware/semiAdminAuth.js";
 import completeLogin from "../middleware/completeLogin.js";
 import MulterService from "../services/multerService.js";
+import { PrismaClient } from '@prisma/client';
 
-
+const prisma = new PrismaClient();
 const ManagingGallery=express.Router();
 
 ManagingGallery.post('/mobileAPI/gallery', semiAdminAuth('gallery'), MulterService.array('photos', 10), async (req, res) => {
@@ -22,10 +22,12 @@ ManagingGallery.post('/mobileAPI/gallery', semiAdminAuth('gallery'), MulterServi
         // Save each uploaded file in the database
         const galleryImages = await Promise.all(
             req.files.map(file =>
-                Gallery.create({
-                    school_id,
-                    event_name,
-                    filename: file.path,
+                prisma.gallery.create({
+                    data: {
+                        school_id,
+                        event_name,
+                        filename: file.path,
+                    }
                 })
             )
         );
@@ -41,7 +43,7 @@ ManagingGallery.post('/mobileAPI/gallery', semiAdminAuth('gallery'), MulterServi
 ManagingGallery.get('/mobileAPI/gallery',completeLogin,async (req,res)=>{
     try{
         const school_id=req['sessionData']['school_id'];
-        const completeData=await Gallery.findAll({
+        const completeData=await prisma.gallery.findMany({
             where:{
                 school_id
             }

@@ -1,12 +1,9 @@
 import express from "express";
-import Homework from "../models/Homework.js";
-import Classroom from "../models/Classroom.js";
 import teacherAuth from "../middleware/teacherAuth.js";
-import Subject from "../models/Subject.js";
-import sequelize from "../config/database.js";
-import Teacher from "../models/Teacher.js";
 import completeLogin from "../middleware/completeLogin.js";
+import { PrismaClient } from "@prisma/client";
 
+const prisma = new PrismaClient();
 const ManagingHomework = express.Router();
 
 ManagingHomework.post('/mobileAPI/homework', teacherAuth('homework'), async (req, res) => {
@@ -24,9 +21,9 @@ ManagingHomework.post('/mobileAPI/homework', teacherAuth('homework'), async (req
 
 
         if (role === 'teacher' || role === 'admin-teacher') {
-            const teacherDetails = await Teacher.findOne({
-                where: { teacher_id },
-                attributes: ['assignedClass', 'subject_id']
+            const teacherDetails = await prisma.teachers.findFirst({
+                where: { teacher_id: parseInt(teacher_id) },
+                select: { assignedClass: true, subject_id: true }
             });
 
             if (!teacherDetails) {
@@ -39,8 +36,8 @@ ManagingHomework.post('/mobileAPI/homework', teacherAuth('homework'), async (req
             }
 
             if (standard && section) {
-                const classroom = await Classroom.findOne({
-                    where: { standard, section, school_id }
+                const classroom = await prisma.classrooms.findFirst({
+                    where: { standard, section, school_id: parseInt(school_id) }
                 });
 
                 if (!classroom) {
@@ -58,8 +55,8 @@ ManagingHomework.post('/mobileAPI/homework', teacherAuth('homework'), async (req
         }
 
 
-        const subjectDetails = await Subject.findOne({
-            where: { school_id, subject_id }
+        const subjectDetails = await prisma.subjects.findFirst({
+            where: { school_id: parseInt(school_id), subject_id: parseInt(subject_id) }
         });
 
         if (!subjectDetails) {
@@ -71,13 +68,12 @@ ManagingHomework.post('/mobileAPI/homework', teacherAuth('homework'), async (req
             return res.status(400).json({ message: "Classroom ID could not be determined." });
         }
 
-        const today = new Date().toLocaleDateString('en-CA');
+        const today = new Date(new Date().toLocaleDateString('en-CA'));
 
-
-        const existingHomework = await Homework.findOne({
+        const existingHomework = await prisma.homeworks.findFirst({
             where: {
-                classroom_id: classroomID,
-                school_id,
+                classroom_id: parseInt(classroomID),
+                school_id: parseInt(school_id),
                 subject_id: subjectDetails.subject_id,
                 addedDate: today
             }
@@ -87,13 +83,14 @@ ManagingHomework.post('/mobileAPI/homework', teacherAuth('homework'), async (req
             return res.status(409).json({ message: "Homework for this subject and date already exists." });
         }
 
-
-        const newHomework = await Homework.create({
-            school_id,
-            classroom_id: classroomID,
-            subject_id: subjectDetails.subject_id,
-            context,
-            addedDate: today
+        const newHomework = await prisma.homeworks.create({
+            data: {
+                school_id: parseInt(school_id),
+                classroom_id: parseInt(classroomID),
+                subject_id: subjectDetails.subject_id,
+                context,
+                addedDate: today
+            }
         });
 
         return res.status(201).json(newHomework);
@@ -114,32 +111,25 @@ ManagingHomework.post('/mobileAPI/get-homework', completeLogin, async (req, res)
         const homeworkData = {}; 
         
         const now = new Date();
-        const today = now.toLocaleDateString('en-CA');
+        const todayStr = now.toLocaleDateString('en-CA');
+        const today = new Date(todayStr);
         
-        
-        const sevenDaysAgo = new Date(now);
-        sevenDaysAgo.setDate(now.getDate() - 7);
-        const startDate = sevenDaysAgo.toLocaleDateString('en-CA'); 
+        const sevenDaysAgoStr = new Date(now.setDate(now.getDate() - 7)).toLocaleDateString('en-CA');
+        const startDate = new Date(sevenDaysAgoStr);
 
         if (sessionDetails['role'] === 'student') {
-            const [homeworkDetails] = await sequelize.query(`
+            const homeworkDetails = await prisma.$queryRaw`
                 SELECT homework_id, context, s.subject_name, s.subject_code, homeworks.addedDate
                 FROM homeworks 
                 INNER JOIN classrooms c ON c.classroom_id = homeworks.classroom_id 
                 INNER JOIN subjects s ON s.subject_id = homeworks.subject_id 
-                WHERE c.standard = :standard 
-                    AND c.section = :section
-                    AND homeworks.addedDate BETWEEN :startDate AND :today;
-            `,{
-                replacements:{
-                    standard:sessionDetails['standard'],
-                    section:sessionDetails['section'],
-                    startDate,today
-                }
-            });
+                WHERE c.standard = ${sessionDetails['standard']} 
+                    AND c.section = ${sessionDetails['section']}
+                    AND homeworks.addedDate BETWEEN ${startDate} AND ${today};
+            `;
 
             homeworkDetails.forEach((item) => {
-                const date = item.addedDate; 
+                const date = new Date(item.addedDate).toLocaleDateString('en-CA'); 
                 if (!homeworkData[date]) {
                     homeworkData[date] = [];
                 }
@@ -153,29 +143,25 @@ ManagingHomework.post('/mobileAPI/get-homework', completeLogin, async (req, res)
 
             if (!standard || !section) {
                 if (sessionDetails['role'] === 'teacher' || sessionDetails['role'] === 'admin-teacher') {
-                    const teacherDetails = await Teacher.findOne({
+                    const teacherDetails = await prisma.teachers.findFirst({
                         where: {
-                            school_id: req['sessionData']['school_id'],
-                            teacher_id: req['sessionData']['teacher_id']
+                            school_id: parseInt(req['sessionData']['school_id']),
+                            teacher_id: parseInt(req['sessionData']['teacher_id'])
                         },
-                        attributes: ['assignedClass']
+                        select: { assignedClass: true }
                     });
 
-                    const [homeworkDetails] = await sequelize.query(`
+                    const homeworkDetails = await prisma.$queryRaw`
                         SELECT homework_id, context, s.subject_name, s.subject_code, homeworks.addedDate 
                         FROM homeworks 
                         INNER JOIN classrooms c ON c.classroom_id = homeworks.classroom_id  
                         INNER JOIN subjects s ON s.subject_id = homeworks.subject_id 
-                        WHERE homeworks.addedDate BETWEEN :startDate AND :today 
-                            AND homeworks.classroom_id = :assignedClass ;
-                    `,{
-                        replacements:{
-                            startDate,today,assignedClass:teacherDetails['assignedClass']
-                        }
-                    });
+                        WHERE homeworks.addedDate BETWEEN ${startDate} AND ${today} 
+                            AND homeworks.classroom_id = ${teacherDetails['assignedClass']} ;
+                    `;
 
                     homeworkDetails.forEach((item) => {
-                        const date = item.addedDate;
+                        const date = new Date(item.addedDate).toLocaleDateString('en-CA');
                         if (!homeworkData[date]) {
                             homeworkData[date] = [];
                         }
@@ -188,22 +174,18 @@ ManagingHomework.post('/mobileAPI/get-homework', completeLogin, async (req, res)
                 }
             }
 
-            const [homeworkDetails] = await sequelize.query(`
+            const homeworkDetails = await prisma.$queryRaw`
                 SELECT homework_id, context, s.subject_name, s.subject_code, homeworks.addedDate 
                 FROM homeworks 
                 INNER JOIN classrooms c ON c.classroom_id = homeworks.classroom_id 
                 INNER JOIN subjects s ON s.subject_id = homeworks.subject_id 
-                WHERE c.standard = :standard 
-                    AND c.section = :section 
-                    AND homeworks.addedDate BETWEEN :startDate AND :today;
-            `,{
-                replacements:{
-                    standard, section, startDate, today
-                }
-            });
+                WHERE c.standard = ${standard} 
+                    AND c.section = ${section} 
+                    AND homeworks.addedDate BETWEEN ${startDate} AND ${today};
+            `;
 
             homeworkDetails.forEach((item) => {
-                const date = item.addedDate;
+                const date = new Date(item.addedDate).toLocaleDateString('en-CA');
                 if (!homeworkData[date]) {
                     homeworkData[date] = [];
                 }
@@ -224,9 +206,9 @@ ManagingHomework.post('/mobileAPI/get-homework', completeLogin, async (req, res)
 
 ManagingHomework.get('/mobileAPI/homework/:id',teacherAuth('homework'),async (req,res)=>{
     try{
-        const homework_id = req.params.id;
-        const school_id = req['sessionData']['school_id'];
-        const homework = await Homework.findOne({
+        const homework_id = parseInt(req.params.id);
+        const school_id = parseInt(req['sessionData']['school_id']);
+        const homework = await prisma.homeworks.findFirst({
             where: {
                 homework_id,
                 school_id
@@ -244,11 +226,11 @@ ManagingHomework.get('/mobileAPI/homework/:id',teacherAuth('homework'),async (re
 
 ManagingHomework.put('/mobileAPI/homework/:id', teacherAuth('homework'), async (req, res) => {
     try {
-        const homework_id = req.params.id;
+        const homework_id = parseInt(req.params.id);
         const { context } = req.body;
-        const school_id = req['sessionData']['school_id'];
+        const school_id = parseInt(req['sessionData']['school_id']);
 
-        const homework = await Homework.findOne({
+        const homework = await prisma.homeworks.findFirst({
             where: {
                 homework_id,
                 school_id
@@ -259,12 +241,14 @@ ManagingHomework.put('/mobileAPI/homework/:id', teacherAuth('homework'), async (
             return res.status(404).json({ message: "Homework not found" });
         }
 
-        homework.context = context || homework.context;
-        await homework.save();
+        const updatedHomework = await prisma.homeworks.update({
+            where: { homework_id },
+            data: { context: context || homework.context }
+        });
 
         res.status(200).json({
             message: "Homework updated successfully",
-            homework
+            homework: updatedHomework
         });
     } catch (e) {
         console.log("Error while updating the homework: ", e);
@@ -276,10 +260,10 @@ ManagingHomework.put('/mobileAPI/homework/:id', teacherAuth('homework'), async (
 });
 ManagingHomework.delete('/mobileAPI/homework/:id', teacherAuth('homework'), async (req, res) => {
     try {
-        const homework_id = req.params.id;
-        const school_id = req['sessionData']['school_id'];
+        const homework_id = parseInt(req.params.id);
+        const school_id = parseInt(req['sessionData']['school_id']);
 
-        const homework = await Homework.findOne({
+        const homework = await prisma.homeworks.findFirst({
             where: {
                 homework_id,
                 school_id
@@ -290,7 +274,9 @@ ManagingHomework.delete('/mobileAPI/homework/:id', teacherAuth('homework'), asyn
             return res.status(404).json({ message: "Homework not found" });
         }
 
-        await homework.destroy();
+        await prisma.homeworks.delete({
+            where: { homework_id }
+        });
 
         res.status(200).json({
             message: "Homework deleted successfully"
@@ -303,6 +289,5 @@ ManagingHomework.delete('/mobileAPI/homework/:id', teacherAuth('homework'), asyn
         });
     }
 });
-
 
 export default ManagingHomework;

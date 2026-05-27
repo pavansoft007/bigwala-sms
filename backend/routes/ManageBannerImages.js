@@ -1,7 +1,6 @@
 import express from "express";
 import path from "path";
 import AdminAuth from "../middleware/AdminAuth.js";
-import BannerImages from "../models/BannerImages.js";
 import completeLogin from "../middleware/completeLogin.js";
 import Encrypt from "../services/Encrypt.js";
 import ImageCors from "../middleware/ImageCors.js";
@@ -99,9 +98,9 @@ ManageBannerImages.get('/staticFiles/bannerImages/:id', ImageCors, async (req, r
         const __dirname = path.dirname(__filename);
         const completePath = path.parse(__dirname)['dir'];
         if (ip === realIp[realIp.length - 1]) {
-            const fileDetails = await BannerImages.findOne({
+            const fileDetails = await prisma.bannerImages.findUnique({
                 where: {
-                    banner_id: decText[0]
+                    banner_id: Number(decText[0])
                 }
             });
             if (fileDetails['filename']) {

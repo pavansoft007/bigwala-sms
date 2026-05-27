@@ -1,9 +1,11 @@
-import Student from "../models/Student.js";
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 async function generateAdmissionID(school_code) {
-    const lastStudent = await Student.findOne({
+    const lastStudent = await prisma.students.findFirst({
         where: { school_code },
-        order: [['admission_ID', 'DESC']]
+        orderBy: { admission_ID: 'desc' }
     });
 
     let nextAdmissionNumber = 1;

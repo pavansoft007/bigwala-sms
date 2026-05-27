@@ -1,5 +1,4 @@
 import express from "express";
-import MessageBoard from "../models/MessageBoard.js";
 import multer from 'multer';
 import path from 'path';
 import Decrypt from "../services/Decrypt.js";
@@ -7,12 +6,14 @@ import {fileURLToPath} from "url";
 import dotenv from "dotenv";
 import TeacherAuth from "../middleware/teacherAuth.js";
 import getAssignedClassroom from "../services/getAssignedClassroom.js";
-import sequelize from "../config/database.js";
 import completeLogin from "../middleware/completeLogin.js";
 import Encrypt from "../services/Encrypt.js";
 import ImageCors from "../middleware/ImageCors.js";
+import { PrismaClient } from "@prisma/client";
+
 dotenv.config();
 
+const prisma = new PrismaClient();
 
 const storage = multer.diskStorage({
       destination: (req, file, cb) => {
@@ -57,15 +58,17 @@ ManagingMessageBoard.post('/mobileAPI/add-new-message', TeacherAuth('message boa
 
       try {
             if (messageType === 'text') {
-                  const newMessageBoard = await MessageBoard.create({
-                        student_id: type === 'student' ? student_id : null ,
-                        classroom_id,
-                        message_type:messageType,
-                        text_message,
-                        added_by:req['sessionData']['role'],
-                        added_member_id,
-                        school_id,
-                        type
+                  const newMessageBoard = await prisma.messageBoards.create({
+                        data: {
+                              student_id: type === 'student' ? parseInt(student_id) : null ,
+                              classroom_id: parseInt(classroom_id),
+                              message_type:messageType,
+                              text_message,
+                              added_by:req['sessionData']['role'],
+                              added_member_id: parseInt(added_member_id),
+                              school_id: parseInt(school_id),
+                              type
+                        }
                   });
                   return res.status(200).json(newMessageBoard);
 
@@ -74,15 +77,17 @@ ManagingMessageBoard.post('/mobileAPI/add-new-message', TeacherAuth('message boa
                         return res.status(400).json({ error: 'Voice file is required for voice messages.' });
                   }
 
-                  const newMessageBoard = await MessageBoard.create({
-                        student_id : type === 'student' ? student_id : null,
-                        classroom_id,
-                        message_type:messageType,
-                        voice_location: req.file.path,
-                        added_by:req['sessionData']['role'],
-                        added_member_id,
-                        school_id,
-                        type
+                  const newMessageBoard = await prisma.messageBoards.create({
+                        data: {
+                              student_id : type === 'student' ? parseInt(student_id) : null,
+                              classroom_id: parseInt(classroom_id),
+                              message_type:messageType,
+                              voice_location: req.file.path,
+                              added_by:req['sessionData']['role'],
+                              added_member_id: parseInt(added_member_id),
+                              school_id: parseInt(school_id),
+                              type
+                        }
                   });
                   return res.status(200).json(newMessageBoard);
             }
@@ -112,58 +117,57 @@ ManagingMessageBoard.post('/mobileAPI/getMessages', completeLogin, async (req, r
             FROM messageBoards
             LEFT JOIN classrooms c ON c.classroom_id = messageBoards.classroom_id
             LEFT JOIN students s ON s.student_id = messageBoards.student_id
-            LEFT JOIN admins a ON a.admin_id=messageBoards.added_by
-            LEFT JOIN teachers t ON t.teacher_id=messageBoards.added_by
+            LEFT JOIN admins a ON a.admin_id=messageBoards.added_member_id
+            LEFT JOIN teachers t ON t.teacher_id=messageBoards.added_member_id
             LEFT JOIN subjects sub ON sub.subject_id=t.subject_id
         `;
 
-            let whereClause = '';
-            let replacements = { schoolId: school_id, classroom_id, student_id: bodyStudentId };
+            let query = '';
+            let params = [];
 
             if (role === 'admin' || role === 'teacher-admin') {
                   if (classroom_id) {
-                        whereClause = `WHERE messageBoards.school_id = :schoolId AND messageBoards.classroom_id = :classroom_id AND messageBoards.type = 'completeClass'`;
+                        query = `${baseQuery} WHERE messageBoards.school_id = ? AND messageBoards.classroom_id = ? AND messageBoards.type = 'completeClass'`;
+                        params = [school_id, classroom_id];
                   } else if (bodyStudentId) {
-                        whereClause = `WHERE messageBoards.school_id = :schoolId AND messageBoards.student_id = :student_id AND messageBoards.type = 'student'`;
+                        query = `${baseQuery} WHERE messageBoards.school_id = ? AND messageBoards.student_id = ? AND messageBoards.type = 'student'`;
+                        params = [school_id, bodyStudentId];
                   } else {
-                        whereClause = `WHERE messageBoards.school_id = :schoolId AND messageBoards.type = 'completeSchool'`;
+                        query = `${baseQuery} WHERE messageBoards.school_id = ? AND messageBoards.type = 'completeSchool'`;
+                        params = [school_id];
                   }
 
                   if (type === 'fetchAll') {
-                        whereClause = `WHERE messageBoards.school_id = :schoolId`;
+                        query = `${baseQuery} WHERE messageBoards.school_id = ?`;
+                        params = [school_id];
                   }
 
             } else if (role === 'teacher') {
-                  replacements = {
-                        studentId: bodyStudentId,
-                        classroomId: await getAssignedClassroom(student_id, 'teacher'),
-                        schoolId: school_id,
-                  };
-                  whereClause = `
-                WHERE 
-                    (messageBoards.student_id = :studentId)
-                    OR (messageBoards.classroom_id = :classroomId AND messageBoards.type = 'completeClass')
-                    OR (messageBoards.type = 'completeSchool' AND messageBoards.school_id = :schoolId)
-            `;
+                  const assignedClass = await getAssignedClassroom(student_id, 'teacher');
+                  query = `
+                      ${baseQuery}
+                      WHERE 
+                          (messageBoards.student_id = ?)
+                          OR (messageBoards.classroom_id = ? AND messageBoards.type = 'completeClass')
+                          OR (messageBoards.type = 'completeSchool' AND messageBoards.school_id = ?)
+                  `;
+                  params = [bodyStudentId || null, assignedClass, school_id];
 
             } else if (role === 'student') {
-                  replacements = {
-                        studentId: student_id,
-                        classroomId: await getAssignedClassroom(student_id, 'student'),
-                        schoolId: school_id,
-                  };
-                  whereClause = `
-                WHERE 
-                    (messageBoards.student_id = :studentId)
-                    OR (messageBoards.classroom_id = :classroomId AND messageBoards.type = 'completeClass')
-                    OR (messageBoards.type = 'completeSchool' AND messageBoards.school_id = :schoolId)
-            `;
+                  const assignedClass = await getAssignedClassroom(student_id, 'student');
+                  query = `
+                      ${baseQuery}
+                      WHERE 
+                          (messageBoards.student_id = ?)
+                          OR (messageBoards.classroom_id = ? AND messageBoards.type = 'completeClass')
+                          OR (messageBoards.type = 'completeSchool' AND messageBoards.school_id = ?)
+                  `;
+                  params = [student_id, assignedClass, school_id];
             } else {
                   return res.status(403).json({ error: 'Unauthorized access.' });
             }
 
-            const query = `${baseQuery} ${whereClause}`;
-            const [allMessages] = await sequelize.query(query, { replacements });
+            const allMessages = await prisma.$queryRawUnsafe(query, ...params);
 
             const formattedMessages = allMessages.map(item => {
                   if(item.added_by === 'admin'){
@@ -187,25 +191,21 @@ ManagingMessageBoard.post('/mobileAPI/getMessages', completeLogin, async (req, r
       }
 });
 
-//@todo backend route for the get them via there assignedClass id
-
-
-
 ManagingMessageBoard.get('/staticFiles/voiceMessage/:id',ImageCors,async (req,res)=>{
       const id=req.params.id;
       const decText = Decrypt(id).split(':');
       const ip=decText[decText.length-1];
       const realIp=req['ip'].split(':');
       if(ip === realIp[realIp.length-1]){
-            const fileDetails=await MessageBoard.findOne({
+            const fileDetails = await prisma.messageBoards.findFirst({
                   where:{
-                        message_id:decText[0]
+                        message_id: parseInt(decText[0])
                   }
             });
             const __filename = fileURLToPath(import.meta.url);
             const __dirname = path.dirname(__filename);
             const completePath=path.parse(__dirname)['dir'];
-            if(fileDetails['voice_location']){
+            if(fileDetails && fileDetails['voice_location']){
                   res.sendFile(path.join(completePath,fileDetails['voice_location']));
             }else{
                   res.send('file location not found');

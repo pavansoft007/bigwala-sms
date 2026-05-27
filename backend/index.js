@@ -1,6 +1,5 @@
 import 'dotenv/config';
 import express from "express";
-import sequelize from "./config/database.js";
 import Auth from "./routes/Auth.js";
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
@@ -110,7 +109,6 @@ app.get('*', (req, res) => {
 
 process.on('SIGINT', async () => {
     console.log('Closing database connection...');
-    await sequelize.close();
     await prisma.$disconnect();
     console.log('Database connection closed.');
     process.exit(0);

@@ -1,10 +1,12 @@
-import Teacher from "../models/Teacher.js";
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 async function generateTeacherID(school_code) {
     try {
-        const lastTeacher = await Teacher.findOne({
+        const lastTeacher = await prisma.teachers.findFirst({
             where: { school_code },
-            order: [['TeacherID', 'DESC']]
+            orderBy: { TeacherID: 'desc' }
         });
 
         let nextAdmissionNumber = 1;

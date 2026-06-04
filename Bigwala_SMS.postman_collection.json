@@ -1,0 +1,1356 @@
+{
+  "info": {
+    "name": "Bigwala SMS API",
+    "description": "Complete API collection for Bigwala School Management System",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000", "type": "string" },
+    { "key": "adminToken", "value": "", "type": "string" },
+    { "key": "teacherToken", "value": "", "type": "string" },
+    { "key": "studentToken", "value": "", "type": "string" },
+    { "key": "otpToken", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Admin Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/admin-login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@school.com\",\n  \"password\": \"yourpassword\"\n}"
+            },
+            "description": "Login as admin. Returns JWT token. Save it to {{adminToken}}."
+          }
+        },
+        {
+          "name": "OTP Request (Mobile)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/mobileAPI/otp-request",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+911234567890\"\n}"
+            },
+            "description": "Request an OTP for mobile login. Save the returned token to {{otpToken}}."
+          }
+        },
+        {
+          "name": "OTP Verify (Mobile)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{otpToken}}" }
+            ],
+            "url": "{{baseUrl}}/mobileAPI/otp-verify",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"otp\": \"123456\"\n}"
+            },
+            "description": "Verify OTP. Returns teacher/student JWT token."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "Get Dashboard (Admin Info)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/dashboard",
+            "description": "Returns admin name, school name, role, and permissions."
+          }
+        },
+        {
+          "name": "Get Main Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/main-dashboard",
+            "description": "Returns teacher count, attendance %, fee collection, enrollment and weekly attendance chart data."
+          }
+        },
+        {
+          "name": "Get User Details",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/userDetails",
+            "description": "Returns current logged-in user's session data."
+          }
+        },
+        {
+          "name": "Submit Interested School",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/interested_school",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"school_name\": \"ABC School\",\n  \"location\": \"Hyderabad\",\n  \"admin_name\": \"John Doe\",\n  \"phone_number\": \"9876543210\"\n}"
+            },
+            "description": "Public endpoint — no auth required. Register a school's interest."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Classrooms",
+      "item": [
+        {
+          "name": "Create Classroom",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": "{{baseUrl}}/mobileAPI/classroom",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"standard\": \"10\",\n  \"section\": \"A\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get All Classrooms",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{teacherToken}}" }],
+            "url": "{{baseUrl}}/mobileAPI/classroom"
+          }
+        },
+        {
+          "name": "Delete Classroom",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/mobileAPI/classroom/1",
+            "description": "Replace 1 with classroom_id."
+          }
+        },
+        {
+          "name": "Get All Standards",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/mobileAPI/standard",
+            "description": "Returns distinct standards for the school."
+          }
+        },
+        {
+          "name": "Get Sections by Standard",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/mobileAPI/section?standard=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["mobileAPI", "section"],
+              "query": [{ "key": "standard", "value": "10" }]
+            }
+          }
+        },
+        {
+          "name": "Get Students in Classroom",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{teacherToken}}" }],
+            "url": "{{baseUrl}}/mobileAPI/getStudent/1",
+            "description": "Replace 1 with classroom_id."
+          }
+        },
+        {
+          "name": "Assign Student to Classroom",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": "{{baseUrl}}/mobileAPI/student-assign-classroom",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"standard\": \"10\",\n  \"section\": \"A\",\n  \"studentID\": 1\n}"
+            }
+          }
+        },
+        {
+          "name": "Assign Teacher to Classroom",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": "{{baseUrl}}/mobileAPI/teacher-assign-classroom",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"standard\": \"10\",\n  \"section\": \"A\",\n  \"teacher_id\": 1\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Students",
+      "item": [
+        {
+          "name": "Create Student",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/student",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "first_name", "value": "John", "type": "text" },
+                { "key": "last_name", "value": "Doe", "type": "text" },
+                { "key": "date_of_birth", "value": "2010-01-15", "type": "text" },
+                { "key": "gender", "value": "Male", "type": "text" },
+                { "key": "email", "value": "john.doe@example.com", "type": "text" },
+                { "key": "phone_number", "value": "9876543210", "type": "text" },
+                { "key": "address", "value": "123 Main St", "type": "text" },
+                { "key": "enrollment_date", "value": "2024-06-01", "type": "text" },
+                { "key": "standard", "value": "10", "type": "text" },
+                { "key": "section", "value": "A", "type": "text" },
+                { "key": "father_name", "value": "James Doe", "type": "text" },
+                { "key": "mother_name", "value": "Jane Doe", "type": "text" },
+                { "key": "mother_phone_number", "value": "9876543211", "type": "text" },
+                { "key": "caste", "value": "General", "type": "text" },
+                { "key": "feeDetails", "value": "[{\"total_fee\": 5000, \"category_id\": 1}]", "type": "text" },
+                { "key": "student_photo", "type": "file", "src": "" },
+                { "key": "father_photo", "type": "file", "src": "" }
+              ]
+            },
+            "description": "Creates a new student. Uses multipart/form-data for photo uploads."
+          }
+        },
+        {
+          "name": "Get Student by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/mobileAPI/students/1",
+            "description": "Returns full student details including fees, payment history, and exam marks. Replace 1 with student_id."
+          }
+        },
+        {
+          "name": "Search Students",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/search/student",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"page\": 1,\n  \"limit\": 10,\n  \"searchKey\": \"John\",\n  \"standard\": \"10\",\n  \"section\": \"A\",\n  \"status\": \"Active\"\n}"
+            },
+            "description": "Paginated search. Supports: searchKey, email, phone_number, student_id, admission_ID, status, assignedClassroom, standard, section, name."
+          }
+        },
+        {
+          "name": "Update Student",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/student/1",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "first_name", "value": "John Updated", "type": "text" },
+                { "key": "address", "value": "456 New St", "type": "text" },
+                { "key": "status", "value": "Active", "type": "text" },
+                { "key": "student_photo", "type": "file", "src": "" }
+              ]
+            },
+            "description": "Update student fields. Replace 1 with student_id."
+          }
+        },
+        {
+          "name": "Delete Student",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/student/1",
+            "description": "Deletes student and all associated payments, fees, and user record. Replace 1 with student_id."
+          }
+        },
+        {
+          "name": "Get Students (Teacher - own class)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{teacherToken}}" }],
+            "url": "{{baseUrl}}/mobileAPI/getStudent",
+            "description": "Returns students in the teacher's assigned classroom."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Teachers",
+      "item": [
+        {
+          "name": "Create Teacher",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/teacher",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "first_name", "value": "Alice", "type": "text" },
+                { "key": "last_name", "value": "Smith", "type": "text" },
+                { "key": "email", "value": "alice.smith@school.com", "type": "text" },
+                { "key": "phone_number", "value": "9123456789", "type": "text" },
+                { "key": "hire_date", "value": "2024-01-01", "type": "text" },
+                { "key": "status", "value": "Active", "type": "text" },
+                { "key": "salary", "value": "30000", "type": "text" },
+                { "key": "subject_id", "value": "1", "type": "text" },
+                { "key": "assignedClass", "value": "1", "type": "text" },
+                { "key": "role_id", "value": "2", "type": "text" },
+                { "key": "adminAccess", "value": "false", "type": "text" },
+                { "key": "teachers_qualification", "value": "B.Ed", "type": "text" },
+                { "key": "teacher_photo", "type": "file", "src": "" },
+                { "key": "teacher_qualification_certificate", "type": "file", "src": "" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Teachers",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/teacher"
+          }
+        },
+        {
+          "name": "Get Teacher by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/teacher/1",
+            "description": "Replace 1 with teacher_id."
+          }
+        },
+        {
+          "name": "Search Teachers",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/search/teacher",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"page\": 1,\n  \"limit\": 10,\n  \"name\": \"Alice\",\n  \"status\": \"Active\"\n}"
+            },
+            "description": "Supports: name, email, phone_number, TeacherID, status, assignedClass, subject_id, teachers_qualification, subject_name, standard, section."
+          }
+        },
+        {
+          "name": "Update Teacher",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/teacher/1",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "first_name", "value": "Alice Updated", "type": "text" },
+                { "key": "salary", "value": "35000", "type": "text" },
+                { "key": "status", "value": "Active", "type": "text" },
+                { "key": "adminAccess", "value": "false", "type": "text" }
+              ]
+            },
+            "description": "Replace 1 with teacher_id."
+          }
+        },
+        {
+          "name": "Delete Teacher",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/teacher/1",
+            "description": "Deletes teacher and associated user record. Replace 1 with teacher_id."
+          }
+        },
+        {
+          "name": "Get Teacher by ID (Mobile)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/mobileAPI/teachers/1",
+            "description": "Mobile endpoint. Replace 1 with teacher_id."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Attendance",
+      "item": [
+        {
+          "name": "Get Attendance Summary (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/get-attendance-data",
+            "description": "Returns today's total vs attended count for students and teachers."
+          }
+        },
+        {
+          "name": "Mark Student Attendance (Teacher)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{teacherToken}}" }
+            ],
+            "url": "{{baseUrl}}/mobileAPI/student/attendance",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentsIDs\": [1, 2, 3, 4]\n}"
+            },
+            "description": "Mark attendance for an array of student IDs. Skips duplicates."
+          }
+        },
+        {
+          "name": "Teacher Attendance Request (Mobile)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{teacherToken}}" }
+            ],
+            "url": "{{baseUrl}}/mobileAPI/teacher/attendance/request",
+            "description": "Teacher submits their own attendance request (status: pending)."
+          }
+        },
+        {
+          "name": "Get Pending Teacher Attendance (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/attendance/admin/pending"
+          }
+        },
+        {
+          "name": "Approve Teacher Attendance (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/attendance/admin/approve/1",
+            "description": "Replace 1 with attendance_id."
+          }
+        },
+        {
+          "name": "Reject Teacher Attendance (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/attendance/admin/reject/1",
+            "description": "Replace 1 with attendance_id."
+          }
+        },
+        {
+          "name": "Get Attended Teachers Today (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/attendance/admin/attended-today?date=2026-06-04",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "attendance", "admin", "attended-today"],
+              "query": [{ "key": "date", "value": "2026-06-04", "description": "Optional. Defaults to today." }]
+            }
+          }
+        },
+        {
+          "name": "Get Student Attendance History (Student)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{studentToken}}" }],
+            "url": "{{baseUrl}}/mobileAPI/attendance/student"
+          }
+        },
+        {
+          "name": "Get Teacher Attendance History (Teacher)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{teacherToken}}" }],
+            "url": "{{baseUrl}}/mobileAPI/attendance/teachers"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Homework",
+      "item": [
+        {
+          "name": "Add Homework",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{teacherToken}}" }
+            ],
+            "url": "{{baseUrl}}/mobileAPI/homework",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"subject_id\": 1,\n  \"context\": \"Read chapter 5 and solve exercises 1-10.\",\n  \"standard\": \"10\",\n  \"section\": \"A\"\n}"
+            },
+            "description": "standard and section are optional if teacher has an assigned class."
+          }
+        },
+        {
+          "name": "Get Homework",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{teacherToken}}" }
+            ],
+            "url": "{{baseUrl}}/mobileAPI/get-homework",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"standard\": \"10\",\n  \"section\": \"A\"\n}"
+            },
+            "description": "Returns last 7 days' homework grouped by date. For students, uses their enrolled class automatically."
+          }
+        },
+        {
+          "name": "Get Homework by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{teacherToken}}" }],
+            "url": "{{baseUrl}}/mobileAPI/homework/1",
+            "description": "Replace 1 with homework_id."
+          }
+        },
+        {
+          "name": "Update Homework",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{teacherToken}}" }
+            ],
+            "url": "{{baseUrl}}/mobileAPI/homework/1",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"context\": \"Updated: Read chapter 5 and 6.\"\n}"
+            },
+            "description": "Replace 1 with homework_id."
+          }
+        },
+        {
+          "name": "Delete Homework",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{teacherToken}}" }],
+            "url": "{{baseUrl}}/mobileAPI/homework/1",
+            "description": "Replace 1 with homework_id."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Message Board",
+      "item": [
+        {
+          "name": "Add Text Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{teacherToken}}" }
+            ],
+            "url": "{{baseUrl}}/mobileAPI/add-new-message",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"messageType\": \"text\",\n  \"text_message\": \"School will be closed tomorrow.\",\n  \"type\": \"completeClass\",\n  \"classroom_id\": 1\n}"
+            },
+            "description": "type: 'completeClass' | 'student' | 'completeSchool' (admin only). messageType: 'text' | 'voice'."
+          }
+        },
+        {
+          "name": "Add Voice Message",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{teacherToken}}" }],
+            "url": "{{baseUrl}}/mobileAPI/add-new-message",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "messageType", "value": "voice", "type": "text" },
+                { "key": "type", "value": "completeClass", "type": "text" },
+                { "key": "classroom_id", "value": "1", "type": "text" },
+                { "key": "voice", "type": "file", "src": "" }
+              ]
+            },
+            "description": "Upload an audio file (mp3, wav, ogg, m4a, mpeg). Max 10MB."
+          }
+        },
+        {
+          "name": "Get Messages",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": "{{baseUrl}}/mobileAPI/getMessages",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"classroom_id\": 1\n}"
+            },
+            "description": "Fetches messages based on role. Admin can filter by classroom_id, student_id, or fetch all (type: 'fetchAll')."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Gallery",
+      "item": [
+        {
+          "name": "Upload Gallery Photos",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/mobileAPI/gallery",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "event_name", "value": "Sports Day 2026", "type": "text" },
+                { "key": "photos", "type": "file", "src": "" },
+                { "key": "photos", "type": "file", "src": "" }
+              ]
+            },
+            "description": "Upload up to 10 photos for an event."
+          }
+        },
+        {
+          "name": "Get Gallery",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{studentToken}}" }],
+            "url": "{{baseUrl}}/mobileAPI/gallery",
+            "description": "Returns photos grouped by date > event_name. Photo filenames are encrypted tokens."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Videos",
+      "item": [
+        {
+          "name": "Add YouTube Video",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": "{{baseUrl}}/mobileAPI/add-new-video",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_name\": \"Annual Day 2026\",\n  \"youtude_link\": \"https://www.youtube.com/watch?v=dQw4w9WgXcQ\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get All Videos",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{studentToken}}" }],
+            "url": "{{baseUrl}}/mobileAPI/get-videos"
+          }
+        },
+        {
+          "name": "Update Video",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": "{{baseUrl}}/mobileAPI/update-video/1",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_name\": \"Annual Day 2026 Updated\",\n  \"youtude_link\": \"https://www.youtube.com/watch?v=newlink\"\n}"
+            },
+            "description": "Replace 1 with youtube_id."
+          }
+        },
+        {
+          "name": "Delete Video",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/mobileAPI/delete-video/1",
+            "description": "Replace 1 with youtube_id."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Subjects",
+      "item": [
+        {
+          "name": "Create Subject",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/subject",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"subject_name\": \"Mathematics\",\n  \"subject_code\": \"MATH101\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get All Subjects",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/subject"
+          }
+        },
+        {
+          "name": "Update Subject",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/subject/1",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"subject_name\": \"Advanced Mathematics\",\n  \"subject_code\": \"MATH201\"\n}"
+            },
+            "description": "Replace 1 with subject_id."
+          }
+        },
+        {
+          "name": "Delete Subject",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/subject/1",
+            "description": "Replace 1 with subject_id."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Exams & Marks",
+      "item": [
+        {
+          "name": "Create Exam",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/exam",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "exam_name", "value": "Mid-Term 2026", "type": "text" },
+                { "key": "class_id", "value": "1", "type": "text" },
+                { "key": "start_date", "value": "2026-07-01", "type": "text" },
+                { "key": "end_date", "value": "2026-07-10", "type": "text" },
+                { "key": "status", "value": "upcoming", "type": "text" },
+                { "key": "timetable_photo", "type": "file", "src": "" }
+              ]
+            },
+            "description": "Timetable photo is required. status: 'upcoming' | 'ongoing' | 'completed'."
+          }
+        },
+        {
+          "name": "Get All Exams",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/exam"
+          }
+        },
+        {
+          "name": "Update Exam",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/exam/1",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "exam_name", "value": "Mid-Term 2026 Updated", "type": "text" },
+                { "key": "classroom_id", "value": "1", "type": "text" },
+                { "key": "start_date", "value": "2026-07-01", "type": "text" },
+                { "key": "end_date", "value": "2026-07-12", "type": "text" },
+                { "key": "status", "value": "completed", "type": "text" }
+              ]
+            },
+            "description": "Replace 1 with exam_id. timetable_photo is optional on update."
+          }
+        },
+        {
+          "name": "Add Student Marks (Bulk by Exam)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/studentMarks",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"student_id\": 1,\n  \"exam_id\": 1,\n  \"classroom_id\": 1,\n  \"marks\": {\n    \"1\": { \"marks\": 85 },\n    \"2\": { \"marks\": 90 }\n  }\n}"
+            },
+            "description": "marks object: keys are subject_ids. Exam status must be 'completed'."
+          }
+        },
+        {
+          "name": "Add Single Exam Mark",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/exam-marks",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"subject_id\": 1,\n  \"class_id\": 1,\n  \"student_id\": 1,\n  \"exam_id\": 1,\n  \"marks\": 88\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Exam Marks (Filtered)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/exam-marks?exam_id=1&class_id=1&student_id=1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "exam-marks"],
+              "query": [
+                { "key": "exam_id", "value": "1" },
+                { "key": "class_id", "value": "1" },
+                { "key": "student_id", "value": "1" }
+              ]
+            },
+            "description": "All query params are optional filters."
+          }
+        },
+        {
+          "name": "Get Marks by Student and Exam",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/exam-marks/1/1",
+            "description": "Path: /api/exam-marks/:student_id/:exam_id"
+          }
+        },
+        {
+          "name": "Update Exam Mark",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/exam-marks/1",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"marks\": 92\n}"
+            },
+            "description": "Replace 1 with the ExamMark record id."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Fee Categories",
+      "item": [
+        {
+          "name": "Create Fee Category",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/fee_category",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category_name\": \"Transport Fee\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get All Fee Categories",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/fee_category"
+          }
+        },
+        {
+          "name": "Update Fee Category",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/fee_category/1",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category_name\": \"Transport Fee Updated\"\n}"
+            },
+            "description": "Replace 1 with category_id."
+          }
+        },
+        {
+          "name": "Delete Fee Category",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/fee_category/1",
+            "description": "Replace 1 with category_id."
+          }
+        },
+        {
+          "name": "Fee Dashboard Data",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/fee/dashboard_data",
+            "description": "Returns total collection, pending payments, fully paid count, monthly trend, and recent transactions."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Fee Payments",
+      "item": [
+        {
+          "name": "Collect Fee (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/fee/fee-collect",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 2000,\n  \"student_id\": 1,\n  \"category_id\": 1,\n  \"payment_mode\": \"cash\",\n  \"remarks\": \"First installment\"\n}"
+            },
+            "description": "payment_mode: 'cash' | 'upi' | 'cheque' | etc."
+          }
+        },
+        {
+          "name": "Online Fee Payment (Student)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{studentToken}}" }],
+            "url": "{{baseUrl}}/api/fee/online-fee-payment",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "amount", "value": "1500", "type": "text" },
+                { "key": "category_id", "value": "1", "type": "text" },
+                { "key": "payment_photo", "type": "file", "src": "" }
+              ]
+            },
+            "description": "Student uploads payment screenshot. Status will be 'pending' until admin approves."
+          }
+        },
+        {
+          "name": "Get Pending Online Payments (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/fee/pending-online-fee"
+          }
+        },
+        {
+          "name": "Approve Online Payment (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/fee/update-online-fee/1",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"remarks\": \"Verified via UPI\"\n}"
+            },
+            "description": "Replace 1 with pending_payment_id."
+          }
+        },
+        {
+          "name": "Reject Online Payment (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/fee/reject-online-fee/1",
+            "description": "Replace 1 with pending_payment_id."
+          }
+        },
+        {
+          "name": "Get Classes for Fee",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/fee/class",
+            "description": "Returns distinct standards for fee management."
+          }
+        },
+        {
+          "name": "Get Students by Standard (Fee)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/fee/student_data/10",
+            "description": "Replace 10 with the standard name."
+          }
+        },
+        {
+          "name": "Get Recent Transactions",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/fee/recent-transactions?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "fee", "recent-transactions"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Leaves",
+      "item": [
+        {
+          "name": "Submit Leave Request (Teacher)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{teacherToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/teacher/leaves",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leave_type\": \"sick\",\n  \"start_date\": \"2026-06-10\",\n  \"end_date\": \"2026-06-11\",\n  \"reason\": \"Fever and cold\",\n  \"is_half_day\": false,\n  \"emergency_contact\": \"9876543210\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get My Leaves (Teacher)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{teacherToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/teacher/leaves?status=pending&page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "teacher", "leaves"],
+              "query": [
+                { "key": "status", "value": "pending", "description": "pending | approved | rejected | cancelled" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Leave (Teacher)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{teacherToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/teacher/leaves/1",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Updated reason\",\n  \"end_date\": \"2026-06-12\"\n}"
+            },
+            "description": "Can only update pending leaves. Replace 1 with leave id."
+          }
+        },
+        {
+          "name": "Cancel Leave (Teacher)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{teacherToken}}" }],
+            "url": "{{baseUrl}}/api/teacher/leaves/1/cancel",
+            "description": "Replace 1 with leave id."
+          }
+        },
+        {
+          "name": "Get All Leaves (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/leaves?status=pending&page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "leaves"],
+              "query": [
+                { "key": "status", "value": "pending", "description": "pending | approved | rejected | all" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Leave Stats (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/admin/leaves/stats",
+            "description": "Returns leave counts by status and this month's count."
+          }
+        },
+        {
+          "name": "Get Leave by ID (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/admin/leaves/1",
+            "description": "Replace 1 with leave id."
+          }
+        },
+        {
+          "name": "Approve Leave (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/admin/leaves/1/approve",
+            "description": "Replace 1 with leave id."
+          }
+        },
+        {
+          "name": "Reject Leave (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/admin/leaves/1/reject",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rejection_reason\": \"No cover available\"\n}"
+            },
+            "description": "rejection_reason is required. Replace 1 with leave id."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Banner Images",
+      "item": [
+        {
+          "name": "Upload Banner Images",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/bannerImage",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "photo", "type": "file", "src": "" },
+                { "key": "photo", "type": "file", "src": "" }
+              ]
+            },
+            "description": "Upload up to 10 banner images."
+          }
+        },
+        {
+          "name": "Get Banner Images (Mobile)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{studentToken}}" }],
+            "url": "{{baseUrl}}/mobileAPI/bannerImages",
+            "description": "Returns encrypted image tokens."
+          }
+        },
+        {
+          "name": "Delete Banner Image",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/bannerImages/1",
+            "description": "Replace 1 with banner id."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Roles & Users",
+      "item": [
+        {
+          "name": "Create Role",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/roles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role_name\": \"accountant\",\n  \"permissions\": [\"fee\", \"student management\"]\n}"
+            }
+          }
+        },
+        {
+          "name": "Get All Roles",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/roles"
+          }
+        },
+        {
+          "name": "Update Role",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/roles/1",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role_name\": \"accountant\",\n  \"permissions\": [\"fee\", \"student management\", \"attendance\"]\n}"
+            },
+            "description": "Replace 1 with role_id."
+          }
+        },
+        {
+          "name": "Delete Role",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/roles/1",
+            "description": "Replace 1 with role_id. Fails if role is assigned to any admin."
+          }
+        },
+        {
+          "name": "Create Admin User",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/users",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"admin_name\": \"Accounts Manager\",\n  \"admin_email\": \"accounts@school.com\",\n  \"admin_password\": \"securepass123\",\n  \"admin_phone_number\": \"9000000001\",\n  \"role_id\": 2\n}"
+            }
+          }
+        },
+        {
+          "name": "Get All Admin Users",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/users"
+          }
+        },
+        {
+          "name": "Update Admin User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/users/1",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"admin_name\": \"Updated Name\",\n  \"admin_email\": \"updated@school.com\",\n  \"role_id\": 3\n}"
+            },
+            "description": "Replace 1 with admin_id."
+          }
+        },
+        {
+          "name": "Delete Admin User",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/users/1",
+            "description": "Replace 1 with admin_id."
+          }
+        },
+        {
+          "name": "Get All Modules",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/get-all-module"
+          }
+        },
+        {
+          "name": "Get Current User Role & Permissions",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/get-all-roles"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Super Admin - School Management",
+      "item": [
+        {
+          "name": "Add New School",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{masterAdminToken}}" }
+            ],
+            "url": "{{baseUrl}}/super-admin/schools",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"school_name\": \"Springfield Elementary\",\n  \"address\": \"742 Evergreen Terrace\",\n  \"phone_number\": \"9876500000\",\n  \"email\": \"info@springfield.edu\",\n  \"school_code\": \"SPRG001\",\n  \"admin_name\": \"Principal Skinner\",\n  \"admin_email\": \"skinner@springfield.edu\",\n  \"admin_phone_number\": \"9876500001\",\n  \"admin_password\": \"securepassword123\",\n  \"year\": \"2026-2027\"\n}"
+            },
+            "description": "Master admin only. Creates school, default admin, default 'tuition fee' category, academic year, and financials in a single transaction."
+          }
+        }
+      ]
+    }
+  ]
+}

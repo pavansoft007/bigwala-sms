@@ -1,7 +1,5 @@
 import jwt from "jsonwebtoken";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from "../lib/prisma.js";
 
 const SemiAdminAuth = (required) => {
     return async (req, res, next) => {
@@ -31,7 +29,7 @@ const SemiAdminAuth = (required) => {
 
                 return res.status(404).json({});
 
-            } else if (tokenDetails.role === 'teacher-admin') {
+            } else if (tokenDetails.role === 'admin-teacher') {
                 req['sessionData'] = tokenDetails;
                 return next();
             } else {

@@ -43,72 +43,14 @@ const AdminDashboard = () => {
     const userInfo = useSelector((state: RootState) => state.userInfo);
     const [isLoading, setIsLoading] = useState(true);
 
-    // const attendanceData = [
-    //     {name: "Mon", students: 95, teachers: 98},
-    //     {name: "Tue", students: 93, teachers: 100},
-    //     {name: "Wed", students: 94, teachers: 99},
-    //     {name: "Thu", students: 91, teachers: 97},
-    //     {name: "Fri", students: 89, teachers: 100},
-    // ];
-
     const [enrollmentData, setEnrollmentData] = useState<EnrollmentData[]>([]);
     const [attendanceData, setAttendanceData] = useState<AttendanceData[]>([]);
-
-    // Sample enrollment data
-    // const enrollmentData = [
-    //     {name: "Class VI", count: 120},
-    //     {name: "Class VII", count: 115},
-    //     {name: "Class VIII", count: 110},
-    //     {name: "Class IX", count: 105},
-    //     {name: "Class X", count: 108},
-    //     {name: "Class XI", count: 86},
-    //     {name: "Class XII", count: 84},
-    // ];
-
-    // interface AdmissionData {
-    //     name: string,
-    //     value: number
-    // }
-    //
-    // // Sample Admission Status
-    // const admissionData:AdmissionData[] = [
-    //     {name: "Applied", value: 150},
-    //     {name: "Shortlisted", value: 80},
-    //     {name: "Enrolled", value: 50},
-    //     {name: "Rejected", value: 20},
-    // ];
-    // const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
-
     const [stats, setStats] = useState([
-        {title: "Total Students", value: "728", icon: <Users size={24}/>},
-        {title: "Total Staff", value: "56", icon: <Users size={24}/>},
-        {title: "Fee Collection", value: "₹4.8L", icon: <CreditCard size={24}/>},
-        {title: "Attendance", value: "93%", icon: <Clock size={24}/>},
+        {title: "Total Students", value: "—", icon: <Users size={24}/>},
+        {title: "Total Staff", value: "—", icon: <Users size={24}/>},
+        {title: "Fee Collection", value: "—", icon: <CreditCard size={24}/>},
+        {title: "Attendance", value: "—", icon: <Clock size={24}/>},
     ]);
-
-    // Quick stats
-    // const stats = [
-    //     {title: "Total Students", value: "728", icon: <Users size={24}/>},
-    //     {title: "Total Staff", value: "56", icon: <Users size={24}/>},
-    //     {title: "Fee Collection", value: "₹4.8L", icon: <CreditCard size={24}/>},
-    //     {title: "Attendance", value: "93%", icon: <Clock size={24}/>},
-    // ];
-
-    // Upcoming events
-    // const events = [
-    //     {date: "05 Mar", title: "Parent-Teacher Meeting", category: "Meeting"},
-    //     {date: "12 Mar", title: "Annual Sports Day", category: "Event"},
-    //     {date: "15 Mar", title: "Science Exhibition", category: "Academic"},
-    //     {date: "20 Mar", title: "Final Exam Begins", category: "Exam"},
-    // ];
-    //
-    // // Recent notifications
-    // const notifications = [
-    //     {title: "Fee Payment Reminder", time: "2 hours ago", priority: "high"},
-    //     {title: "New Admission Application", time: "5 hours ago", priority: "medium"},
-    //     {title: "Staff Meeting Rescheduled", time: "Yesterday", priority: "medium"},
-    //     {title: "Academic Calendar Updated", time: "2 days ago", priority: "low"},
-    // ];
 
     useEffect(() => {
         setIsLoading(true);
@@ -248,7 +190,7 @@ const AdminDashboard = () => {
                 </div>
             </div>
 
-            {/* Second Row */}
+            {/* Second Row — admission status, quick access, to-do, system status panels are available for future use */}
             {/*<div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">*/}
             {/*    /!* Admission Status *!/*/}
             {/*    <div className="bg-white p-4 rounded-lg shadow-md">*/}

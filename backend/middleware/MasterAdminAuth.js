@@ -10,8 +10,6 @@ function MasterAdminAuth(req, res, next) {
     const base64Credentials = authHeader.split(' ')[1];
     const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
     const [username, password] = credentials.split(':');
-    console.log(process.env.MASTER_ADMIN_USERNAME)
-
     if (username === process.env.MASTER_ADMIN_USERNAME && password === process.env.MASTER_ADMIN_PASSWORD) {
         next();
     } else {

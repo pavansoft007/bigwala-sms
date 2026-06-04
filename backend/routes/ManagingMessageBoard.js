@@ -9,11 +9,9 @@ import getAssignedClassroom from "../services/getAssignedClassroom.js";
 import completeLogin from "../middleware/completeLogin.js";
 import Encrypt from "../services/Encrypt.js";
 import ImageCors from "../middleware/ImageCors.js";
-import { PrismaClient } from "@prisma/client";
+import prisma from '../lib/prisma.js';
 
 dotenv.config();
-
-const prisma = new PrismaClient();
 
 const storage = multer.diskStorage({
       destination: (req, file, cb) => {
@@ -125,7 +123,7 @@ ManagingMessageBoard.post('/mobileAPI/getMessages', completeLogin, async (req, r
             let query = '';
             let params = [];
 
-            if (role === 'admin' || role === 'teacher-admin') {
+            if (role === 'admin' || role === 'admin-teacher') {
                   if (classroom_id) {
                         query = `${baseQuery} WHERE messageBoards.school_id = ? AND messageBoards.classroom_id = ? AND messageBoards.type = 'completeClass'`;
                         params = [school_id, classroom_id];

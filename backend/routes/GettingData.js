@@ -1,36 +1,10 @@
 import express from "express";
-import { PrismaClient } from '@prisma/client';
 import AdminAuth from "../middleware/AdminAuth.js";
 import verifyToken from "../middleware/teacherAuth.js";
 import completeLogin from "../middleware/completeLogin.js";
 import adminAuth from "../middleware/AdminAuth.js";
-
-const prisma = new PrismaClient();
+import prisma from '../lib/prisma.js';
 const GettingData = express.Router();
-
-// Original commented route - converted for reference:
-// GettingData.get('/mobileAPI/students/:id', AdminAuth('student management'), async (req, res) => {
-//     try {
-//         const student = await prisma.Students.findFirst({
-//             where: {
-//                 student_id: parseInt(req.params.id)
-//             },
-//             include: {
-//                 Classrooms: true
-//             }
-//         });
-//         if (!student) {
-//             return res.status(404).json({ message: 'Student not found' });
-//         }
-//         res.status(200).json(student);
-//     } catch (error) {
-//         console.error('Error fetching student:', error);
-//         res.status(500).json({
-//             message: 'An error occurred while fetching student',
-//             error: error.message
-//         });
-//     }
-// });
 
 GettingData.get('/mobileAPI/teachers/:id', AdminAuth('student management'), async (req, res) => {
     try {
@@ -183,29 +157,38 @@ GettingData.get("/api/main-dashboard", adminAuth('all'), async (req, res) => {
             }
         });
 
-        const attendanceData = await Promise.all(weekDays.map(async (day) => {
-            const studentAttendance = await prisma.StudentAttendance.count({
-                where: {
-                    school_id: school_id,
-                    attendDate: day
-                }
-            });
+        const endOfWeek = new Date(weekDays[4]);
+        endOfWeek.setDate(endOfWeek.getDate() + 1);
 
-            const teacherAttendance = await prisma.TeacherAttendance.count({
-                where: {
-                    school_id: school_id,
-                    attendDate: day
-                }
-            });
+        const [studentAttendanceRows, teacherAttendanceRows] = await Promise.all([
+            prisma.$queryRaw`
+                SELECT attendDate, COUNT(*) as cnt
+                FROM studentAttendance
+                WHERE school_id = ${school_id}
+                  AND attendDate >= ${weekDays[0]} AND attendDate < ${endOfWeek}
+                GROUP BY attendDate
+            `,
+            prisma.$queryRaw`
+                SELECT attendDate, COUNT(*) as cnt
+                FROM teacherAttendance
+                WHERE school_id = ${school_id}
+                  AND attendDate >= ${weekDays[0]} AND attendDate < ${endOfWeek}
+                GROUP BY attendDate
+            `,
+        ]);
 
-            const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
-            const dayName = dayNames[day.getDay() - 1]; // Adjust for Monday = 0
+        const studentMap = Object.fromEntries(
+            studentAttendanceRows.map(r => [new Date(r.attendDate).toDateString(), Number(r.cnt)])
+        );
+        const teacherMap = Object.fromEntries(
+            teacherAttendanceRows.map(r => [new Date(r.attendDate).toDateString(), Number(r.cnt)])
+        );
 
-            return {
-                name: dayName,
-                students: totalStudents > 0 ? Math.round((studentAttendance * 100.0) / totalStudents) : 0,
-                teachers: totalTeachers > 0 ? Math.round((teacherAttendance * 100.0) / totalTeachers) : 0
-            };
+        const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+        const attendanceData = weekDays.map((day, i) => ({
+            name: dayNames[i],
+            students: totalStudents > 0 ? Math.round(((studentMap[day.toDateString()] || 0) * 100.0) / totalStudents) : 0,
+            teachers: totalTeachers > 0 ? Math.round(((teacherMap[day.toDateString()] || 0) * 100.0) / totalTeachers) : 0,
         }));
 
         res.status(200).json({

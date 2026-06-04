@@ -45,6 +45,7 @@ model School {
   Teachers              Teachers[]
   YoutubeVideo          YoutubeVideo[]
   TeacherLeave          TeacherLeave[]
+  User                  User[]
 
   @@map("school")
 }
@@ -182,7 +183,7 @@ model FeeCategories {
   category_name         String                  @db.VarChar(225)
   description           String?                 @db.Text
   created_at            DateTime?               @default(now()) @db.DateTime(0)
-  updated_at            DateTime?               @default(now()) @db.DateTime(0)
+  updated_at            DateTime?               @updatedAt @db.DateTime(0)
   StudentPaymentPending StudentPaymentPending[]
   School                School                  @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction, map: "fee_categories_ibfk_1")
   StudentFees           StudentFees[]
@@ -279,7 +280,6 @@ model Roles {
 
 model SchoolFinancials {
   school_financial_id Int          @id @default(autoincrement())
-  year                String       @db.VarChar(255)
   year_id             Int
   school_id           Int
   current_balance     Int
@@ -461,13 +461,22 @@ model Teachers {
 
 model User {
   id           Int        @id @default(autoincrement())
+  name         String?    @db.VarChar(100)
+  email        String?    @db.VarChar(100)
   phone_number String     @db.VarChar(15)
+  password     String?    @db.VarChar(255)
   role         users_role
   original_id  String     @db.VarChar(50)
+  school_id    Int?
+  is_active    Boolean    @default(true)
   createdAt    DateTime?  @default(now()) @db.DateTime(0)
-  updatedAt    DateTime?  @default(now()) @db.DateTime(0)
+  updatedAt    DateTime?  @updatedAt @db.DateTime(0)
+
+  School       School?    @relation(fields: [school_id], references: [school_id], onDelete: NoAction)
 
   @@index([phone_number], map: "phone_number")
+  @@index([email], map: "email")
+  @@index([school_id], map: "user_school_id")
   @@map("users")
 }
 

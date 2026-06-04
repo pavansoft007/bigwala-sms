@@ -1,12 +1,12 @@
 import express from "express";
-import { PrismaClient } from "@prisma/client";
 import semiAdminAuth from "../middleware/semiAdminAuth.js";
 import adminAuth from "../middleware/AdminAuth.js";
 import teacherAuth from "../middleware/teacherAuth.js";
 import completeLogin from "../middleware/completeLogin.js";
 
+import prisma from '../lib/prisma.js';
+
 const ManagingClassrooms = express.Router();
-const prisma = new PrismaClient();
 
 // Create Classroom
 ManagingClassrooms.post('/mobileAPI/classroom', adminAuth('classroom'), async (req, res) => {

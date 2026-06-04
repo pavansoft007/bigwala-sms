@@ -1,10 +1,10 @@
 import express from 'express';
-import { PrismaClient } from '@prisma/client';
 import TeacherAuth from "../middleware/teacherAuth.js";
 import AdminAuth from "../middleware/AdminAuth.js";
 import StudentAuth from "../middleware/StudentAuth.js";
 
-const prisma = new PrismaClient();
+import prisma from '../lib/prisma.js';
+
 const ManageAttendance = express.Router();
 
 

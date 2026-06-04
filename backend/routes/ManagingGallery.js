@@ -4,9 +4,7 @@ import Encrypt from "../services/Encrypt.js";
 import semiAdminAuth from "../middleware/semiAdminAuth.js";
 import completeLogin from "../middleware/completeLogin.js";
 import MulterService from "../services/multerService.js";
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import prisma from '../lib/prisma.js';
 const ManagingGallery=express.Router();
 
 ManagingGallery.post('/mobileAPI/gallery', semiAdminAuth('gallery'), MulterService.array('photos', 10), async (req, res) => {

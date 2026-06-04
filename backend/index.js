@@ -23,10 +23,11 @@ import ManageBannerImages from "./routes/ManageBannerImages.js";
 import ManagingFeeCategory from "./routes/ManagingFeeCategory.js";
 import ManagingStaticFiles from "./routes/ManagingStaticFiles.js";
 import ManagingFeePayment from "./routes/ManagingFeePayment.js";
+import ManageLeaves from "./routes/ManageLeaves.js";
 import {realIpMiddleware} from "./middleware/realIpMiddleware.js";
 import ManagingSchool from "./routes/ManagingSchool.js";
-import { PrismaClient } from '@prisma/client';
-const prisma = new PrismaClient();
+import ManagingAcademicYear from "./routes/ManagingAcademicYear.js";
+import prisma from './lib/prisma.js';
 
 const app = express();
 app.use(express.json());
@@ -59,15 +60,6 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// sequelize.sync()
-//     .then(() => {
-//         console.log('Database synced successfully.');
-//     })
-//     .catch((error) => {
-//         console.error('Error syncing the database:', error);
-//     });
-
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const frontendPath = path.resolve(__dirname, '../frontend/dist');
@@ -75,6 +67,7 @@ app.use(express.static(frontendPath));
 
 app.use('/uploads', express.static('uploads'));
 app.use(ManagingSchool);
+app.use(ManagingAcademicYear);
 app.use(Auth);
 app.use(GettingData);
 app.use(ManagingClassrooms);
@@ -93,6 +86,7 @@ app.use(ManageBannerImages);
 app.use(ManagingFeeCategory);
 app.use(ManagingStaticFiles);
 app.use(ManagingFeePayment);
+app.use(ManageLeaves);
 
 
 app.all('/mobileAPI/*', (req, res) => {
@@ -114,7 +108,7 @@ process.on('SIGINT', async () => {
     process.exit(0);
 });
 
-const port = process.env.PORT;
+const port = process.env.PORT || 3000;
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });

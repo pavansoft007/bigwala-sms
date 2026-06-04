@@ -1,9 +1,7 @@
 import express from "express";
 import SemiAdminAuth from "../middleware/semiAdminAuth.js";
 import studentAuth from "../middleware/StudentAuth.js";
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import prisma from '../lib/prisma.js';
 const ManagingVideo=express.Router();
 
 ManagingVideo.post('/mobileAPI/add-new-video',SemiAdminAuth('managing videos'),async (req,res)=>{

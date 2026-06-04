@@ -1,9 +1,7 @@
 import express from "express";
 import teacherAuth from "../middleware/teacherAuth.js";
 import completeLogin from "../middleware/completeLogin.js";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from '../lib/prisma.js';
 const ManagingHomework = express.Router();
 
 ManagingHomework.post('/mobileAPI/homework', teacherAuth('homework'), async (req, res) => {

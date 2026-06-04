@@ -1,9 +1,8 @@
 import express from "express";
-import { PrismaClient } from "@prisma/client";
 import AdminAuth from "../middleware/AdminAuth.js";
+import prisma from '../lib/prisma.js';
 
 const ManageUserRights = express.Router();
-const prisma = new PrismaClient();
 
 ManageUserRights.post("/api/roles", AdminAuth("roles"), async (req, res) => {
     try {

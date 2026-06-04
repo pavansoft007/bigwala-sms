@@ -1,11 +1,11 @@
 import express from "express";
-import {PrismaClient} from "@prisma/client";
 import AdminAuth from "../middleware/AdminAuth.js";
 import generateTeacherID from "../services/generateTeacherID.js";
 import upload from "../services/multerService.js";
 import Encrypt from "../services/Encrypt.js";
 
-const prisma = new PrismaClient();
+import prisma from '../lib/prisma.js';
+
 const ManagingTeacher = express.Router();
 
 
@@ -62,9 +62,13 @@ ManagingTeacher.post("/api/teacher", AdminAuth("teacher management"),
 
                 const createdUser = await tx.user.create({
                     data: {
+                        name: `${first_name} ${last_name}`,
+                        email,
                         phone_number,
                         role: adminAccess ? "admin_teacher" : "teacher",
                         original_id: createdTeacher.teacher_id.toString(),
+                        school_id: req.sessionData.school_id,
+                        is_active: true,
                     },
                 });
 
@@ -130,10 +134,15 @@ ManagingTeacher.put("/api/teacher/:id", AdminAuth("teacher management"),
                 });
 
                 await tx.user.updateMany({
-                    where: {original_id: teacherId.toString()},
+                    where: {
+                        original_id: teacherId.toString(),
+                        role: { in: ['teacher', 'admin_teacher'] },
+                    },
                     data: {
-                        role: adminAccess ? "admin_teacher" : "teacher",
+                        name: `${updatedTeacher.first_name} ${updatedTeacher.last_name}`,
+                        email: updatedTeacher.email,
                         phone_number: updatedTeacher.phone_number,
+                        role: adminAccess ? "admin_teacher" : "teacher",
                     },
                 });
                 return updatedTeacher;

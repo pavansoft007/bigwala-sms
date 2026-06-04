@@ -7,10 +7,9 @@ import ImageCors from "../middleware/ImageCors.js";
 import Decrypt from "../services/Decrypt.js";
 import {fileURLToPath} from "url";
 import upload from "../services/multerService.js";
-import {PrismaClient} from "@prisma/client";
+import prisma from '../lib/prisma.js';
 
 const ManageBannerImages = express.Router();
-const prisma = new PrismaClient();
 
 ManageBannerImages.post('/api/bannerImage', AdminAuth('banner Images'), upload.fields([{
     name: 'photo',

@@ -190,77 +190,31 @@ const Students = () => {
                     </div>
                 ) : students.length > 0 ? (
                     <>
-                        {/*<div className="flex justify-center items-center my-4">*/}
-                        {/*    <button*/}
-                        {/*        onClick={prevPage}*/}
-                        {/*        disabled={currentPage === 1}*/}
-                        {/*        className={`p-2 mx-2 rounded-lg text-center ${*/}
-                        {/*            currentPage === 1 ? "bg-gray-300" : "bg-blue-500 text-white hover:bg-blue-600"*/}
-                        {/*        }`}*/}
-                        {/*    >*/}
-                        {/*        Prev*/}
-                        {/*    </button>*/}
-                        {/*    <p className="text-gray-600">*/}
-                        {/*        Page {currentPage} of {totalPages}*/}
-                        {/*    </p>*/}
-                        {/*    <button*/}
-                        {/*        onClick={nextPage}*/}
-                        {/*        disabled={currentPage === totalPages}*/}
-                        {/*        className={`p-2 mx-2 rounded-lg text-center ${*/}
-                        {/*            currentPage === totalPages ? "bg-gray-300" : "bg-blue-500 text-white hover:bg-blue-600"*/}
-                        {/*        }`}*/}
-                        {/*    >*/}
-                        {/*        Next*/}
-                        {/*    </button>*/}
-                        {/*</div>*/}
                         <Table className="text-sm bg-white rounded-lg shadow-md">
-                            <TableCaption>
-                                <div className="flex justify-center items-center my-4">
-                                    <button
-                                        onClick={prevPage}
-                                        disabled={currentPage === 1}
-                                        className={`p-2 mx-2 rounded-lg text-center ${
-                                            currentPage === 1 ? "bg-gray-300 cursor-not-allowed" : "bg-blue-500 text-white hover:bg-blue-600"
-                                        }`}
-                                    >
-                                        Prev
-                                    </button>
-                                    <p className="text-gray-600">
-                                        Page {currentPage} of {totalPages}
-                                    </p>
-                                    <button
-                                        onClick={nextPage}
-                                        disabled={currentPage === totalPages}
-                                        className={`p-2 mx-2 rounded-lg text-center ${
-                                            currentPage === totalPages ? "bg-gray-300 cursor-not-allowed" : "bg-blue-500 text-white hover:bg-blue-600"
-                                        }`}
-                                    >
-                                        Next
-                                    </button>
-                                </div>
-                            </TableCaption>
                             <TableHeader className="bg-gray-200">
                                 <TableRow>
-                                    <TableHead>Student ID</TableHead>
+                                    <TableHead>Admission ID</TableHead>
                                     <TableHead>Name</TableHead>
                                     <TableHead>Email</TableHead>
-                                    <TableHead>parents Phone</TableHead>
+                                    <TableHead>Parent's Phone</TableHead>
+                                    <TableHead>Class</TableHead>
                                     <TableHead>Status</TableHead>
-                                    {/*<TableHead>Subject</TableHead>*/}
-                                    {/*<TableHead>Assigned Classroom</TableHead>*/}
                                     <TableHead>Action</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {students.map((student, index) => (
-                                    <TableRow key={index} className="hover:bg-gray-100 transition-colors">
+                                {students.map((student) => (
+                                    <TableRow key={student.student_id} className="hover:bg-gray-100 transition-colors">
                                         <TableCell>{student.admission_ID}</TableCell>
                                         <TableCell>{student.first_name} {student.last_name}</TableCell>
                                         <TableCell>{student.email}</TableCell>
                                         <TableCell>{student.phone_number}</TableCell>
-                                        {/*<TableCell>{student.status}</TableCell>*/}
-                                        {/*<TableCell>{student.subject_name}</TableCell>*/}
                                         <TableCell>{student.standard}-{student.section}</TableCell>
+                                        <TableCell>
+                                            <span className={`px-2 py-1 rounded text-xs font-medium ${student.status === "Active" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                                                {student.status}
+                                            </span>
+                                        </TableCell>
                                         <TableCell>
                                             <button
                                                 onClick={() => handleEdit(student.student_id)}
@@ -272,22 +226,24 @@ const Students = () => {
                                 ))}
                             </TableBody>
                         </Table>
-                        {/*{students.map((student) => (*/}
-                        {/*    <div key={student.student_id} className="bg-gray-100 p-3 rounded-lg shadow-sm">*/}
-                        {/*        <p className="font-medium text-gray-700">*/}
-                        {/*            {student.first_name} {student.last_name} (ID: {student.student_id})*/}
-                        {/*        </p>*/}
-                        {/*        <p className="text-sm text-gray-500">*/}
-                        {/*            Email: {student.email} | Phone: {student.phone_number}*/}
-                        {/*        </p>*/}
-                        {/*        <button*/}
-                        {/*            onClick={() => handleEdit(student.student_id)}*/}
-                        {/*            className="bg-green-500 hover:bg-green-600 text-white font-semibold py-1 px-3 rounded-lg transition"*/}
-                        {/*        >*/}
-                        {/*            Edit*/}
-                        {/*        </button>*/}
-                        {/*    </div>*/}
-                        {/*))}*/}
+
+                        <div className="flex justify-center items-center my-4 gap-3">
+                            <button
+                                onClick={prevPage}
+                                disabled={currentPage === 1}
+                                className={`px-4 py-2 rounded-lg text-sm font-medium ${currentPage === 1 ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-blue-500 text-white hover:bg-blue-600"}`}
+                            >
+                                ← Prev
+                            </button>
+                            <span className="text-gray-600 text-sm">Page {currentPage} of {totalPages}</span>
+                            <button
+                                onClick={nextPage}
+                                disabled={currentPage === totalPages}
+                                className={`px-4 py-2 rounded-lg text-sm font-medium ${currentPage === totalPages ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-blue-500 text-white hover:bg-blue-600"}`}
+                            >
+                                Next →
+                            </button>
+                        </div>
                     </>
                 ) : (
                     <p className="text-gray-500">No students found. Adjust the filters or try again later.</p>

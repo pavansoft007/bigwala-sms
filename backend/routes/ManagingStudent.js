@@ -1,12 +1,11 @@
 import express from "express";
-import { PrismaClient } from "@prisma/client";
+import prisma from '../lib/prisma.js';
 import generateAdmissionID from "../services/generateAdmissionID.js";
 import AdminAuth from "../middleware/AdminAuth.js";
 import upload from "../services/multerService.js";
 import Encrypt from "../services/Encrypt.js";
 
-// Initialize Prisma Client
-const prisma = new PrismaClient();
+
 const ManagingStudent = express.Router();
 
 // Route to create a new student
@@ -126,9 +125,13 @@ ManagingStudent.post(
 
                 const newUser = await tx.user.create({
                     data: {
+                        name: `${first_name} ${last_name}`,
+                        email,
                         phone_number,
                         role: "student",
                         original_id: newStudent.student_id.toString(),
+                        school_id: school_id,
+                        is_active: true,
                     },
                 });
 

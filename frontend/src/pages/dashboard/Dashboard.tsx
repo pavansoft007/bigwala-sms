@@ -78,7 +78,6 @@ const DashboardSideBar = () => {
                     FetchUserDetails()
                 ]);
 
-                console.log(userInfo);
             } catch (error) {
                 console.error('Error fetching data:', error);
             }finally {

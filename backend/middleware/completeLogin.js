@@ -8,7 +8,7 @@ const TeacherAuth = async (req, res, next) => {
         if (!bearerToken) return res.status(403).json({ message: 'No token provided' });
 
         const tokenDetails=await jwt.verify(bearerToken,process.env.JWTKEY);
-        if(tokenDetails.role=== 'admin' || tokenDetails.role === 'teacher-admin' || tokenDetails.role === 'teacher' ||
+        if(tokenDetails.role === 'admin' || tokenDetails.role === 'admin-teacher' || tokenDetails.role === 'teacher' ||
             tokenDetails.role === 'student' ){
             req['sessionData']=tokenDetails;
             next();

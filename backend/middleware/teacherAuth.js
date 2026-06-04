@@ -1,7 +1,5 @@
 import jwt from "jsonwebtoken";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from "../lib/prisma.js";
 
 const teacherAdminAuth = (requiredPermission) => {
     return async (req, res, next) => {
@@ -40,7 +38,7 @@ const teacherAdminAuth = (requiredPermission) => {
 
                 return res.status(403).json({ message: 'Permission denied' });
 
-            } else if (tokenDetails.role === 'teacher-admin' || tokenDetails.role === 'teacher') {
+            } else if (tokenDetails.role === 'admin-teacher' || tokenDetails.role === 'teacher') {
                 req.sessionData = tokenDetails;
                 return next();
             } else {

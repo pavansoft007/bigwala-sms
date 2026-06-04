@@ -4,9 +4,7 @@ import upload from "../services/multerService.js";
 import completeLogin from "../middleware/completeLogin.js";
 import Encrypt from "../services/Encrypt.js";
 import FormatDate from "../services/FormatDate.js";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from '../lib/prisma.js';
 const ManagingExam = express.Router();
 
 ManagingExam.post(

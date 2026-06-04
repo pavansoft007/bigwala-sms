@@ -64,6 +64,7 @@ const AddStudent = () => {
     const [feeCategory, setFeeCategory] = useState<FeeCategory[]>([]);
     const [message, setMessage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
         const fetchStandards = async () => {
@@ -145,6 +146,7 @@ const AddStudent = () => {
         e.preventDefault();
         setMessage(null);
         setError(null);
+        setSubmitting(true);
         try {
             const backendFormData = new FormData();
 
@@ -195,8 +197,10 @@ const AddStudent = () => {
             newFormData.caste = "";
             setFormData(newFormData);
         } catch (err: unknown) {
-            console.log('error in while adding the user:')
+            console.error('Error adding student:', err);
             setError("An error occurred while adding the student.");
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -287,7 +291,7 @@ const AddStudent = () => {
                     </div>
 
                     <div className="mt-2">
-                        <label className="block text-sm font-medium text-gray-700">father name</label>
+                        <label className="block text-sm font-medium text-gray-700">Father Name</label>
                         <input
                             type="text"
                             name="father_name"
@@ -299,7 +303,7 @@ const AddStudent = () => {
                     </div>
 
                     <div className="mt-2">
-                        <label className="block text-sm font-medium text-gray-700">mother name</label>
+                        <label className="block text-sm font-medium text-gray-700">Mother Name</label>
                         <input
                             type="text"
                             name="mother_name"
@@ -336,7 +340,7 @@ const AddStudent = () => {
                     </div>
 
                     <div className="mt-2">
-                        <label className="block text-sm font-medium text-gray-700">mother Phone Number</label>
+                        <label className="block text-sm font-medium text-gray-700">Mother's Phone Number</label>
                         <input
                             type="tel"
                             name="mother_phone_number"
@@ -393,7 +397,7 @@ const AddStudent = () => {
                     </div>
                     <div className="mb-4 flex flex-row mt-2">
                         <div>
-                            <label className="block text-gray-700 font-medium mb-2">Student photo:</label>
+                            <label className="block text-gray-700 font-medium mb-2">Student Photo:</label>
                             <input
                                 type="file"
                                 name="student_photo"
@@ -402,7 +406,7 @@ const AddStudent = () => {
                             />
                         </div>
                         <div>
-                            <label className="block text-gray-700 font-medium mb-2">father photo:</label>
+                            <label className="block text-gray-700 font-medium mb-2">Father Photo:</label>
                             <input
                                 type="file"
                                 name="father_photo"
@@ -415,7 +419,7 @@ const AddStudent = () => {
 
                     </div> */}
                     <div className="mt-2">
-                        <label className="block text-sm font-medium text-gray-700">caste</label>
+                        <label className="block text-sm font-medium text-gray-700">Caste</label>
                         <select
                             name="caste"
                             value={formData.caste}
@@ -470,12 +474,13 @@ const AddStudent = () => {
                         </Table>
                     </div>
 
-                    <div className=" flex justify-center mt-5 ">
+                    <div className="flex justify-center mt-5">
                         <button
-                            onClick={handleSubmit}
-                            className="bg-blue-600 text-white py-2 px-4 w-1/2 rounded-lg hover:bg-blue-700"
+                            type="submit"
+                            disabled={submitting}
+                            className="bg-blue-600 text-white py-2 px-4 w-1/2 rounded-lg hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed"
                         >
-                            Add Student
+                            {submitting ? "Adding..." : "Add Student"}
                         </button>
                     </div>
 

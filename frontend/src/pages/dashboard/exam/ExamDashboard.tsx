@@ -10,6 +10,7 @@ const ExamDashboard = () => {
     const [exams, setExams] = useState<Exam[]>([]);
     const classrooms = useSelector((state: RootState) => state.classrooms);
     const [editMode, setEditMode] = useState<null | number>(null);
+    const [feedback, setFeedback] = useState<{ text: string; type: "success" | "error" } | null>(null);
 
 
     const [formData, setFormData] = useState<Omit<Exam, "exam_id" | "school_id" | "timetable_photo"> & {
@@ -71,12 +72,12 @@ const ExamDashboard = () => {
             } else {
                 await axiosInstance.post("/api/exam", data);
             }
-            alert(editMode ? "Exam edited successfully" : "Exam created successfully" );
+            setFeedback({ text: editMode ? "Exam updated successfully." : "Exam created successfully.", type: "success" });
             setEditMode(null);
             setFormData({
-                classroom_id:null,
-                standard:'',
-                section:'',
+                classroom_id: null,
+                standard: '',
+                section: '',
                 exam_name: "",
                 class_id: 0,
                 start_date: "",
@@ -85,8 +86,9 @@ const ExamDashboard = () => {
                 timetable_photo: null
             });
             setRefresh((prev) => !prev);
-        } catch (err: any) {
-            alert(err.response?.data?.error || "Failed to create exam");
+        } catch (err: unknown) {
+            const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error;
+            setFeedback({ text: message || "Failed to save exam. Please try again.", type: "error" });
         }
     };
 
@@ -123,6 +125,12 @@ const ExamDashboard = () => {
     return (
         <div className="p-6 max-w-4xl mx-auto">
             <h2 className="text-2xl font-bold mb-4">Exam Dashboard</h2>
+
+            {feedback && (
+                <div className={`mb-4 p-3 rounded text-sm font-medium ${feedback.type === "success" ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-700 border border-red-200"}`}>
+                    {feedback.text}
+                </div>
+            )}
 
             <form
                 onSubmit={handleSubmit}
@@ -187,13 +195,18 @@ const ExamDashboard = () => {
                         onChange={handleChange}
                         required
                     />
-                    <input
-                        type="file"
-                        className="border p-2 rounded col-span-full"
-                        name="timetable_photo"
-                        onChange={handleFileChange}
-                        required
-                    />
+                    <div className="col-span-full">
+                        <label className="block text-sm text-gray-600 mb-1">
+                            Timetable Photo{editMode ? " (leave blank to keep existing)" : " *"}
+                        </label>
+                        <input
+                            type="file"
+                            className="border p-2 rounded w-full"
+                            name="timetable_photo"
+                            onChange={handleFileChange}
+                            required={!editMode}
+                        />
+                    </div>
                 </div>
                 <button
                     type="submit"

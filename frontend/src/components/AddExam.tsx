@@ -25,7 +25,7 @@ const AddExam = ({ classroomId, studentId }: AddExamProps) => {
     const [exams, setExams] = useState<Exam[]>([]);
     const [selectedExamId, setSelectedExamId] = useState<number>(0);
     const [marksData, setMarksData] = useState<{ [subjectId: number]: number }>({});
-    const [message, setMessage] = useState("");
+    const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
 
     useEffect(() => {
         async function fetchExamInfo() {
@@ -53,13 +53,13 @@ const AddExam = ({ classroomId, studentId }: AddExamProps) => {
         };
 
         try {
-            await axiosInstance.post("/api/exam-marks", payload);
-            setMessage("Marks submitted successfully!");
+            await axiosInstance.post("/api/studentMarks", payload);
+            setMessage({ text: "Marks submitted successfully!", type: "success" });
             setMarksData({});
             setSelectedExamId(0);
         } catch (err) {
             console.error("Failed to submit marks:", err);
-            setMessage("Failed to submit marks.");
+            setMessage({ text: "Failed to submit marks. Please try again.", type: "error" });
         }
     };
 
@@ -92,7 +92,7 @@ const AddExam = ({ classroomId, studentId }: AddExamProps) => {
                     <h3 className="text-lg font-semibold">Subject-wise Marks</h3>
                     {subjects.map((subject) => (
                         <div key={subject.subject_id}>
-                            <label className="block text-sm text-gray-700">
+                            <label className="block text-sm text-gray-700 " >
                                 {subject.subject_name}
                             </label>
                             <input
@@ -124,9 +124,10 @@ const AddExam = ({ classroomId, studentId }: AddExamProps) => {
                 </button>
             </div>
 
-            {/* Response Message */}
             {message && (
-                <p className="text-center text-sm font-medium text-green-600">{message}</p>
+                <p className={`text-center text-sm font-medium ${message.type === "success" ? "text-green-600" : "text-red-600"}`}>
+                    {message.text}
+                </p>
             )}
         </div>
     );

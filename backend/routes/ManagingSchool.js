@@ -1,9 +1,8 @@
-// src/routes/managingSchool.js
 import express from 'express';
+import bcrypt from 'bcryptjs';
 import MasterAdminAuth from '../middleware/MasterAdminAuth.js';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../lib/prisma.js';
 
-const prisma = new PrismaClient();
 const ManagingSchool = express.Router();
 
 /* ─────────────────────────  ADD NEW SCHOOL  ───────────────────────── */
@@ -21,47 +20,52 @@ ManagingSchool.post('/super-admin/schools', MasterAdminAuth, async (req, res) =>
         year
     } = req.body;
 
+    if (!school_name || !school_code || !admin_email || !admin_password) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+
     try {
+        const hashedPassword = await bcrypt.hash(admin_password, 10);
+
         await prisma.$transaction(async (tx) => {
-            /* ---------- SCHOOL ---------- */
-            const school = await tx.School.create({
-                data: {
-                    name: school_name,
-                    address,
-                    phone_number,
-                    school_code,
-                    email
-                }
+            const school = await tx.school.create({
+                data: { name: school_name, address, phone_number, school_code, email }
             });
 
-            const academicYear = await tx.AcademicYear.create({
-                data: {
-                    year,
-                    school_id: school.school_id,
-                    is_current: true
-                }
+            const academicYear = await tx.academicYear.create({
+                data: { year, school_id: school.school_id, is_current: true }
             });
 
-            const role = await tx.Roles.create({
-                data: {
-                    role_name: 'admin',
-                    school_id: school.school_id
-                }
+            const role = await tx.roles.create({
+                data: { role_name: 'admin', school_id: school.school_id }
             });
 
-
-            await tx.Admin.create({
+            const admin = await tx.admin.create({
                 data: {
                     admin_name,
                     admin_email,
                     admin_phone_number,
-                    admin_password,
+                    admin_password: hashedPassword,
                     role_id: role.role_id,
                     school_id: school.school_id
                 }
             });
 
-            await tx.FeeCategories.create({
+            // Create the master User record so the admin can log in via the unified auth system
+            await tx.user.create({
+                data: {
+                    name: admin_name,
+                    email: admin_email,
+                    phone_number: admin_phone_number,
+                    password: hashedPassword,
+                    role: 'admin',
+                    original_id: admin.admin_id.toString(),
+                    school_id: school.school_id,
+                    is_active: true
+                }
+            });
+
+            await tx.feeCategories.create({
                 data: {
                     school_id: school.school_id,
                     category_name: 'tuition fee',
@@ -69,10 +73,9 @@ ManagingSchool.post('/super-admin/schools', MasterAdminAuth, async (req, res) =>
                 }
             });
 
-            await tx.SchoolFinancials.create({
+            await tx.schoolFinancials.create({
                 data: {
                     year_id: academicYear.id,
-                    year: new Date().getFullYear().toString(),
                     school_id: school.school_id,
                     current_balance: 0
                 }
@@ -83,6 +86,9 @@ ManagingSchool.post('/super-admin/schools', MasterAdminAuth, async (req, res) =>
 
     } catch (err) {
         console.error('Error adding new school:', err);
+        if (err.code === 'P2002') {
+            return res.status(409).json({ error: 'School code or admin email already exists' });
+        }
         res.status(500).json({ error: 'Internal server error' });
     }
 });

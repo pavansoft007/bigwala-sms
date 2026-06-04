@@ -1,8 +1,6 @@
 import express from "express";
 import AdminAuth from "../middleware/AdminAuth.js";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from '../lib/prisma.js';
 const ManagingFeeCategory = express.Router();
 
 ManagingFeeCategory.post('/api/fee_category', AdminAuth('fee'), async (req, res) => {

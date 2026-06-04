@@ -1,6 +1,4 @@
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import prisma from '../lib/prisma.js';
 
 async function generateAdmissionID(school_code) {
     const lastStudent = await prisma.students.findFirst({

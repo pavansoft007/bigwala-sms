@@ -1,9 +1,7 @@
 import express from "express";
-import { PrismaClient } from "@prisma/client";
 import AdminAuth from "../middleware/AdminAuth.js";
 import completeLogin from "../middleware/completeLogin.js";
-
-const prisma = new PrismaClient();
+import prisma from '../lib/prisma.js';
 const ManagingSubjects = express.Router();
 
 ManagingSubjects.post('/api/subject', AdminAuth('subject'), async (req, res) => {

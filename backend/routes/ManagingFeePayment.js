@@ -2,9 +2,7 @@ import express from "express";
 import adminAuth from "../middleware/AdminAuth.js";
 import multerService from "../services/multerService.js";
 import studentAuth from "../middleware/StudentAuth.js";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from '../lib/prisma.js';
 const ManagingFeePayment = express.Router();
 
 ManagingFeePayment.post('/api/fee/fee-collect', adminAuth('fee'), async (req, res) => {
@@ -57,11 +55,15 @@ ManagingFeePayment.post('/api/fee/fee-collect', adminAuth('fee'), async (req, re
                     }
                 });
 
-                const school_financials = await tx.schoolFinancials.findFirst({
-                    where: {
-                        school_id: parseInt(school_id)
-                    }
+                const currentYear = await tx.academicYear.findFirst({
+                    where: { school_id: parseInt(school_id), is_current: true }
                 });
+
+                const school_financials = currentYear
+                    ? await tx.schoolFinancials.findFirst({
+                        where: { school_id: parseInt(school_id), year_id: currentYear.id }
+                    })
+                    : null;
 
                 if (school_financials) {
                     await tx.schoolFinancials.update({
@@ -168,9 +170,15 @@ ManagingFeePayment.put('/api/fee/update-online-fee/:id', adminAuth('fee'), async
                 }
             });
 
-            const school_financials = await tx.schoolFinancials.findFirst({
-                where: { school_id: req.sessionData.school_id }
+            const currentYear = await tx.academicYear.findFirst({
+                where: { school_id: req.sessionData.school_id, is_current: true }
             });
+
+            const school_financials = currentYear
+                ? await tx.schoolFinancials.findFirst({
+                    where: { school_id: req.sessionData.school_id, year_id: currentYear.id }
+                })
+                : null;
 
             if (school_financials) {
                 await tx.schoolFinancials.update({
